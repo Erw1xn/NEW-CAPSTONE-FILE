@@ -1,164 +1,57 @@
 const FINANCE_TRANSACTIONS_API = "../../api/finance/transactions.php";
-const PAYMENT_STORAGE_KEY = "dentanueva_patient_payments";
 const XENDIT_CREATE_PAYMENT_API = "../../api/xendit/create_payment.php";
 let CURRENT_PATIENT_ID = "";
 let CURRENT_PATIENT_NAME = "";
 let payments = [];
 let currentFilter = "all";
 let currentPayTransaction = null;
-let currentReceiptPayment = null;
 let xenditPaymentState = { status: "idle", paymentId: "", action: null };
 document.addEventListener("DOMContentLoaded", async function () {
-  resolveCurrentPatient();
+  await resolveCurrentPatient();
   await syncPaymentsFromFinance();
   bindPaymentEvents();
   renderSummary();
   renderPaymentHistory();
-  window.addEventListener("storage", async function (event) {
-    if (event.key === PAYMENT_STORAGE_KEY) {
-      resolveCurrentPatient();
-      await syncPaymentsFromFinance();
-      renderSummary();
-      renderPaymentHistory();
-    }
-  });
-  window.addEventListener("focus", async function () {
-    resolveCurrentPatient();
-    await syncPaymentsFromFinance();
-    renderSummary();
-    renderPaymentHistory();
-  });
 });
-function resolveCurrentPatient() {
+window.addEventListener("focus", async function () {
+  await resolveCurrentPatient();
+  await syncPaymentsFromFinance();
+  renderSummary();
+  renderPaymentHistory();
+});
+async function resolveCurrentPatient() {
   CURRENT_PATIENT_ID = "";
   CURRENT_PATIENT_NAME = "";
-  let currentUser = null;
-  let patients = [];
   try {
-    const storedUser = sessionStorage.getItem("currentUser");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      if (parsedUser && typeof parsedUser === "object")
-        currentUser = parsedUser;
+    const response = await fetch("../../api/patient_records.php", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to load patient record.");
     }
-  } catch (error) {
-    currentUser = null;
-  }
-  try {
-    const storedPatients = localStorage.getItem("dentanueva_patients");
-    if (storedPatients) {
-      const parsedPatients = JSON.parse(storedPatients);
-      if (Array.isArray(parsedPatients)) patients = parsedPatients;
+    const data = result.data;
+    const patient = Array.isArray(data) ? data[0] : data;
+    if (!patient || typeof patient !== "object") {
+      throw new Error("Patient record was not found.");
     }
-  } catch (error) {
-    patients = [];
-  }
-  if (!currentUser) return;
-  const userId = String(
-    currentUser.id || currentUser.userId || currentUser.user_id || "",
-  ).trim();
-  const userEmail = String(currentUser.email || currentUser.emailAddress || "")
-    .trim()
-    .toLowerCase();
-  const userPatientId = String(
-    currentUser.patientId || currentUser.patient_id || "",
-  ).trim();
-  let patient = null;
-  if (userPatientId) {
-    patient =
-      patients.find(function (item) {
-        const patientId = String(
-          item.patientId || item.patient_id || "",
-        ).trim();
-        return patientId && patientId === userPatientId;
-      }) || null;
-  }
-  if (!patient && userId) {
-    patient =
-      patients.find(function (item) {
-        const patientUserId = String(
-          item.userId ||
-            item.userIdRef ||
-            item.user_id ||
-            item.user_id_ref ||
-            "",
-        ).trim();
-        return patientUserId && patientUserId === userId;
-      }) || null;
-  }
-  if (!patient && userEmail) {
-    patient =
-      patients.find(function (item) {
-        const patientEmail = String(item.email || item.emailAddress || "")
-          .trim()
-          .toLowerCase();
-        return patientEmail && patientEmail === userEmail;
-      }) || null;
-  }
-  if (!patient && userPatientId) {
-    patient =
-      patients.find(function (item) {
-        const patientId = String(
-          item.patientId || item.patient_id || "",
-        ).trim();
-        return patientId === userPatientId;
-      }) || null;
-  }
-  if (!patient) {
-    const currentName = String(
-      currentUser.name ||
-        currentUser.fullName ||
-        `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
-    )
-      .trim()
-      .toLowerCase();
-    if (currentName) {
-      patient =
-        patients.find(function (item) {
-          const patientName = String(
-            item.name ||
-              `${item.firstName || ""} ${item.lastName || ""}`.trim(),
-          )
-            .trim()
-            .toLowerCase();
-          return patientName && patientName === currentName;
-        }) || null;
-    }
-  }
-  if (patient) {
     CURRENT_PATIENT_ID = String(
-      userPatientId ||
-        patient.patientId ||
-        patient.patient_id ||
-        patient.id ||
-        "",
+      patient.patientId || patient.patient_id || patient.id || "",
     ).trim();
     CURRENT_PATIENT_NAME = String(
       patient.name ||
         `${patient.firstName || ""} ${patient.lastName || ""}`.trim() ||
-        currentUser.name ||
-        currentUser.fullName ||
         "Patient",
     ).trim();
-    if (
-      !userPatientId &&
-      CURRENT_PATIENT_ID &&
-      String(currentUser.patientId || "").trim() !== CURRENT_PATIENT_ID
-    ) {
-      try {
-        currentUser.patientId = CURRENT_PATIENT_ID;
-        sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-      } catch (error) {}
+    if (!CURRENT_PATIENT_ID) {
+      throw new Error("Patient ID was not found.");
     }
-    return;
+  } catch (error) {
+    console.error("Unable to resolve current patient:", error);
+    showPaymentMessage("Unable to load your patient record.");
   }
-  CURRENT_PATIENT_ID = userPatientId;
-  CURRENT_PATIENT_NAME = String(
-    currentUser.name ||
-      currentUser.fullName ||
-      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim() ||
-      "Patient",
-  ).trim();
 }
 async function loadPatientTransactions() {
   if (!CURRENT_PATIENT_ID) return null;
@@ -195,7 +88,6 @@ async function syncPaymentsFromFinance() {
     return dateB - dateA;
   });
   payments = nextPayments;
-  localStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(payments));
   return true;
 }
 function normalizeDatabaseTransaction(transaction) {
@@ -220,6 +112,7 @@ function normalizeDatabaseTransaction(transaction) {
           payment_method: transaction.payment_method || "-",
           status: paid > 0 ? "paid" : transaction.status || "unpaid",
           paid_at: transaction.created_at,
+          isPlaceholder: true,
         },
       ];
   return records.map(function (payment, index) {
@@ -258,6 +151,7 @@ function normalizeDatabaseTransaction(transaction) {
       xenditPaymentId:
         payment.xendit_payment_id || payment.xendit_payment_request_id || "",
       xenditStatus: payment.xendit_status || "",
+      isPlaceholder: Boolean(payment.isPlaceholder),
     });
   });
 }
@@ -292,6 +186,7 @@ function normalizePayment(payment) {
     bankReference: payment.bankReference || "",
     xenditPaymentId: payment.xenditPaymentId || "",
     xenditStatus: payment.xenditStatus || "",
+    isPlaceholder: Boolean(payment.isPlaceholder),
   };
 }
 function normalizeStatus(status) {
@@ -301,9 +196,7 @@ function normalizeStatus(status) {
   if (value === "partial" || value === "partially_paid") return "partial";
   return "pending";
 }
-function savePayments() {
-  localStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(payments));
-}
+function savePayments() {}
 function bindPaymentEvents() {
   document.querySelectorAll(".payment-filter").forEach(function (button) {
     button.addEventListener("click", async function () {
@@ -312,7 +205,7 @@ function bindPaymentEvents() {
       });
       button.classList.add("active");
       currentFilter = button.dataset.filter || "all";
-      resolveCurrentPatient();
+      await resolveCurrentPatient();
       await syncPaymentsFromFinance();
       renderPaymentHistory();
     });
@@ -343,10 +236,6 @@ function bindPaymentEvents() {
   }
   const closeButton = document.getElementById("paymentModalClose");
   const overlay = document.getElementById("paymentModalOverlay");
-  const receiptClose = document.getElementById("receiptModalClose");
-  const receiptOverlay = document.getElementById("receiptModalOverlay");
-  const receiptCloseButton = document.getElementById("receiptCloseButton");
-  const printReceiptButton = document.getElementById("printReceiptButton");
   const payClose = document.getElementById("patientPayClose");
   const payOverlay = document.getElementById("patientPayOverlay");
   const payCancel = document.getElementById("patientPayCancel");
@@ -358,13 +247,6 @@ function bindPaymentEvents() {
   const payForm = document.getElementById("patientPayForm");
   if (closeButton) closeButton.addEventListener("click", closePaymentModal);
   if (overlay) overlay.addEventListener("click", closePaymentModal);
-  if (receiptClose) receiptClose.addEventListener("click", closeReceiptModal);
-  if (receiptOverlay)
-    receiptOverlay.addEventListener("click", closeReceiptModal);
-  if (receiptCloseButton)
-    receiptCloseButton.addEventListener("click", closeReceiptModal);
-  if (printReceiptButton)
-    printReceiptButton.addEventListener("click", printCurrentReceipt);
   if (payClose) payClose.addEventListener("click", closePatientPayModal);
   if (payOverlay) payOverlay.addEventListener("click", closePatientPayModal);
   if (payCancel) payCancel.addEventListener("click", closePatientPayModal);
@@ -399,14 +281,13 @@ function bindPaymentEvents() {
   }
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-      closeReceiptModal();
       closePaymentModal();
       closePatientPayModal();
     }
   });
 }
 async function renderPayments() {
-  resolveCurrentPatient();
+  await resolveCurrentPatient();
   await syncPaymentsFromFinance();
   renderSummary();
   renderPaymentHistory();
@@ -586,7 +467,17 @@ function createMobileItem(transaction) {
   const status = getTransactionStatus(transaction);
   const patientName =
     transaction.patientName || CURRENT_PATIENT_NAME || "Patient";
-  return `<article class="mobile-payment-item"><div class="mobile-payment-top"><div><div class="mobile-payment-id">${escapeHtml(transaction.transactionId || "N/A")}</div><div class="mobile-payment-patient">${escapeHtml(patientName)}</div><div class="mobile-payment-date">${formatDate(transaction.date)}</div></div><span class="payment-status-badge ${status.className}">${status.label}</span></div><div class="mobile-payment-service">${escapeHtml(transaction.service)}</div><div class="mobile-payment-details"><div class="mobile-payment-detail"><span>Total</span><strong>${formatCurrency(totalCharge)}</strong></div><div class="mobile-payment-detail"><span>Discount</span><strong>${formatCurrency(discount)}</strong></div><div class="mobile-payment-detail"><span>Paid</span><strong>${formatCurrency(amountPaid)}</strong></div><div class="mobile-payment-detail"><span>Balance</span><strong>${formatCurrency(balance)}</strong></div><div class="mobile-payment-detail"><span>Payment Method</span><strong>${escapeHtml(transaction.paymentMethod)}</strong></div></div><div class="mobile-payment-bottom"><span class="transaction-reference">${transaction.payments.length} payment${transaction.payments.length === 1 ? "" : "s"}</span><div class="mobile-payment-actions"><button type="button" class="view-payment-btn" data-transaction-id="${escapeAttribute(transaction.transactionId)}" title="View transaction and payment history"><i class="fa-regular fa-eye"></i></button>${balance > 0 ? `<button type="button" class="pay-payment-btn" data-transaction-id="${escapeAttribute(transaction.transactionId)}" title="Pay remaining balance"><i class="fa-solid fa-plus"></i></button>` : ""}</div></div></article>`;
+  return `<article class="mobile-payment-item"><div class="mobile-payment-top"><div><div class="mobile-payment-id">${escapeHtml(transaction.transactionId || "N/A")}</div><div class="mobile-payment-patient">${escapeHtml(patientName)}</div><div class="mobile-payment-date">${formatDate(transaction.date)}</div></div><span class="payment-status-badge ${status.className}">${status.label}</span></div><div class="mobile-payment-service">${escapeHtml(transaction.service)}</div><div class="mobile-payment-details"><div class="mobile-payment-detail"><span>Total</span><strong>${formatCurrency(totalCharge)}</strong></div><div class="mobile-payment-detail"><span>Discount</span><strong>${formatCurrency(discount)}</strong></div><div class="mobile-payment-detail"><span>Paid</span><strong>${formatCurrency(amountPaid)}</strong></div><div class="mobile-payment-detail"><span>Balance</span><strong>${formatCurrency(balance)}</strong></div><div class="mobile-payment-detail"><span>Payment Method</span><strong>${escapeHtml(transaction.paymentMethod)}</strong></div></div><div class="mobile-payment-bottom"><span class="transaction-reference">${
+    transaction.payments.filter(function (payment) {
+      return !payment.isPlaceholder;
+    }).length
+  } payment${
+    transaction.payments.filter(function (payment) {
+      return !payment.isPlaceholder;
+    }).length === 1
+      ? ""
+      : "s"
+  }</span><div class="mobile-payment-actions"><button type="button" class="view-payment-btn" data-transaction-id="${escapeAttribute(transaction.transactionId)}" title="View transaction and payment history"><i class="fa-regular fa-eye"></i></button>${balance > 0 ? `<button type="button" class="pay-payment-btn" data-transaction-id="${escapeAttribute(transaction.transactionId)}" title="Pay remaining balance"><i class="fa-solid fa-plus"></i></button>` : ""}</div></div></article>`;
 }
 function openTransactionDetails(transactionId) {
   const transaction = getTransactionGroup(transactionId);
@@ -608,21 +499,50 @@ function openPaymentModal(transaction) {
   ];
   const patientName =
     transaction.patientName || CURRENT_PATIENT_NAME || "Patient";
-  const paymentHistory = transaction.payments.length
-    ? transaction.payments
+  const actualPayments = transaction.payments.filter(function (payment) {
+    return !payment.isPlaceholder;
+  });
+  const paymentHistory = actualPayments.length
+    ? actualPayments
         .map(function (payment, index) {
           const icon = getPaymentMethodIcon(payment.paymentMethod)
             .replace("fa-solid ", "")
             .replace("fa-regular ", "");
-          return `<div class="payment-history-item"><div class="payment-history-item-left"><div class="payment-history-method-icon"><i class="fa-solid ${icon}"></i></div><div class="payment-history-item-info"><strong>${escapeHtml(payment.paymentMethod || "-")}</strong><span>${escapeHtml(formatPaymentHistoryDateTime(payment.date))}</span></div></div><div class="payment-history-item-right"><strong>${formatCurrency(payment.amount)}</strong><span>Payment ${transaction.payments.length - index}</span></div></div>`;
+          return `<div class="payment-history-item"><div class="payment-history-item-left"><div class="payment-history-method-icon"><i class="fa-solid ${icon}"></i></div><div class="payment-history-item-info"><strong>${escapeHtml(payment.paymentMethod || "-")}</strong><span>${escapeHtml(formatPaymentHistoryDateTime(payment.date))}</span></div></div><div class="payment-history-item-right"><strong>${formatCurrency(payment.amount)}</strong><span>Payment ${actualPayments.length - index}</span></div></div>`;
         })
         .join("")
     : `<div class="payment-history-empty"><strong>No payment history</strong><p>Additional payments will appear here.</p></div>`;
-  body.innerHTML = `<div class="modal-payment-id"><div><span>TRANSACTION ID</span><strong>${escapeHtml(transaction.transactionId || "N/A")}</strong></div><span class="payment-status-badge ${status.className}">${status.label}</span></div><div class="modal-section-label">Transaction Overview</div><div class="modal-detail-grid"><div class="modal-detail-item"><span>DATE</span><strong>${formatDate(transaction.latestPayment?.date || "")}</strong></div><div class="modal-detail-item"><span>PATIENT</span><strong>${escapeHtml(patientName)}</strong></div><div class="modal-detail-item"><span>SERVICE</span><strong>${escapeHtml(transaction.service || "Dental Service")}</strong></div><div class="modal-detail-item"><span>PAYMENT METHOD</span><strong>${escapeHtml(methods.join(" + ") || "-")}</strong></div></div><div class="modal-section-label">Amount Breakdown</div><div class="modal-detail-grid"><div class="modal-detail-item"><span>TOTAL CHARGE</span><strong>${formatCurrency(transaction.totalCharge)}</strong></div><div class="modal-detail-item"><span>DISCOUNT</span><strong>${formatCurrency(transaction.discount)}</strong></div><div class="modal-detail-item"><span>AMOUNT PAID</span><strong>${formatCurrency(transaction.amountPaid)}</strong></div><div class="modal-detail-item"><span>REMAINING BALANCE</span><strong>${formatCurrency(transaction.balance)}</strong></div></div><div class="payment-history-section"><div class="payment-history-header"><div><span>PAYMENT HISTORY</span><h3>Payment History</h3><p>View all payments recorded for this transaction.</p></div><div class="payment-history-count">${transaction.payments.length} payment${transaction.payments.length === 1 ? "" : "s"}</div></div><div class="payment-history-list">${paymentHistory}</div></div><div class="modal-receipt-action"><button type="button" class="modal-receipt-button" id="viewReceiptButton"><i class="fa-solid fa-receipt"></i>View Receipt</button></div>`;
+  body.innerHTML = `<div class="modal-payment-id"><div><span>TRANSACTION ID</span><strong>${escapeHtml(transaction.transactionId || "N/A")}</strong></div><span class="payment-status-badge ${status.className}">${status.label}</span></div><div class="modal-section-label">Transaction Overview</div><div class="modal-detail-grid"><div class="modal-detail-item"><span>DATE</span><strong>${formatDate(transaction.payments?.[0]?.date || "")}</strong></div><div class="modal-detail-item"><span>PATIENT</span><strong>${escapeHtml(patientName)}</strong></div><div class="modal-detail-item"><span>SERVICE</span><strong>${escapeHtml(transaction.service || "Dental Service")}</strong></div><div class="modal-detail-item"><span>PAYMENT METHOD</span><strong>${escapeHtml(methods.join(" + ") || "-")}</strong></div></div><div class="modal-section-label">Amount Breakdown</div><div class="modal-detail-grid"><div class="modal-detail-item"><span>TOTAL CHARGE</span><strong>${formatCurrency(transaction.totalCharge)}</strong></div><div class="modal-detail-item"><span>DISCOUNT</span><strong>${formatCurrency(transaction.discount)}</strong></div><div class="modal-detail-item"><span>AMOUNT PAID</span><strong>${formatCurrency(transaction.amountPaid)}</strong></div><div class="modal-detail-item"><span>REMAINING BALANCE</span><strong>${formatCurrency(transaction.balance)}</strong></div></div><div class="payment-history-section"><div class="payment-history-header"><div><span>PAYMENT HISTORY</span><h3>Payment History</h3><p>View all payments recorded for this transaction.</p></div><div class="payment-history-count">${actualPayments.length} payment${actualPayments.length === 1 ? "" : "s"}</div></div><div class="payment-history-list">${paymentHistory}</div></div><div class="modal-receipt-action"><button type="button" class="modal-receipt-button" id="viewReceiptButton"><i class="fa-solid fa-receipt"></i>View Receipt</button></div>`;
   const viewReceiptButton = document.getElementById("viewReceiptButton");
-  if (viewReceiptButton && transaction.payments[0]) {
+
+  if (viewReceiptButton) {
     viewReceiptButton.addEventListener("click", function () {
-      openReceiptModal(transaction.payments[0]);
+      const receiptTransaction = {
+        ...transaction,
+        id: transaction.transactionId || "",
+        transactionId: transaction.transactionId || "",
+        patient: patientName,
+        patientName: patientName,
+        patientId: transaction.patientId || CURRENT_PATIENT_ID || "",
+        service: transaction.service || "Dental Service",
+        total: Number(transaction.totalCharge) || 0,
+        totalCharge: Number(transaction.totalCharge) || 0,
+        discount: Number(transaction.discount) || 0,
+        paid: Number(transaction.amountPaid) || 0,
+        amountPaid: Number(transaction.amountPaid) || 0,
+        balance: Number(transaction.balance) || 0,
+        paymentMethod: methods.join(" + ") || "-",
+        status: status.label,
+        date:
+          transaction.date ||
+          transaction.latestPayment?.date ||
+          transaction.payments?.find(function (payment) {
+            return payment.date;
+          })?.date ||
+          "",
+        paymentHistory: transaction.payments || [],
+      };
+      openPaymentReceipt(receiptTransaction);
     });
   }
   modal.hidden = false;
@@ -641,70 +561,6 @@ function formatPaymentHistoryDateTime(value) {
     minute: "2-digit",
   });
   return `${dateLabel} · ${timeLabel}`;
-}
-function openReceiptModal(payment) {
-  const modal = document.getElementById("receiptModal");
-  const body = document.getElementById("receiptModalBody");
-  if (!modal || !body) return;
-  currentReceiptPayment = payment;
-  const balance = getPaymentBalance(payment);
-  const group = getTransactionGroup(payment.transactionId);
-  const transactionPaid = group
-    ? group.amountPaid
-    : Number(payment.amount) || 0;
-  const status = getPaymentRecordStatus(payment, balance, transactionPaid);
-  const reference = payment.xenditPaymentId || payment.reference || "N/A";
-  const patientName =
-    payment.patientName ||
-    group?.patientName ||
-    CURRENT_PATIENT_NAME ||
-    "Patient";
-  body.innerHTML = `<div class="receipt-paper"><div class="receipt-clinic"><div class="receipt-clinic-icon"><i class="fa-solid fa-tooth"></i></div><h3>DentaNueva Dental Clinic</h3><p>Official Payment Receipt</p></div><div class="receipt-title">Payment Receipt</div><div class="receipt-info"><div class="receipt-info-item"><span>Transaction ID</span><strong>${escapeHtml(payment.transactionId || "N/A")}</strong></div><div class="receipt-info-item"><span>Payment ID</span><strong>${escapeHtml(payment.id || "N/A")}</strong></div><div class="receipt-info-item"><span>Patient</span><strong>${escapeHtml(patientName)}</strong></div><div class="receipt-info-item"><span>Patient ID</span><strong>${escapeHtml(payment.patientId)}</strong></div><div class="receipt-info-item"><span>Service</span><strong>${escapeHtml(payment.service)}</strong></div><div class="receipt-info-item"><span>Date</span><strong>${formatDate(payment.date)}</strong></div><div class="receipt-info-item"><span>Payment Method</span><strong>${escapeHtml(payment.paymentMethod)}</strong></div><div class="receipt-info-item"><span>Xendit Payment ID</span><strong>${escapeHtml(reference)}</strong></div><div class="receipt-info-item"><span>Status</span><strong>${status.label}</strong></div><div class="receipt-info-item"><span>Total Charge</span><strong>${formatCurrency(payment.totalCharge)}</strong></div></div><div class="receipt-payment-total"><span>AMOUNT PAID</span><strong>${formatCurrency(payment.amount)}</strong></div><div class="receipt-balance"><span>Remaining Balance</span><strong>${formatCurrency(balance)}</strong></div><div class="receipt-footer"><p>Thank you for your payment.</p><p>This receipt represents the selected payment transaction.</p></div></div>`;
-  modal.hidden = false;
-  document.body.style.overflow = "hidden";
-}
-function closeReceiptModal() {
-  const modal = document.getElementById("receiptModal");
-  if (!modal) return;
-  modal.hidden = true;
-  currentReceiptPayment = null;
-  if (
-    document.getElementById("paymentModal")?.hidden !== false &&
-    document.getElementById("patientPayModal")?.hidden !== false
-  )
-    document.body.style.overflow = "";
-}
-function printCurrentReceipt() {
-  if (!currentReceiptPayment) {
-    showPaymentMessage("No payment receipt is available.");
-    return;
-  }
-  const payment = currentReceiptPayment;
-  const balance = getPaymentBalance(payment);
-  const group = getTransactionGroup(payment.transactionId);
-  const transactionPaid = group
-    ? group.amountPaid
-    : Number(payment.amount) || 0;
-  const status = getPaymentRecordStatus(payment, balance, transactionPaid);
-  const reference = payment.xenditPaymentId || payment.reference || "N/A";
-  const patientName =
-    payment.patientName ||
-    group?.patientName ||
-    CURRENT_PATIENT_NAME ||
-    "Patient";
-  const printWindow = window.open("", "_blank", "width=700,height=800");
-  if (!printWindow) {
-    showPaymentMessage("Please allow pop-ups to print the receipt.");
-    return;
-  }
-  printWindow.document.write(
-    `<!doctype html><html><head><meta charset="UTF-8"><title>Payment Receipt</title><style>*{box-sizing:border-box}body{margin:0;padding:30px;font-family:Arial,sans-serif;color:#24332a}.receipt{width:100%;max-width:620px;margin:0 auto;padding:25px;border:1px solid #dfe7e2}.clinic{text-align:center;padding-bottom:18px;border-bottom:1px dashed #cfd8d2}.clinic h1{margin:0;font-size:22px}.clinic p{margin:5px 0 0;color:#68756d;font-size:12px}.title{margin:20px 0;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{padding:10px;border:1px solid #e4ebe6}.item span{display:block;margin-bottom:5px;color:#7c8981;font-size:9px;text-transform:uppercase}.item strong{display:block;font-size:11px;word-break:break-word}.amount{margin-top:15px;padding:15px;display:flex;justify-content:space-between;align-items:center;background:#eaf7ef}.amount span{font-size:10px;font-weight:700}.amount strong{color:#16803d;font-size:18px}.balance{margin-top:8px;padding:12px;display:flex;justify-content:space-between;border:1px solid #f0dfbd;background:#fff7e9}.footer{margin-top:20px;padding-top:15px;border-top:1px dashed #cfd8d2;text-align:center;color:#7c8981;font-size:9px;line-height:1.5}@media print{body{padding:0}.receipt{border:0}}</style></head><body><div class="receipt"><div class="clinic"><h1>DentaNueva Dental Clinic</h1><p>Official Payment Receipt</p></div><div class="title">Payment Receipt</div><div class="grid"><div class="item"><span>Transaction ID</span><strong>${escapeHtml(payment.transactionId || "N/A")}</strong></div><div class="item"><span>Payment ID</span><strong>${escapeHtml(payment.id || "N/A")}</strong></div><div class="item"><span>Patient</span><strong>${escapeHtml(patientName)}</strong></div><div class="item"><span>Patient ID</span><strong>${escapeHtml(payment.patientId)}</strong></div><div class="item"><span>Service</span><strong>${escapeHtml(payment.service)}</strong></div><div class="item"><span>Date</span><strong>${formatDate(payment.date)}</strong></div><div class="item"><span>Payment Method</span><strong>${escapeHtml(payment.paymentMethod)}</strong></div><div class="item"><span>Xendit Payment ID</span><strong>${escapeHtml(reference)}</strong></div><div class="item"><span>Status</span><strong>${status.label}</strong></div><div class="item"><span>Total Charge</span><strong>${formatCurrency(payment.totalCharge)}</strong></div></div><div class="amount"><span>AMOUNT PAID</span><strong>${formatCurrency(payment.amount)}</strong></div><div class="balance"><span>Remaining Balance</span><strong>${formatCurrency(balance)}</strong></div><div class="footer"><div>Thank you for your payment.</div><div>This receipt represents the selected payment transaction.</div></div></div></body></html>`,
-  );
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(function () {
-    printWindow.print();
-  }, 300);
 }
 async function openPayModalByTransaction(transactionId) {
   await syncPaymentsFromFinance();

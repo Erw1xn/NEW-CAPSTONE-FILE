@@ -20,7 +20,7 @@ let patientSearch = null;
 let sortPatients = null;
 let patientActionMenu = null;
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   patientTableBody = $("patientTableBody");
   patientEmptyState = $("patientEmptyState");
   patientCountLabel = $("patientCount");
@@ -28,19 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
   sortPatients = $("sortPatients");
   patientActionMenu = $("patientActionMenu");
 
-  loadPatients();
-  void hydratePatientsFromDatabase();
-  void hydrateAppointmentsFromDatabase();
   bindPatientEvents();
   bindMedicalFormEvents();
   bindActionMenuEvents();
-  removeMedicalFormFromActionMenu();
   setupPatientFormValidation();
+  setupModalLayout();
+  bindStaffClinicalImageViewer();
+
+  await hydratePatientsFromDatabase();
+  await hydrateAppointmentsFromDatabase();
+
   renderPatients();
   updateTotalPatientCount();
   startAppointmentRealtimeRefresh();
-  setupModalLayout();
-  bindStaffClinicalImageViewer();
 });
 
 async function hydratePatientsFromDatabase() {
@@ -49,80 +49,77 @@ async function hydratePatientsFromDatabase() {
       credentials: "same-origin",
       cache: "no-store",
     });
-    if (!response.ok) return;
+
     const result = await response.json();
-    if (!result.success || !Array.isArray(result.data)) return;
-    const localById = new Map(
-      patients.map((patient) => [
-        String(patient.patientId || patient.id),
-        patient,
-      ]),
-    );
-    patients = result.data.map((remotePatient) => {
-      const localPatient = localById.get(
-        String(remotePatient.patientId || remotePatient.id),
-      );
-      return normalizePatient({
-        ...localPatient,
-        ...remotePatient,
-        appointments: remotePatient.appointments?.length
-          ? remotePatient.appointments
-          : localPatient?.appointments || [],
-        treatments: remotePatient.treatments?.length
-          ? remotePatient.treatments
-          : localPatient?.treatments || [],
-        clinicalImages: remotePatient.clinicalImages?.length
-          ? remotePatient.clinicalImages
-          : localPatient?.clinicalImages || [],
-        dentalChart: Object.keys(remotePatient.dentalChart?.teeth || {}).length
-          ? remotePatient.dentalChart
-          : localPatient?.dentalChart || remotePatient.dentalChart,
-      });
-    });
+
+    if (!response.ok || !result.success || !Array.isArray(result.data)) {
+      throw new Error(result.message || "Patient records unavailable.");
+    }
+
+    patients = result.data.map((patient) => normalizePatient(patient));
+
     renderPatients();
-    void hydrateAppointmentsFromDatabase();
+    updateTotalPatientCount();
   } catch (error) {
-    console.warn(
-      "Database patient list unavailable; using local records.",
-      error,
-    );
+    console.error("Unable to load patient records from database.", error);
+    patients = [];
+    renderPatients();
+    updateTotalPatientCount();
   }
 }
 
 async function hydrateAppointmentsFromDatabase() {
   try {
-    if (!patients.length) {
-      await hydratePatientsFromDatabase();
-    }
     const response = await fetch(APPOINTMENTS_API, {
       credentials: "same-origin",
       cache: "no-store",
     });
+
     const result = await response.json();
+
     if (!response.ok || !result.success || !Array.isArray(result.data)) {
       throw new Error(result.message || "Appointments unavailable.");
     }
+
     const appointmentsByPatient = new Map();
+
     result.data.forEach((appointment) => {
       const patientId = String(
         appointment.patientId || appointment.patient_id || "",
       ).trim();
-      if (!patientId) return;
+
+      if (!patientId) {
+        return;
+      }
+
       const records = appointmentsByPatient.get(patientId) || [];
       records.push(appointment);
       appointmentsByPatient.set(patientId, records);
     });
+
     patients = patients.map((patient) => {
-      const patientId = String(patient.patientId || patient.id || "").trim();
-      const records = appointmentsByPatient.get(patientId);
-      return records ? { ...patient, appointments: records } : patient;
+      const patientId = String(
+        patient.patientId || patient.patient_id || patient.id || "",
+      ).trim();
+
+      return {
+        ...patient,
+        appointments: appointmentsByPatient.get(patientId) || [],
+      };
     });
+
     renderPatients();
   } catch (error) {
-    console.warn(
-      "Database appointments unavailable; using patient records.",
-      error,
-    );
+    console.error("Unable to load appointments from database.", error);
+
+    patients = patients.map((patient) => ({
+      ...patient,
+      appointments: Array.isArray(patient.appointments)
+        ? patient.appointments
+        : [],
+    }));
+
+    renderPatients();
   }
 }
 
@@ -387,10 +384,6 @@ function startAppointmentRealtimeRefresh() {
   }, 1000);
 }
 
-function removeMedicalFormFromActionMenu() {
-  return;
-}
-
 function setupPatientFormValidation() {
   const form = $("patientForm");
   if (!form) {
@@ -406,24 +399,25 @@ function setupPatientFormValidation() {
   if (phoneField) {
     phoneField.type = "tel";
     phoneField.required = true;
-    phoneField.maxLength = 11;
-    phoneField.minLength = 11;
-    phoneField.pattern = "^09\\d{9}$";
-    phoneField.inputMode = "numeric";
-    phoneField.title = "Please enter exactly 11 digits starting with 09.";
-    phoneField.setAttribute("placeholder", "09XXXXXXXXX");
+    phoneField.maxLength = 13;
+    phoneField.minLength = 13;
+    phoneField.pattern = "^\\+639\\d{9}$";
+    phoneField.inputMode = "tel";
+    phoneField.title =
+      "Please enter a valid Philippine phone number in +63 format (+639XXXXXXXXX).";
+    phoneField.setAttribute("placeholder", "+639XXXXXXXXX");
   }
   const emergencyContactField = $("emergencyContact");
   if (emergencyContactField) {
     emergencyContactField.type = "tel";
     emergencyContactField.required = true;
-    emergencyContactField.maxLength = 11;
-    emergencyContactField.minLength = 11;
-    emergencyContactField.pattern = "^09\\d{9}$";
-    emergencyContactField.inputMode = "numeric";
+    emergencyContactField.maxLength = 13;
+    emergencyContactField.minLength = 13;
+    emergencyContactField.pattern = "^\\+639\\d{9}$";
+    emergencyContactField.inputMode = "tel";
     emergencyContactField.title =
-      "Please enter exactly 11 digits starting with 09.";
-    emergencyContactField.setAttribute("placeholder", "09XXXXXXXXX");
+      "Please enter a valid Philippine emergency contact number (+639XXXXXXXXX).";
+    emergencyContactField.setAttribute("placeholder", "+639XXXXXXXXX");
   }
   const emailField = $("email");
   if (emailField) {
@@ -441,11 +435,11 @@ function setupPatientFormValidation() {
       return;
     }
     const phoneValue = phoneField?.value.trim() || "";
-    if (phoneValue && !/^(09\d{9}|\+639\d{9})$/.test(phoneValue)) {
+    if (phoneValue && !/^\+639\d{9}$/.test(phoneValue)) {
       event.preventDefault();
       if (phoneField) {
         phoneField.setCustomValidity(
-          "Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX).",
+          "Please enter a valid Philippine phone number in +63 format (+639XXXXXXXXX).",
         );
         phoneField.reportValidity();
         phoneField.focus();
@@ -459,14 +453,11 @@ function setupPatientFormValidation() {
       phoneField.setCustomValidity("");
     }
     const emergencyContactValue = emergencyContactField?.value.trim() || "";
-    if (
-      emergencyContactValue &&
-      !/^(09\d{9}|\+639\d{9})$/.test(emergencyContactValue)
-    ) {
+    if (emergencyContactValue && !/^\+639\d{9}$/.test(emergencyContactValue)) {
       event.preventDefault();
       if (emergencyContactField) {
         emergencyContactField.setCustomValidity(
-          "Please enter a valid Philippine emergency contact number (09XXXXXXXXX or +639XXXXXXXXX).",
+          "Please enter a valid Philippine emergency contact number in +63 format (+639XXXXXXXXX).",
         );
         emergencyContactField.reportValidity();
         emergencyContactField.focus();
@@ -482,21 +473,28 @@ function setupPatientFormValidation() {
   });
 }
 
-function loadPatients() {
-  patients = [];
-}
-
 function normalizePatient(patient) {
   const normalized = {
     ...patient,
   };
+
   if (!normalized.patientId) {
     normalized.patientId =
       normalized.id || `PN-${String(Date.now()).slice(-8)}`;
   }
+
   if (!normalized.id) {
     normalized.id = normalized.patientId;
   }
+
+  if (!normalized.createdAt) {
+    normalized.createdAt = normalized.created_at || "";
+  }
+
+  if (!normalized.updatedAt) {
+    normalized.updatedAt = normalized.updated_at || "";
+  }
+
   if (!normalized.fullName) {
     normalized.fullName = [normalized.firstName, normalized.lastName]
       .filter(Boolean)
@@ -525,72 +523,6 @@ function normalizePatient(patient) {
     normalized.medicalForm = null;
   }
   return normalized;
-}
-
-function getPatientIdentityKeys(patient) {
-  const keys = [];
-  const patientId = String(patient.patientId || patient.id || "")
-    .trim()
-    .toLowerCase();
-  const userId = String(patient.userId || patient.userIdRef || "")
-    .trim()
-    .toLowerCase();
-  const email = String(patient.email || "")
-    .trim()
-    .toLowerCase();
-  if (patientId) {
-    keys.push(`patient:${patientId}`);
-  }
-  if (userId) {
-    keys.push(`user:${userId}`);
-  }
-  if (email) {
-    keys.push(`email:${email}`);
-  }
-  return keys;
-}
-
-function mergePatientRecords(records) {
-  const merged = [];
-  const keyMap = new Map();
-  records.forEach((record) => {
-    const patient = normalizePatient(record);
-    const keys = getPatientIdentityKeys(patient);
-    let existingIndex = -1;
-    for (const key of keys) {
-      if (keyMap.has(key)) {
-        existingIndex = keyMap.get(key);
-        break;
-      }
-    }
-    if (existingIndex === -1) {
-      const index = merged.length;
-      merged.push(patient);
-      keys.forEach((key) => keyMap.set(key, index));
-      return;
-    }
-    const existing = merged[existingIndex];
-    const mergedPatient = normalizePatient({
-      ...existing,
-      ...patient,
-      id: existing.id || patient.id || existing.patientId || patient.patientId,
-      patientId:
-        existing.patientId || patient.patientId || existing.id || patient.id,
-      appointments: patient.appointments?.length
-        ? patient.appointments
-        : existing.appointments || [],
-      medicalForm: patient.medicalForm || existing.medicalForm || null,
-      createdAt:
-        existing.createdAt || patient.createdAt || new Date().toISOString(),
-      updatedAt:
-        patient.updatedAt || existing.updatedAt || new Date().toISOString(),
-    });
-    merged[existingIndex] = mergedPatient;
-    getPatientIdentityKeys(mergedPatient).forEach((key) =>
-      keyMap.set(key, existingIndex),
-    );
-  });
-  return merged;
 }
 
 function savePatients() {
@@ -866,7 +798,6 @@ function closePatientRecordPage() {
   $("patientRecordPage")?.setAttribute("hidden", "");
 
   document.querySelector(".patient-list-card")?.removeAttribute("hidden");
-
   document.querySelector(".patient-page-header")?.removeAttribute("hidden");
 
   document
@@ -875,6 +806,7 @@ function closePatientRecordPage() {
 
   currentPatientRecord = null;
   currentPatientId = null;
+  selectedPatientId = null;
 
   window.scrollTo({
     top: 0,
@@ -932,10 +864,10 @@ async function savePatientFromForm(event) {
   }
   const phoneField = $("phone");
   const phoneValue = phoneField?.value.trim() || "";
-  if (!/^(09\d{9}|\+639\d{9})$/.test(phoneValue)) {
+  if (!/^\+639\d{9}$/.test(phoneValue)) {
     if (phoneField) {
       phoneField.setCustomValidity(
-        "Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX).",
+        "Please enter a valid Philippine phone number in +63 format (+639XXXXXXXXX).",
       );
       phoneField.reportValidity();
       phoneField.focus();
@@ -950,10 +882,10 @@ async function savePatientFromForm(event) {
   }
   const emergencyContactField = $("emergencyContact");
   const emergencyContactValue = emergencyContactField?.value.trim() || "";
-  if (!/^(09\d{9}|\+639\d{9})$/.test(emergencyContactValue)) {
+  if (!/^\+639\d{9}$/.test(emergencyContactValue)) {
     if (emergencyContactField) {
       emergencyContactField.setCustomValidity(
-        "Please enter a valid Philippine emergency contact number (09XXXXXXXXX or +639XXXXXXXXX).",
+        "Please enter a valid Philippine emergency contact number in +63 format (+639XXXXXXXXX).",
       );
       emergencyContactField.reportValidity();
       emergencyContactField.focus();
@@ -1088,8 +1020,14 @@ function renderPatients() {
         ? nameA.localeCompare(nameB)
         : nameB.localeCompare(nameA);
     }
-    const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
-    const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+    const dateA = new Date(
+      a.createdAt || a.updatedAt || a.created_at || a.updated_at || 0,
+    ).getTime();
+
+    const dateB = new Date(
+      b.createdAt || b.updatedAt || b.created_at || b.updated_at || 0,
+    ).getTime();
+
     return sort === "oldest" ? dateA - dateB : dateB - dateA;
   });
   patientTableBody.innerHTML = "";
@@ -1485,11 +1423,6 @@ document.addEventListener("click", (event) => {
     patientRow.classList.add("selected");
     openPatientRecordPage(patient);
     return;
-
-    selectedPatientId = patientId;
-    patientRow.classList.add("selected");
-    openPatientRecordPage(patient);
-    return;
   }
 
   const medicalButton = event.target.closest("[data-medical-form-id]");
@@ -1549,7 +1482,6 @@ function bindActionMenuEvents() {
 }
 
 function openActionMenu(trigger, patientId) {
-  removeMedicalFormFromActionMenu();
   currentActionPatientId = patientId;
   const rect = trigger.getBoundingClientRect();
   patientActionMenu.classList.add("open");
@@ -1945,12 +1877,6 @@ function openPatientRecordPage(patient) {
     patient.patientId || patient.patient_id || patient.id || "N/A"
   }`;
 
-  $("patientPageTitle").textContent = getFullName(patient) || "Patient Record";
-
-  $("patientPageSubtitle").textContent = `Patient ID: ${
-    patient.patientId || patient.patient_id || patient.id || "N/A"
-  }`;
-
   $("patientPageOverview").innerHTML = buildStaffPatientOverview(
     patient,
     appointments,
@@ -2181,8 +2107,11 @@ function buildStaffPatientOverview(patient, appointments, medical) {
     : "No appointment recorded";
 
   const latestDentist = latestAppointment
-    ? latestAppointment.dentist ||
-      latestAppointment.dentist_name ||
+    ? latestAppointment.dentist_name ||
+      latestAppointment.doctor_name ||
+      latestAppointment.dentistName ||
+      latestAppointment.doctorName ||
+      latestAppointment.dentist ||
       "Not assigned"
     : "Not assigned";
 
@@ -2191,11 +2120,10 @@ function buildStaffPatientOverview(patient, appointments, medical) {
 
       <div class="patient-record-section-header">
         <div>
-          <span class="patient-record-section-eyebrow">
+          <span class="patient-record-section-eyebrow" >
             PATIENT OVERVIEW
           </span>
 
-          <h3>Patient Overview</h3>
 
           <p>
             Summary of the patient's current clinical records and visit history.
@@ -2250,19 +2178,6 @@ function buildStaffPatientOverview(patient, appointments, medical) {
 
         <div class="patient-overview-information-item">
           <div class="patient-overview-information-icon">
-            <i class="fa-solid fa-phone"></i>
-          </div>
-
-          <div>
-            <span>Phone</span>
-            <strong>
-              ${escapeHTML(valueOrNone(patient.phone))}
-            </strong>
-          </div>
-        </div>
-
-        <div class="patient-overview-information-item">
-          <div class="patient-overview-information-icon">
             <i class="fa-solid fa-envelope"></i>
           </div>
 
@@ -2287,165 +2202,25 @@ function buildStaffPatientOverview(patient, appointments, medical) {
           </div>
         </div>
 
-        <div class="patient-overview-information-item patient-overview-emergency">
-          <div class="patient-overview-information-icon">
-            <i class="fa-solid fa-users"></i>
-          </div>
+<div class="patient-overview-information-item patient-overview-emergency">
+  <div class="patient-overview-information-icon">
+    <i class="fa-solid fa-users"></i>
+  </div>
 
-          <div>
-            <span>Emergency Contact</span>
-            <strong>
-              ${escapeHTML(emergencyName)}
-            </strong>
+  <div>
+    <span>Emergency Contact</span>
 
-            <small>
-              ${escapeHTML(emergencyContact)}
-            </small>
-          </div>
-        </div>
+    <strong>
+      ${escapeHTML(emergencyName)}
+    </strong>
+  </div>
+</div>
 
       </div>
 
-      <div class="patient-overview-stat-grid">
-
-        <div class="patient-overview-stat">
-          <div class="patient-overview-stat-icon">
-            <i class="fa-regular fa-calendar-check"></i>
-          </div>
-
-          <div>
-            <strong>${appointments.length}</strong>
-            <span>Recorded Appointments</span>
-          </div>
-        </div>
-
-        <div class="patient-overview-stat">
-          <div class="patient-overview-stat-icon">
-            <i class="fa-solid fa-tooth"></i>
-          </div>
-
-          <div>
-            <strong>${treatments.length}</strong>
-            <span>Actual Treatment</span>
-          </div>
-        </div>
-
       </div>
 
-      <div class="patient-overview-card">
-
-        <div class="patient-overview-card-header">
-          <div>
-            <span class="patient-record-section-eyebrow">
-              VISIT HISTORY
-            </span>
-
-            <h3>Latest Appointment</h3>
-          </div>
-
-          ${
-            latestAppointment
-              ? `
-                <span class="patient-overview-status ${appointmentStatus}">
-                  <i class="fa-solid fa-circle"></i>
-                  ${escapeHTML(appointmentStatusLabel)}
-                </span>
-              `
-              : ""
-          }
-        </div>
-
-        ${
-          latestAppointment
-            ? `
-              <div class="patient-overview-appointment">
-
-                <div class="patient-overview-appointment-main">
-                  <strong>
-                    ${escapeHTML(latestService)}
-                  </strong>
-
-                  <div class="patient-overview-appointment-meta">
-                    <span>
-                      <i class="fa-regular fa-calendar"></i>
-                      ${escapeHTML(latestAppointmentDate)}
-                    </span>
-
-                    <span>
-                      <i class="fa-regular fa-clock"></i>
-                      ${escapeHTML(latestAppointmentTime)}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="patient-overview-appointment-dentist">
-                  <span>Dentist</span>
-                  <strong>
-                    ${escapeHTML(latestDentist)}
-                  </strong>
-                </div>
-
-              </div>
-            `
-            : `
-              <div class="patient-overview-empty">
-                No appointments recorded.
-              </div>
-            `
-        }
-
-      </div>
-
-      <div class="patient-overview-card">
-
-        <div class="patient-overview-card-header">
-          <div>
-            <span class="patient-record-section-eyebrow">
-              MEDICAL INFORMATION
-            </span>
-
-            <h3>Medical Summary</h3>
-          </div>
-
-          ${
-            medical
-              ? `
-                <span class="patient-overview-status completed">
-                  <i class="fa-solid fa-circle"></i>
-                  Completed
-                </span>
-              `
-              : ""
-          }
-        </div>
-
-        <div class="patient-overview-medical-summary">
-
-          <div>
-            <span>Dental Concern</span>
-            <strong>
-              ${escapeHTML(dentalConcern)}
-            </strong>
-          </div>
-
-          <div>
-            <span>Medical Conditions</span>
-            <strong>
-              ${escapeHTML(latestMedicalHistory)}
-            </strong>
-          </div>
-
-          <div>
-            <span>Allergies</span>
-            <strong>
-              ${escapeHTML(latestAllergies)}
-            </strong>
-          </div>
-
-        </div>
-
-      </div>
-
+      <!-- 1. CLINICAL RECORDS (dating nasa baba, ngayon nasa taas) -->
       <div class="patient-overview-card">
 
         <div class="patient-overview-card-header">
@@ -2453,8 +2228,6 @@ function buildStaffPatientOverview(patient, appointments, medical) {
             <span class="patient-record-section-eyebrow">
               CLINICAL RECORDS
             </span>
-
-            <h3>Clinical Record Summary</h3>
           </div>
         </div>
 
@@ -2523,6 +2296,121 @@ function buildStaffPatientOverview(patient, appointments, medical) {
           </div>
 
         </div>
+
+      </div>
+
+      <!-- 2. MEDICAL INFORMATION (hindi gumalaw) -->
+      <div class="patient-overview-card">
+
+        <div class="patient-overview-card-header">
+          <div>
+            <span class="patient-record-section-eyebrow">
+              MEDICAL INFORMATION
+            </span>
+          </div>
+
+          ${
+            medical
+              ? `
+                <span class="patient-overview-status completed">
+                  <i class="fa-solid fa-circle"></i>
+                  Completed
+                </span>
+              `
+              : ""
+          }
+        </div>
+
+        <div class="patient-overview-medical-summary">
+
+          <div>
+            <span>Dental Concern</span>
+            <strong>
+              ${escapeHTML(dentalConcern)}
+            </strong>
+          </div>
+
+          <div>
+            <span>Medical Conditions</span>
+            <strong>
+              ${escapeHTML(latestMedicalHistory)}
+            </strong>
+          </div>
+
+          <div>
+            <span>Allergies</span>
+            <strong>
+              ${escapeHTML(latestAllergies)}
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- 3. VISIT HISTORY (dating nasa taas, ngayon nasa baba) -->
+      <div class="patient-overview-card">
+
+        <div class="patient-overview-card-header">
+          <div>
+            <span class="patient-record-section-eyebrow">
+              VISIT HISTORY
+            </span>
+          </div>
+
+          ${
+            latestAppointment
+              ? `
+                <span class="patient-overview-status ${appointmentStatus}">
+                  <i class="fa-solid fa-circle"></i>
+                  ${escapeHTML(appointmentStatusLabel)}
+                </span>
+              `
+              : ""
+          }
+        </div>
+
+        ${
+          latestAppointment
+            ? `
+              <div class="patient-overview-appointment">
+
+<div class="patient-overview-appointment-main">
+  <strong>
+    <span class="visit-history-label">Service:</span>
+    <span class="visit-history-value">
+      ${escapeHTML(latestService)}
+    </span>
+  </strong>
+
+  <div class="patient-overview-appointment-meta">
+                    <span>
+                      <i class="fa-regular fa-calendar"></i>
+                      ${escapeHTML(latestAppointmentDate)}
+                    </span>
+
+                    <span>
+                      <i class="fa-regular fa-clock"></i>
+                      ${escapeHTML(latestAppointmentTime)}
+                    </span>
+                  </div>
+                </div>
+
+<div class="patient-overview-appointment-dentist">
+  <span class="visit-history-label">Dentist:</span>
+  <strong class="visit-history-value">
+    Dr. ${escapeHTML(latestDentist)}
+  </strong>
+</div>
+
+              </div>
+            `
+            : `
+              <div class="patient-overview-empty">
+                No appointments recorded.
+              </div>
+            `
+        }
 
       </div>
 
@@ -2648,9 +2536,8 @@ function buildStaffMedicalRecord(patient, medical) {
           </div>
 
           <div>
-            <span>VISIT INFORMATION</span>
-            <h4>Dental Concern</h4>
-          </div>
+  <span style="font-size: 10px;">VISIT INFORMATION</span>
+</div>
 
         </div>
 
@@ -2708,7 +2595,6 @@ function buildStaffMedicalRecord(patient, medical) {
 
           <div>
             <span>HEALTH INFORMATION</span>
-            <h4>Medical History</h4>
           </div>
 
         </div>
@@ -2775,7 +2661,6 @@ function buildStaffMedicalRecord(patient, medical) {
 
           <div>
             <span>DENTAL HISTORY</span>
-            <h4>Previous Dental Care</h4>
           </div>
 
         </div>
@@ -3448,23 +3333,6 @@ function buildStaffTreatments(patient) {
     });
   };
 
-  const formatTreatmentTime = (value) => {
-    if (!value) {
-      return "Not provided";
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Not provided";
-    }
-
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
-
   return `
     <div class="patient-record-section">
 
@@ -3507,9 +3375,6 @@ function buildStaffTreatments(patient) {
               treatment.updatedAt ||
               "";
 
-            const treatmentTime =
-              treatment.createdAt || treatment.updatedAt || "";
-
             const consumedMaterials = Array.isArray(treatment.consumedMaterials)
               ? treatment.consumedMaterials.filter(
                   (item) => Number(item.quantity) > 0,
@@ -3517,58 +3382,53 @@ function buildStaffTreatments(patient) {
               : [];
 
             return `
-              <div class="staff-actual-treatment-card">
+  <div class="staff-actual-treatment-card">
 
-                <div class="staff-actual-treatment-date">
+    <div class="staff-actual-treatment-date">
 
-                  <strong>
-                    ${escapeHTML(formatTreatmentDate(treatmentDate))}
-                  </strong>
+      <strong>
+        ${escapeHTML(formatTreatmentDate(treatmentDate))}
+      </strong>
 
-                  <span>
-                    <i class="fa-regular fa-clock"></i>
-                    ${escapeHTML(formatTreatmentTime(treatmentTime))}
-                  </span>
+      ${
+        toothNumber
+          ? `
+            <small>
+              Tooth ${escapeHTML(String(toothNumber))}
+            </small>
+          `
+          : ""
+      }
 
-                  ${
-                    toothNumber
-                      ? `
-                        <small>
-                          Tooth ${escapeHTML(String(toothNumber))}
-                        </small>
-                      `
-                      : ""
-                  }
+    </div>
 
-                </div>
+    <div class="staff-actual-treatment-divider"></div>
 
-                <div class="staff-actual-treatment-divider"></div>
+    <div class="staff-actual-treatment-info">
 
-                <div class="staff-actual-treatment-info">
+      <strong>
+        ${escapeHTML(procedure)}
+      </strong>
 
-                  <strong>
-                    ${escapeHTML(procedure)}
-                  </strong>
+      <span>
+        ${escapeHTML(procedure)}
+      </span>
 
-                  <span>
-                    ${escapeHTML(procedure)}
-                  </span>
+      ${
+        consumedMaterials.length
+          ? `<div class="staff-treatment-materials"><i class="fa-solid fa-boxes-stacked"></i><span>${consumedMaterials
+              .map(
+                (item) =>
+                  `${escapeHTML(item.itemName || item.name || "Item")} x ${Number(item.quantity)}`,
+              )
+              .join(" · ")}</span></div>`
+          : ""
+      }
 
-                  ${
-                    consumedMaterials.length
-                      ? `<div class="staff-treatment-materials"><i class="fa-solid fa-boxes-stacked"></i><span>${consumedMaterials
-                          .map(
-                            (item) =>
-                              `${escapeHTML(item.itemName || item.name || "Item")} x ${Number(item.quantity)}`,
-                          )
-                          .join(" · ")}</span></div>`
-                      : ""
-                  }
+    </div>
 
-                </div>
-
-              </div>
-            `;
+  </div>
+`;
           })
           .join("")}
 
@@ -3695,8 +3555,6 @@ function buildStaffAppointments(appointments) {
           <span class="patient-record-section-eyebrow">
             VISIT HISTORY
           </span>
-
-          <h3>Appointment History</h3>
 
           <p>
             Patient appointment schedule and visit history.
@@ -4108,23 +3966,6 @@ function closePatientDetailsModal() {
   $("patientDetailsModalBackdrop")?.classList.remove("open");
   $("patientDetailsModalBackdrop")?.setAttribute("aria-hidden", "true");
   selectedPatientId = null;
-  renderPatients();
-}
-function closePatientRecordPage() {
-  $("patientRecordPage")?.classList.remove("open");
-  $("patientRecordPage")?.setAttribute("hidden", "");
-  document.querySelector(".patient-list-card")?.removeAttribute("hidden");
-  document.querySelector(".patient-page-header")?.removeAttribute("hidden");
-  document
-    .querySelector(".patients-main")
-    ?.classList.remove("patient-record-open");
-  currentPatientRecord = null;
-  currentPatientId = null;
-  selectedPatientId = null;
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
   renderPatients();
 }
 
@@ -4747,98 +4588,10 @@ document.addEventListener("keydown", (event) => {
   closeActionMenu();
 });
 
-function buildStaffPatientOverview(patient, appointments, medical) {
-  const name = getFullName(patient) || "Unnamed Patient";
-  const patientId =
-    patient.patientId || patient.patient_id || patient.id || "N/A";
-  const age = calculateAge(patient.dateOfBirth);
-  const gender = patient.gender || patient.patientGender || "Not specified";
-  const treatments = Array.isArray(patient.treatments)
-    ? patient.treatments
-    : [];
-  const images = Array.isArray(patient.clinicalImages)
-    ? patient.clinicalImages
-    : [];
-  const teeth =
-    patient.dentalChart?.teeth && typeof patient.dentalChart.teeth === "object"
-      ? Object.keys(patient.dentalChart.teeth).length
-      : 0;
-  const latest = [...appointments].sort((a, b) =>
-    `${b.date || b.appointment_date || ""} ${b.start || b.appointment_time || ""}`.localeCompare(
-      `${a.date || a.appointment_date || ""} ${a.start || a.appointment_time || ""}`,
-    ),
-  )[0];
-  const values = (value, other) =>
-    [...arrayValue(value), ...(other ? [other] : [])].filter(Boolean);
-  const status =
-    latest?.status || latest?.appointmentStatus || latest?.state || "Scheduled";
-
-  return `
-    <div class="patient-overview">
-      <section class="patient-overview-summary-card"><div class="patient-overview-summary-avatar">${escapeHTML(getInitials(patient))}</div><div class="patient-overview-summary-main"><span class="patient-overview-label">PATIENT SUMMARY</span><h3>${escapeHTML(name)}</h3><div class="patient-overview-summary-meta"><span><i class="fa-regular fa-id-card"></i>${escapeHTML(patientId)}</span><span><i class="fa-solid fa-venus-mars"></i>${escapeHTML(gender)}</span><span><i class="fa-solid fa-cake-candles"></i>${age === "" ? "Age not provided" : `${age} years old`}</span><span><i class="fa-solid fa-phone"></i>${escapeHTML(valueOrNone(patient.phone))}</span></div></div></section>
-      <div class="patient-overview-stats">${staffOverviewStat("fa-regular fa-calendar-check", "APPOINTMENTS", appointments.length, appointments.length === 1 ? "recorded appointment" : "recorded appointments")}${staffOverviewStat("fa-solid fa-tooth", "TREATMENTS", treatments.length, treatments.length === 1 ? "actual treatment" : "actual treatments")}</div>
-      <section class="patient-overview-card"><div class="patient-overview-card-header"><div><span class="patient-overview-eyebrow">VISIT HISTORY</span><h3>Latest Appointment</h3></div>${latest ? `<span class="patient-overview-status"><span></span>${escapeHTML(status)}</span>` : ""}</div>${latest ? `<div class="patient-overview-latest-content"><div class="patient-overview-latest-main"><strong>${escapeHTML(latest.type || latest.service_type || "Appointment")}</strong><div class="patient-overview-latest-meta"><span><i class="fa-regular fa-calendar"></i>${escapeHTML(formatDate(latest.date || latest.appointment_date))}</span><span><i class="fa-regular fa-clock"></i>${escapeHTML(formatTime12Hour(latest.start || latest.appointment_time || ""))}</span></div></div><div class="patient-overview-latest-dentist"><span>DENTIST</span><strong>${escapeHTML(latest.dentist || latest.dentist_name || latest.dentist_id || "Not provided")}</strong></div></div>` : `<div class="patient-overview-empty"><i class="fa-regular fa-calendar"></i><strong>No appointments recorded</strong><span>This patient does not have an appointment history yet.</span></div>`}</section>
-      <section class="patient-overview-card"><div class="patient-overview-card-header"><div><span class="patient-overview-eyebrow">MEDICAL INFORMATION</span><h3>Medical Summary</h3></div>${medical ? `<span class="patient-overview-status"><span></span>Completed</span>` : ""}</div>${medical ? `<div class="patient-overview-medical-grid"><div class="patient-overview-medical-item"><span>Dental Concern</span><strong>${escapeHTML(values(medical.dentalConcern, medical.dentalConcernOther).join(", ") || "None reported")}</strong></div><div class="patient-overview-medical-item"><span>Medical Conditions</span><strong>${escapeHTML(values(medical.medicalHistory, medical.medicalOther).join(", ") || "None reported")}</strong></div><div class="patient-overview-medical-item"><span>Allergies</span><strong>${escapeHTML(values(medical.allergies, medical.allergyOther).join(", ") || "None reported")}</strong></div></div>` : `<div class="patient-overview-empty compact"><i class="fa-solid fa-notes-medical"></i><strong>No medical record</strong><span>No completed medical form is available for this patient.</span></div>`}</section>
-      <section class="patient-overview-card"><div class="patient-overview-card-header"><div><span class="patient-overview-eyebrow">CLINICAL RECORDS</span><h3>Clinical Record Summary</h3></div></div><div class="patient-overview-record-grid">${staffOverviewRecord("fa-solid fa-tooth", "Dental Chart", `${teeth} ${teeth === 1 ? "tooth" : "teeth"} recorded`)}${staffOverviewRecord("fa-regular fa-images", "Clinical Images", `${images.length} ${images.length === 1 ? "record" : "records"}`)}${staffOverviewRecord("fa-solid fa-file-medical", "Treatments", `${treatments.length} actual ${treatments.length === 1 ? "treatment" : "treatments"}`)}${staffOverviewRecord("fa-regular fa-calendar-days", "Appointments", `${appointments.length} ${appointments.length === 1 ? "visit recorded" : "visits recorded"}`)}</div></section>
-    </div>
-  `;
-}
-
 function staffOverviewStat(icon, label, value, caption) {
   return `<div class="patient-overview-stat-card"><div class="patient-overview-stat-icon"><i class="${icon}"></i></div><div><span>${label}</span><strong>${value}</strong><small>${caption}</small></div></div>`;
 }
 
 function staffOverviewRecord(icon, label, caption) {
   return `<div class="patient-overview-record-item"><div class="patient-overview-record-icon"><i class="${icon}"></i></div><div><strong>${label}</strong><span>${caption}</span></div></div>`;
-}
-
-function buildStaffTreatments(patient) {
-  const treatments = Array.isArray(patient.treatments)
-    ? [...patient.treatments]
-    : [];
-  treatments.sort(
-    (a, b) =>
-      new Date(b.date || b.createdAt || 0) -
-      new Date(a.date || a.createdAt || 0),
-  );
-  return `<div class="patient-record-section"><div class="patient-record-section-header"><div><span class="patient-record-section-eyebrow" style="color: #16803d; font-size: 10px;">CLINICAL HISTORY</span><p>Patient-specific treatment history and procedures performed.</p></div><span class="patient-record-count">${treatments.length} ${treatments.length === 1 ? "treatment" : "treatments"}</span></div>${
-    treatments.length
-      ? `<div class="treatment-history-list">${treatments
-          .map((treatment) => {
-            const consumedMaterials = Array.isArray(treatment.consumedMaterials)
-              ? treatment.consumedMaterials.filter(
-                  (item) => Number(item.quantity) > 0,
-                )
-              : [];
-            return `<div class="patient-record-appointment"><div class="patient-record-appointment-date"><span>${escapeHTML(formatDate(String(treatment.date || treatment.createdAt || "").slice(0, 10)))}</span>${treatment.createdAt ? `<strong><i class="fa-regular fa-clock"></i>${escapeHTML(formatDateTime(treatment.createdAt).split(", ")[1] || "")}</strong>` : ""}${treatment.toothNumber || treatment.tooth ? `<strong>Tooth ${escapeHTML(treatment.toothNumber || treatment.tooth)}</strong>` : ""}</div><div class="patient-record-appointment-info"><strong>${escapeHTML(treatment.procedure || treatment.treatment || "Treatment")}</strong>${treatment.note || treatment.notes ? `<span>${escapeHTML(treatment.note || treatment.notes)}</span>` : ""}${consumedMaterials.length ? `<div class="staff-treatment-materials"><i class="fa-solid fa-boxes-stacked"></i><span>${consumedMaterials.map((item) => `${escapeHTML(item.itemName || item.name || "Item")} x ${Number(item.quantity)}`).join(" · ")}</span></div>` : ""}</div></div>`;
-          })
-          .join("")}</div>`
-      : `<div class="patient-record-empty"><i class="fa-solid fa-stethoscope"></i><strong>No treatments recorded</strong><span>Actual procedures performed by the dentist will appear here after clinical assessment.</span></div>`
-  }<div class="staff-treatment-view-only"><i class="fa-solid fa-eye"></i><span>Actual treatments recorded by the Doctor. Viewing only.</span></div></div>`;
-}
-
-function buildStaffAppointments(appointments) {
-  const records = Array.isArray(appointments) ? [...appointments] : [];
-  records.sort((a, b) =>
-    `${b.date || b.appointment_date || ""} ${b.start || b.appointment_time || ""}`.localeCompare(
-      `${a.date || a.appointment_date || ""} ${a.start || a.appointment_time || ""}`,
-    ),
-  );
-  return `<div class="patient-record-section appointment-history-section"><div class="patient-record-section-header"><div><span class="patient-record-section-eyebrow" style="color: #16803d; font-size: 10px;">APPOINTMENT HISTORY</span><p>Patient appointment schedule and visit status.</p></div><span class="patient-record-count">${records.length} ${records.length === 1 ? "appointment" : "appointments"}</span></div>${
-    records.length
-      ? `<div class="patient-appointment-history-list">${records
-          .map((appointment) => {
-            const date = appointment.date || appointment.appointment_date || "";
-            const time =
-              appointment.start || appointment.appointment_time || "";
-            const status =
-              appointment.status ||
-              appointment.appointmentStatus ||
-              appointment.state ||
-              "Not provided";
-            return `<article class="patient-appointment-card"><div class="patient-appointment-card-main"><div class="patient-appointment-date-box"><span class="patient-appointment-date-label">DATE</span><strong>${escapeHTML(formatDate(date))}</strong><span class="patient-appointment-time"><i class="fa-regular fa-clock"></i>${escapeHTML(time ? formatTime12Hour(time) : "Time not provided")}</span></div><div class="patient-appointment-details"><div class="patient-appointment-title-row"><h4>${escapeHTML(appointment.type || appointment.service_type || "Appointment")}</h4><span class="patient-appointment-status"><span class="patient-appointment-status-dot"></span>${escapeHTML(status)}</span></div><div class="patient-appointment-meta"><div class="patient-appointment-meta-item"><i class="fa-solid fa-user-doctor"></i><div><span>DENTIST</span><strong>${escapeHTML(appointment.dentist || appointment.dentist_name || appointment.dentist_id || "Not provided")}</strong></div></div></div></div></div></article>`;
-          })
-          .join("")}</div>`
-      : `<div class="patient-record-empty"><i class="fa-regular fa-calendar"></i><strong>No appointments found</strong><span>No appointments are currently recorded for this patient.</span></div>`
-  }<div class="staff-treatment-view-only"><i class="fa-solid fa-eye"></i><span>Appointment history recorded by the clinic. Viewing only.</span></div></div>`;
 }

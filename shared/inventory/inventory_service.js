@@ -1,9 +1,14 @@
 (() => {
   "use strict";
 
+  const API_ENDPOINT = "../../api/inventory.php";
   const ITEMS_KEY = "dentanueva_inventory_items";
   const MOVEMENTS_KEY = "dentanueva_inventory_movements";
   const NOTIFICATIONS_KEY = "dentanueva_inventory_notifications";
+
+  let cachedItems = [];
+  let cachedMovements = [];
+  let inMemoryNotifications = [];
 
   function normalizeName(value) {
     return String(value || "")
@@ -12,26 +17,93 @@
       .replace(/\s+/g, " ");
   }
 
-  function readList(storageKey) {
+  function normalizeItem(row) {
+    return {
+      id: String(row?.id ?? row?.item_id ?? ""),
+      item_id: row?.item_id ?? row?.id ?? "",
+      name: String(row?.name ?? row?.itemName ?? row?.item_name ?? ""),
+      category: String(row?.category ?? "Other"),
+      unit: String(row?.unit ?? "unit"),
+      stock: Number(row?.stock ?? row?.stock_quantity ?? 0),
+      minimum: Number(row?.minimum ?? row?.reorder_level ?? 0),
+      expiry: row?.expiry ?? row?.expiry_date ?? "",
+      updatedAt: row?.updatedAt ?? row?.updated_at ?? new Date().toISOString(),
+    };
+  }
+
+  async function fetchInventoryFromBackend() {
+    try {
+      const response = await fetch(`${API_ENDPOINT}?action=list`, {
+        method: "GET",
+        credentials: "same-origin",
+      });
+      const result = await response.json();
+
+      if (!result?.success) {
+        return { items: [], movements: [] };
+      }
+
+      const items = Array.isArray(result?.data?.items)
+        ? result.data.items.map(normalizeItem)
+        : [];
+      const movements = Array.isArray(result?.data?.movements)
+        ? result.data.movements
+        : [];
+
+      cachedItems = items;
+      cachedMovements = movements;
+      window[ITEMS_KEY] = items;
+      window[MOVEMENTS_KEY] = movements;
+      return { items, movements };
+    } catch (error) {
+      console.error("Unable to load inventory from backend:", error);
+      return { items: [], movements: [] };
+    }
+  }
+
+  function readLocalInventoryFallback(storageKey) {
     try {
       const stored = localStorage.getItem(storageKey);
       const parsed = stored ? JSON.parse(stored) : [];
-
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-      console.error(`Unable to load ${storageKey}:`, error);
       return [];
     }
   }
 
+  function getCachedItems() {
+    if (Array.isArray(cachedItems) && cachedItems.length) {
+      return cachedItems;
+    }
+    if (Array.isArray(window[ITEMS_KEY]) && window[ITEMS_KEY].length) {
+      cachedItems = window[ITEMS_KEY];
+      return cachedItems;
+    }
+    const fallback = readLocalInventoryFallback(ITEMS_KEY);
+    cachedItems = fallback;
+    return cachedItems;
+  }
+
+  function getCachedMovements() {
+    if (Array.isArray(cachedMovements) && cachedMovements.length) {
+      return cachedMovements;
+    }
+    if (Array.isArray(window[MOVEMENTS_KEY]) && window[MOVEMENTS_KEY].length) {
+      cachedMovements = window[MOVEMENTS_KEY];
+      return cachedMovements;
+    }
+    const fallback = readLocalInventoryFallback(MOVEMENTS_KEY);
+    cachedMovements = fallback;
+    return cachedMovements;
+  }
+
   function getTreatmentMaterials(procedure) {
     const materials = window.DentaNuevaTreatmentMaterials || {};
-
     return materials[normalizeName(procedure)] || [];
   }
 
   function getTreatmentMaterialSuggestions(procedure) {
-    const items = readList(ITEMS_KEY);
+    const items = getCachedItems();
 
     return getTreatmentMaterials(procedure).map((material) => {
       const item = items.find((candidate) =>
@@ -51,16 +123,16 @@
     });
   }
 
-  function createMovementId() {
-    return `MOV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  }
-
   function getPatientName(patient) {
-    const fullName = [patient.firstName, patient.middleName, patient.lastName]
+    const fullName = [
+      patient?.firstName,
+      patient?.middleName,
+      patient?.lastName,
+    ]
       .filter(Boolean)
       .join(" ");
 
-    return fullName || patient.name || patient.patientId || "Patient";
+    return fullName || patient?.name || patient?.patientId || "Patient";
   }
 
   function saveTreatmentNotification(
@@ -73,8 +145,7 @@
       return;
     }
 
-    const notifications = readList(NOTIFICATIONS_KEY);
-    notifications.unshift({
+    inMemoryNotifications.unshift({
       id: `INV-NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       type: "clinical-treatment-inventory-update",
       patientName: getPatientName(patient),
@@ -102,132 +173,80 @@
       ],
       createdAt: new Date().toISOString(),
     });
-    localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+
     window.dispatchEvent(new CustomEvent("inventory:notification-created"));
   }
 
-  function getMovementDate(treatment, fallbackDate) {
-    const treatmentDate = new Date(`${treatment.date}T12:00:00`);
+  async function recordTreatmentDeduction(
+    treatment,
+    patient,
+    requestedMaterials,
+  ) {
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          action: "deduct_for_treatment",
+          treatment,
+          patient,
+          requestedMaterials,
+        }),
+      });
 
-    return Number.isNaN(treatmentDate.getTime())
-      ? fallbackDate
-      : treatmentDate.toISOString();
+      const result = await response.json();
+
+      if (!result?.success) {
+        return {
+          success: false,
+          message: result?.message || "Inventory deduction failed.",
+          movements: [],
+          unresolvedMaterials: [],
+        };
+      }
+
+      const movements = Array.isArray(result?.data?.movements)
+        ? result.data.movements
+        : [];
+      const unresolvedMaterials = Array.isArray(
+        result?.data?.unresolvedMaterials,
+      )
+        ? result.data.unresolvedMaterials
+        : [];
+
+      if (movements.length || unresolvedMaterials.length) {
+        saveTreatmentNotification(
+          treatment,
+          patient,
+          movements,
+          unresolvedMaterials,
+        );
+      }
+
+      cachedItems = [];
+      cachedMovements = [];
+      await fetchInventoryFromBackend();
+      window.dispatchEvent(new CustomEvent("inventory:data-changed"));
+
+      return {
+        success: true,
+        movements,
+        unresolvedMaterials,
+      };
+    } catch (error) {
+      console.error("Treatment inventory deduction failed:", error);
+      return {
+        success: false,
+        message: "Unable to update inventory in the database.",
+        movements: [],
+        unresolvedMaterials: [],
+      };
+    }
   }
 
   function deductForTreatment(treatment, patient, requestedMaterials) {
-    const assignedMaterials = Array.isArray(requestedMaterials)
-      ? requestedMaterials
-          .map((material) => ({
-            names: [material.itemName || material.name].filter(Boolean),
-            quantity: Math.max(0, Number(material.quantity) || 0),
-          }))
-          .filter((material) => material.names.length && material.quantity)
-      : getTreatmentMaterials(treatment.procedure);
-
-    if (!assignedMaterials.length) {
-      return { success: true, movements: [] };
-    }
-
-    const movements = readList(MOVEMENTS_KEY);
-    const existingMovements = movements.filter(
-      (movement) =>
-        movement.source === "clinical-treatment" &&
-        String(movement.treatmentId) === String(treatment.id),
-    );
-
-    if (existingMovements.length) {
-      return {
-        success: true,
-        movements: existingMovements,
-        alreadyProcessed: true,
-      };
-    }
-
-    const items = readList(ITEMS_KEY);
-    const unresolvedMaterials = [];
-    const deductions = [];
-
-    assignedMaterials.forEach((material) => {
-      const item = items.find((candidate) =>
-        material.names.some(
-          (name) => normalizeName(candidate.name) === normalizeName(name),
-        ),
-      );
-
-      if (!item) {
-        unresolvedMaterials.push({
-          itemName: material.names[0],
-          quantity: material.quantity,
-          unit: "unit",
-          available: 0,
-          status: "unregistered",
-        });
-        return;
-      }
-
-      const stock = Number(item.stock) || 0;
-
-      if (stock < material.quantity) {
-        unresolvedMaterials.push({
-          itemName: item.name,
-          quantity: material.quantity,
-          unit: item.unit || "unit",
-          available: stock,
-          status: "insufficient-stock",
-        });
-        return;
-      }
-
-      deductions.push({ item, quantity: material.quantity });
-    });
-
-    const now = new Date().toISOString();
-    const movementDate = getMovementDate(treatment, now);
-    const patientName = getPatientName(patient);
-    const createdMovements = [];
-
-    deductions.forEach(({ item, quantity }) => {
-      const previousStock = Number(item.stock) || 0;
-      const newStock = previousStock - quantity;
-      const movement = {
-        id: createMovementId(),
-        itemId: item.id,
-        itemName: item.name,
-        unit: item.unit || "unit",
-        type: "stock-out",
-        quantity,
-        previousStock,
-        newStock,
-        reason: `Patient treatment: ${treatment.procedure} (${patientName})`,
-        source: "clinical-treatment",
-        treatmentId: treatment.id,
-        patientId: treatment.patientId,
-        appointmentId: treatment.appointmentId || "",
-        date: movementDate,
-        createdAt: now,
-      };
-
-      item.stock = newStock;
-      item.updatedAt = now;
-      movements.push(movement);
-      createdMovements.push(movement);
-    });
-
-    localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
-    localStorage.setItem(MOVEMENTS_KEY, JSON.stringify(movements));
-    saveTreatmentNotification(
-      treatment,
-      patient,
-      createdMovements,
-      unresolvedMaterials,
-    );
-    window.dispatchEvent(new CustomEvent("inventory:data-changed"));
-
-    return {
-      success: true,
-      movements: createdMovements,
-      unresolvedMaterials,
-    };
+    return recordTreatmentDeduction(treatment, patient, requestedMaterials);
   }
 
   window.DentaNuevaInventoryService = Object.freeze({
@@ -237,5 +256,8 @@
     getTreatmentMaterials,
     getTreatmentMaterialSuggestions,
     deductForTreatment,
+    refreshInventoryFromBackend: fetchInventoryFromBackend,
   });
+
+  fetchInventoryFromBackend();
 })();

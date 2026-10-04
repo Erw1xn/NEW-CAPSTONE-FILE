@@ -24,6 +24,9 @@ async function initializeSMSPage() {
   bindEvents();
   renderPage();
   await processPendingSMSNotifications();
+  await syncSMSDeliveryStatuses();
+  await loadSMSNotifications();
+  renderPage();
 }
 async function loadPatients() {
   try {
@@ -345,7 +348,7 @@ function getAppointmentStatus(appointment) {
   const value = String(rawStatus)
     .trim()
     .toLowerCase()
-    .replace(/[_-]+/g, " ")
+    .replace(/[\_-]+/g, " ")
     .replace(/\s+/g, " ");
   if (
     value === "confirmed" ||
@@ -566,15 +569,6 @@ function createAutomaticNotificationIfMissing(
   if (phone && createChannelNotification("sms", smsMessage)) created = true;
   return created;
 }
-
-/* ------------------------------------------------------------------
-    Message templates
-    Both the email and SMS versions are built from the same context
-    object so every notification always carries the full set of
-    appointment details: patient, date, time range, doctor, service
-    and duration. SMS stays short (single-segment friendly); email
-    spells everything out in full sentences.
-  ------------------------------------------------------------------ */
 function buildScheduleLines(context) {
   const formattedDate = context.appointmentDate
     ? formatDate(context.appointmentDate)
@@ -696,7 +690,6 @@ function generateAutomaticAppointmentSMSMessage(context, notificationType) {
       return `DentaNueva: Hi ${name}, clinic notification for ${shortDate} ${shortTime}.`;
   }
 }
-
 function removeUndeliveredReminderNotifications(appointmentId) {
   let changed = false;
   smsNotifications = smsNotifications.filter((notification) => {
@@ -917,13 +910,38 @@ async function processSMSNotification(notificationId, isRetry = false) {
       showToast(`${channelLabel} was already sent.`, "i");
       return;
     }
+    if (channel === "sms") {
+      const providerStatus = String(
+        data?.data?.provider_status || data?.data?.status || "",
+      )
+        .trim()
+        .toLowerCase();
+      if (providerStatus === "sent" || providerStatus === "delivered") {
+        notification.status = "Sent";
+        notification.deliveryStatus = "Sent";
+        notification.sentAt = new Date().toISOString();
+        notification.failedAt = null;
+        notification.failureReason = null;
+        renderPage();
+        showToast("SMS sent successfully.");
+        return;
+      }
+      notification.status = "Processing";
+      notification.deliveryStatus = "Processing";
+      notification.sentAt = null;
+      notification.failedAt = null;
+      notification.failureReason = null;
+      renderPage();
+      showToast("SMS accepted by SkySMS and awaiting delivery status.", "i");
+      return;
+    }
     notification.status = "Sent";
     notification.deliveryStatus = "Sent";
     notification.sentAt = new Date().toISOString();
     notification.failedAt = null;
     notification.failureReason = null;
     renderPage();
-    showToast(`${channelLabel} sent successfully.`);
+    showToast("Email sent successfully.");
   } catch (error) {
     const reason = error?.message || `${channelLabel} delivery failed.`;
     notification.status = "Failed";
@@ -937,6 +955,20 @@ async function processSMSNotification(notificationId, isRetry = false) {
     smsProcessingIds.delete(String(notificationId));
     await loadSMSNotifications();
     renderPage();
+  }
+}
+async function syncSMSDeliveryStatuses() {
+  try {
+    const response = await fetch("sms_notifications.php?action=sms_status");
+    const data = await response.json();
+    if (!data.success) {
+      console.error(data.message || "Unable to synchronize SMS statuses.");
+      return false;
+    }
+    return Number(data?.data?.updated || 0) > 0;
+  } catch (error) {
+    console.error("Unable to synchronize SMS statuses:", error);
+    return false;
   }
 }
 function sendSMSNotification(notification) {
@@ -1032,19 +1064,11 @@ function updateSMSDeliveryStatus(notificationId, status, failureReason = null) {
 function renderPage() {
   renderNotifications();
 }
-
-/* Notifications visible in the UI (future scheduled reminders are
-    held back until they're due, same rule the table already used). */
 function getVisibleNotifications() {
   return smsNotifications.filter(
     (notification) => !isFutureScheduledReminder(notification),
   );
 }
-
-/* Updates the four stat chips above the table (Total / Sent /
-    Pending / Failed). These always reflect ALL visible notifications,
-    not just the current search/status/type filter, so the summary
-    stays a stable overview while someone filters the table below it. */
 function updateStatsSummary(visibleNotifications) {
   const totalEl = document.getElementById("statTotal");
   const sentEl = document.getElementById("statSent");
@@ -1058,14 +1082,13 @@ function updateStatsSummary(visibleNotifications) {
     const status = String(notification.status || "");
     if (status === "Sent") sent++;
     else if (status === "Failed") failed++;
-    else pending++; // covers Pending and Processing
+    else pending++;
   });
   if (totalEl) totalEl.textContent = visibleNotifications.length;
   if (sentEl) sentEl.textContent = sent;
   if (pendingEl) pendingEl.textContent = pending;
   if (failedEl) failedEl.textContent = failed;
 }
-
 function renderNotifications() {
   const tableBody = document.getElementById("notificationTableBody");
   const emptyState = document.getElementById("emptyState");
@@ -1375,7 +1398,7 @@ function normalizeTimeForInput(time) {
   const value = String(time).trim();
   if (/^\d{2}:\d{2}$/.test(value)) return value;
   if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value.substring(0, 5);
-  const twelveHourMatch = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  const twelveHourMatch = value.match(/^(\d{1,2}):(\d{2})\s(AM|PM)$/i);
   if (twelveHourMatch) {
     let hour = Number(twelveHourMatch[1]);
     const minute = twelveHourMatch[2];
@@ -1472,6 +1495,8 @@ setInterval(async () => {
       await loadSMSNotifications();
     }
     await processPendingSMSNotifications();
+    await syncSMSDeliveryStatuses();
+    await loadSMSNotifications();
     renderPage();
   } finally {
     smsRefreshInProgress = false;

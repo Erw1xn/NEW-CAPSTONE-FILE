@@ -2,6 +2,7 @@
 const TRANSACTIONS_API = "../../api/finance/transactions.php";
 const PATIENTS_KEY = "dentanueva_patients";
 const PATIENT_API = "../../api/patient_records.php";
+const APPOINTMENTS_API = "../../api/appointments.php?scope=doctor_appointments";
 let transactions = [];
 let patients = [];
 let collectionPeriod = "today";
@@ -27,6 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadPatients();
   setupEvents();
   await loadTransactions();
+  openTreatmentChargeFromQuery();
 });
 function setupEvents() {
   setupPatientSelector();
@@ -228,8 +230,6 @@ async function loadPatients() {
         ? result.records
         : [];
     patients = records;
-    localStorage.setItem(PATIENTS_KEY, JSON.stringify(patients));
-    setupPatientSelector();
   } catch (error) {
     console.error("Unable to load DentaNueva patients:", error);
     try {
@@ -239,8 +239,44 @@ async function loadPatients() {
     } catch (storageError) {
       patients = [];
     }
-    setupPatientSelector();
   }
+  await loadDoctorPatients();
+}
+async function loadDoctorPatients() {
+  try {
+    const response = await fetch(APPOINTMENTS_API, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to load doctor patients.");
+    }
+    const appointments = Array.isArray(result.data) ? result.data : [];
+    const doctorPatientIds = new Set(
+      appointments
+        .map((appointment) =>
+          String(
+            appointment.patientId ||
+              appointment.patient_id ||
+              appointment.patient ||
+              "",
+          ).trim(),
+        )
+        .filter(Boolean),
+    );
+    patients = patients.filter((patient) =>
+      doctorPatientIds.has(getPatientId(patient)),
+    );
+    localStorage.setItem(PATIENTS_KEY, JSON.stringify(patients));
+  } catch (error) {
+    console.error("Unable to load doctor patients:", error);
+    patients = [];
+  }
+  setupPatientSelector();
 }
 function getPatientFullName(patient) {
   if (!patient) {
@@ -251,15 +287,18 @@ function getPatientFullName(patient) {
     String(patient.fullName || patient.name || "").trim()
   );
 }
+function getPatientId(patient) {
+  return String(
+    patient?.patientId || patient?.patient_id || patient?.id || "",
+  ).trim();
+}
 function findPatientById(patientId) {
   if (!patientId) {
     return null;
   }
   return (
     patients.find(
-      (patient) =>
-        String(patient.id) === String(patientId) ||
-        String(patient.patientId) === String(patientId),
+      (patient) => getPatientId(patient) === String(patientId).trim(),
     ) || null
   );
 }
@@ -274,6 +313,9 @@ function findPatientByName(name) {
     ) || null
   );
 }
+function findPatientByNameOrId(value) {
+  return findPatientById(value) || findPatientByName(value);
+}
 function setupPatientSelector() {
   const patientInput = document.getElementById("paymentPatient");
   const datalist = document.getElementById("paymentPatientList");
@@ -287,12 +329,14 @@ function setupPatientSelector() {
     .forEach((patient) => {
       const option = document.createElement("option");
       const name = getPatientFullName(patient);
+      const patientId = getPatientId(patient);
       option.value = name;
-      option.label = `${name} · ${patient.patientId || patient.id || ""}`;
+      option.label = `${name} · ${patientId}`;
       datalist.appendChild(option);
     });
   patientInput.setAttribute("list", "paymentPatientList");
   patientInput.oninput = syncPaymentPatientId;
+  patientInput.onchange = syncPaymentPatientId;
 }
 function syncPaymentPatientId() {
   const patientInput = document.getElementById("paymentPatient");
@@ -300,8 +344,8 @@ function syncPaymentPatientId() {
   if (!patientInput || !patientIdInput) {
     return;
   }
-  const patient = findPatientByName(patientInput.value);
-  patientIdInput.value = patient ? patient.patientId || patient.id || "" : "";
+  const patient = findPatientByNameOrId(patientInput.value);
+  patientIdInput.value = patient ? getPatientId(patient) : "";
   if (patient) {
     patientInput.value = getPatientFullName(patient);
   }
@@ -311,12 +355,12 @@ function getPaymentPatient() {
   const patientIdInput = document.getElementById("paymentPatientId");
   const patient =
     findPatientById(patientIdInput?.value) ||
-    findPatientByName(patientInput?.value);
+    findPatientByNameOrId(patientInput?.value);
   if (!patient) {
     return null;
   }
   if (patientIdInput) {
-    patientIdInput.value = patient.patientId || patient.id || "";
+    patientIdInput.value = getPatientId(patient);
   }
   if (patientInput) {
     patientInput.value = getPatientFullName(patient);
@@ -455,9 +499,7 @@ function renderTransactions() {
   const filtered = getFilteredTransactions();
   const count = document.getElementById("transactionCount");
   if (count) {
-    count.textContent = `${filtered.length} transaction${
-      filtered.length === 1 ? "" : "s"
-    }`;
+    count.textContent = `${filtered.length} transaction${filtered.length === 1 ? "" : "s"}`;
   }
   if (!filtered.length) {
     body.innerHTML =
@@ -467,31 +509,7 @@ function renderTransactions() {
   filtered.forEach((transaction) => {
     const row = document.createElement("tr");
     const status = getPaymentStatus(transaction);
-    row.innerHTML = `<td><div class="patient-cell"><div class="patient-avatar">${getInitials(
-      transaction.patient,
-    )}</div><div><span class="patient-name">${escapeHtml(
-      transaction.patient,
-    )}</span><span class="invoice-number">${escapeHtml(
-      transaction.id,
-    )}</span></div></div></td><td>${escapeHtml(
-      transaction.service,
-    )}</td><td><span class="date-main">${formatShortDate(
-      transaction.date,
-    )}</span><span class="date-time">${formatTime(
-      transaction.time,
-    )}</span></td><td class="money">${formatMoney(
-      transaction.total,
-    )}</td><td class="discount-money">${formatMoney(
-      transaction.discount,
-    )}</td><td class="money">${formatMoney(
-      transaction.paid,
-    )}</td><td class="balance-money">${formatMoney(
-      getBalance(transaction),
-    )}</td><td><span class="status-badge ${getStatusClass(
-      status,
-    )}">${status}</span></td><td><div class="action-buttons"><button type="button" class="table-action" title="View" onclick="viewTransaction('${escapeJs(
-      transaction.id,
-    )}')"><i class="fa-regular fa-eye"></i></button></div></td>`;
+    row.innerHTML = `<td><div class="patient-cell"><div class="patient-avatar">${getInitials(transaction.patient)}</div><div><span class="patient-name">${escapeHtml(transaction.patient)}</span><span class="invoice-number">${escapeHtml(transaction.id)}</span></div></div></td><td>${escapeHtml(transaction.service)}</td><td><span class="date-main">${formatShortDate(transaction.date)}</span><span class="date-time">${formatTime(transaction.time)}</span></td><td class="money">${formatMoney(transaction.total)}</td><td class="discount-money">${formatMoney(transaction.discount)}</td><td class="money">${formatMoney(transaction.paid)}</td><td class="balance-money">${formatMoney(getBalance(transaction))}</td><td><span class="status-badge ${getStatusClass(status)}">${status}</span></td><td><div class="action-buttons"><button type="button" class="table-action" title="View" onclick="viewTransaction('${escapeJs(transaction.id)}')"><i class="fa-regular fa-eye"></i></button></div></td>`;
     body.appendChild(row);
   });
 }
@@ -512,11 +530,7 @@ function renderProcedureChart() {
     const row = document.createElement("div");
     row.className = "procedure-row";
     const percentage = (value / max) * 100;
-    row.innerHTML = `<span class="procedure-name">${escapeHtml(
-      shortenService(name),
-    )}</span><div class="procedure-bar-bg"><div class="procedure-bar" style="width:${percentage}%"></div></div><span class="procedure-value">${formatMoney(
-      value,
-    )}</span>`;
+    row.innerHTML = `<span class="procedure-name">${escapeHtml(shortenService(name))}</span><div class="procedure-bar-bg"><div class="procedure-bar" style="width:${percentage}%"></div></div><span class="procedure-value">${formatMoney(value)}</span>`;
     container.appendChild(row);
   });
 }
@@ -636,9 +650,7 @@ function renderExpenseChart() {
     currentPercent = end;
     const itemElement = document.createElement("div");
     itemElement.className = "expense-category";
-    itemElement.innerHTML = `<span class="expense-color" style="background:${item.color}"></span><span>${escapeHtml(
-      item.name,
-    )}: ${formatMoney(item.amount)} (${percentage.toFixed(1)}%)</span>`;
+    itemElement.innerHTML = `<span class="expense-color" style="background:${item.color}"></span><span>${escapeHtml(item.name)}: ${formatMoney(item.amount)} (${percentage.toFixed(1)}%)</span>`;
     list.appendChild(itemElement);
   });
   pie.style.background = `conic-gradient(${gradients.join(",")})`;
@@ -695,19 +707,7 @@ function renderCollection() {
     grandTotal += amount;
     const item = document.createElement("div");
     item.className = "collection-item";
-    item.innerHTML = `<div class="collection-icon ${
-      method.className
-    }"><i class="fa-solid ${
-      method.icon
-    }"></i></div><div class="collection-details"><span class="collection-name">${
-      method.name
-    }</span><span class="collection-transactions">${
-      methodPayments.length
-    } transaction${
-      methodPayments.length === 1 ? "" : "s"
-    }</span></div><span class="collection-amount">${formatMoney(
-      amount,
-    )}</span>`;
+    item.innerHTML = `<div class="collection-icon ${method.className}"><i class="fa-solid ${method.icon}"></i></div><div class="collection-details"><span class="collection-name">${method.name}</span><span class="collection-transactions">${methodPayments.length} transaction${methodPayments.length === 1 ? "" : "s"}</span></div><span class="collection-amount">${formatMoney(amount)}</span>`;
     list.appendChild(item);
   });
   if (totalElement) {
@@ -732,46 +732,150 @@ function renderAuditTrail() {
   }
   const latest = transactions[0];
   const latestPayment = getPaymentHistory(latest)[0];
-  container.innerHTML = `<div class="audit-content"><strong>Latest payment record:</strong><br>Patient: ${escapeHtml(
-    latest.patient,
-  )}<br>Invoice: ${escapeHtml(latest.invoice)}<br>Amount: ${formatMoney(
-    latestPayment?.amount || latest.paid,
-  )}<br>Date: ${formatLongDate(
-    latestPayment?.date || latest.date,
-  )}<br>Payment Method: ${escapeHtml(
-    latestPayment?.paymentMethod || latest.method || "-",
-  )}</div>`;
+  container.innerHTML = `<div class="audit-content"><strong>Latest payment record:</strong><br>Patient: ${escapeHtml(latest.patient)}<br>Invoice: ${escapeHtml(latest.invoice)}<br>Amount: ${formatMoney(latestPayment?.amount || latest.paid)}<br>Date: ${formatLongDate(latestPayment?.date || latest.date)}<br>Payment Method: ${escapeHtml(latestPayment?.paymentMethod || latest.method || "-")}</div>`;
 }
 function openPaymentModal() {
   const modal = document.getElementById("paymentModal");
   if (!modal) {
     return;
   }
-  document.getElementById("paymentPatient").value = "";
-  document.getElementById("paymentPatientId").value = "";
-  document.getElementById("paymentService").value = "";
+  window.__treatmentChargeContext = null;
+  const patientInput = document.getElementById("paymentPatient");
+  const serviceInput = document.getElementById("paymentService");
+  const patientIdInput = document.getElementById("paymentPatientId");
+  const paymentDateInput = document.getElementById("paymentDate");
+  setupPatientSelector();
+  if (patientIdInput) {
+    patientIdInput.value = "";
+  }
+  if (patientInput) {
+    patientInput.disabled = false;
+    patientInput.readOnly = false;
+    patientInput.value = "";
+  }
+  if (serviceInput) {
+    serviceInput.readOnly = false;
+    serviceInput.value = "";
+  }
+  if (paymentDateInput) {
+    paymentDateInput.value = getTodayKey();
+  }
   document.getElementById("paymentTotal").value = "";
   document.getElementById("paymentDiscount").value = "0";
   modal.classList.add("show");
+}
+function openTreatmentChargeFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const patientId = String(params.get("patient_id") || "").trim();
+  const treatmentId = String(params.get("treatment_id") || "").trim();
+  const appointmentId = String(params.get("appointment_id") || "").trim();
+  const service = String(params.get("service") || "").trim();
+  if (!patientId || !treatmentId) {
+    return;
+  }
+  const patient = findPatientById(patientId);
+  if (!patient) {
+    return;
+  }
+  const patientName = getPatientFullName(patient);
+  const transactionDate = getTodayKey();
+  const patientInput = document.getElementById("paymentPatient");
+  const patientIdInput = document.getElementById("paymentPatientId");
+  const serviceInput = document.getElementById("paymentService");
+  const patientIdGroup = document.getElementById("paymentPatientIdGroup");
+  const paymentDateGroup = document.getElementById("paymentDateGroup");
+  const patientIdDisplay = document.getElementById("paymentPatientIdDisplay");
+  const paymentDateInput = document.getElementById("paymentDate");
+  if (patientInput) {
+    patientInput.value = patientName;
+    patientInput.readOnly = true;
+  }
+  if (patientIdInput) {
+    patientIdInput.value = patientId;
+  }
+  if (patientIdDisplay) {
+    patientIdDisplay.value = patientId;
+  }
+  if (serviceInput) {
+    serviceInput.value = service || "Dental Treatment";
+    serviceInput.readOnly = true;
+  }
+  if (patientIdGroup) {
+    patientIdGroup.style.display = "";
+  }
+  if (paymentDateGroup) {
+    paymentDateGroup.style.display = "";
+  }
+  if (paymentDateInput) {
+    paymentDateInput.value = transactionDate;
+  }
+  const totalInput = document.getElementById("paymentTotal");
+  const discountInput = document.getElementById("paymentDiscount");
+  if (totalInput) {
+    totalInput.value = "";
+    totalInput.focus();
+  }
+  if (discountInput) {
+    discountInput.value = "0";
+  }
+  window.__treatmentChargeContext = {
+    patientId,
+    treatmentId,
+    appointmentId,
+    service: service || "Dental Treatment",
+    transactionDate,
+  };
+  const modal = document.getElementById("paymentModal");
+  if (modal) {
+    modal.classList.add("show");
+  }
+  window.history.replaceState({}, document.title, window.location.pathname);
 }
 function closePaymentModal() {
   document.getElementById("paymentModal")?.classList.remove("show");
 }
 async function savePayment() {
-  const patientRecord = getPaymentPatient();
-  const patientId = patientRecord
-    ? patientRecord.patientId || patientRecord.id || ""
-    : "";
-  const service = document.getElementById("paymentService")?.value.trim() || "";
+  const treatmentContext = window.__treatmentChargeContext || null;
+  const treatmentFlow = Boolean(
+    treatmentContext &&
+    treatmentContext.patientId &&
+    treatmentContext.treatmentId,
+  );
+  let patientId = "";
+  let treatmentId = "";
+  let appointmentId = "";
+  let service = "";
+  if (treatmentFlow) {
+    patientId = String(treatmentContext.patientId || "").trim();
+    treatmentId = String(treatmentContext.treatmentId || "").trim();
+    appointmentId = String(treatmentContext.appointmentId || "").trim();
+    service = String(
+      treatmentContext.service ||
+        document.getElementById("paymentService")?.value ||
+        "",
+    ).trim();
+  } else {
+    const patientRecord = getPaymentPatient();
+    patientId = String(
+      patientRecord?.patientId || patientRecord?.id || "",
+    ).trim();
+    service = String(
+      document.getElementById("paymentService")?.value || "",
+    ).trim();
+  }
   const total = Number(document.getElementById("paymentTotal")?.value) || 0;
   const discount =
     Number(document.getElementById("paymentDiscount")?.value) || 0;
-  if (!patientRecord || !patientId) {
-    alert("Please select a valid patient from the patient list.");
+  if (!patientId) {
+    alert("Please select a valid patient.");
     return;
   }
   if (!service) {
-    alert("Please enter the service.");
+    alert(
+      treatmentFlow
+        ? "Treatment information is missing."
+        : "Please enter the service.",
+    );
     return;
   }
   if (total <= 0) {
@@ -802,6 +906,8 @@ async function savePayment() {
       },
       body: JSON.stringify({
         patientId,
+        appointmentId: appointmentId || null,
+        treatmentId: treatmentId || null,
         service,
         total,
         discount,
@@ -812,6 +918,7 @@ async function savePayment() {
       throw new Error(result.message || "Failed to create treatment charge.");
     }
     await loadTransactions();
+    window.__treatmentChargeContext = null;
     closePaymentModal();
   } catch (error) {
     console.error("Unable to create treatment charge:", error);
@@ -901,9 +1008,7 @@ function renderPaymentHistory(transaction) {
   if (!list || !count) {
     return;
   }
-  count.textContent = `${history.length} payment${
-    history.length === 1 ? "" : "s"
-  }`;
+  count.textContent = `${history.length} payment${history.length === 1 ? "" : "s"}`;
   list.innerHTML = history.length
     ? history
         .map((payment, index) => {
@@ -914,15 +1019,7 @@ function renderPaymentHistory(transaction) {
               : method === "Bank Transfer"
                 ? "fa-building-columns"
                 : "fa-money-bill-wave";
-          return `<div class="payment-history-item"><div class="payment-history-item-left"><div class="payment-history-method-icon"><i class="fa-solid ${icon}"></i></div><div class="payment-history-item-info"><strong>${escapeHtml(
-            method || "-",
-          )}</strong><span>${escapeHtml(formatLongDate(payment.date))}${
-            payment.time ? ` · ${escapeHtml(formatTime(payment.time))}` : ""
-          }</span></div></div><div class="payment-history-item-right"><strong>${escapeHtml(
-            formatMoney(payment.amount),
-          )}</strong><span>Payment ${
-            history.length - index
-          }</span></div></div>`;
+          return `<div class="payment-history-item"><div class="payment-history-item-left"><div class="payment-history-method-icon"><i class="fa-solid ${icon}"></i></div><div class="payment-history-item-info"><strong>${escapeHtml(method || "-")}</strong><span>${escapeHtml(formatLongDate(payment.date))}${payment.time ? ` · ${escapeHtml(formatTime(payment.time))}` : ""}</span></div></div><div class="payment-history-item-right"><strong>${escapeHtml(formatMoney(payment.amount))}</strong><span>Payment ${history.length - index}</span></div></div>`;
         })
         .join("")
     : `<div class="payment-history-empty"><div class="payment-history-empty-icon"><i class="fa-solid fa-clock-rotate-left"></i></div><strong>No payment history</strong><p>Additional payments will appear here.</p></div>`;
@@ -933,61 +1030,16 @@ function closeDetailsModal() {
 }
 function printReceipt() {
   const transaction = currentDetailsTransaction;
+
   if (!transaction) {
     return;
   }
-  const payment = getPaymentHistory(transaction)[0];
-  const receiptWindow = window.open("", "_blank", "width=480,height=760");
-  if (!receiptWindow) {
-    alert("Please allow pop-ups to view the receipt.");
-    return;
-  }
-  const totalCharge = Number(transaction.total || 0);
-  const netAmount = Math.max(
-    totalCharge - Number(transaction.discount || 0),
-    0,
-  );
-  const amountPaid = Number(payment?.amount || transaction.paid || 0);
-  const remainingBalance = getBalance(transaction);
-  const paymentMethod = payment?.paymentMethod || transaction.method || "-";
-  const paymentStatus = getPaymentStatus(transaction);
-  const receiptHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Payment Receipt - ${escapeHtml(
-    transaction.id,
-  )}</title><style>*{box-sizing:border-box}body{margin:0;padding:28px;background:#f3f5f4;font-family:Arial,Helvetica,sans-serif;color:#1d2822}.receipt-page{width:100%;max-width:420px;margin:0 auto;background:#fff;padding:32px 34px;border:1px solid #e2e7e4;box-shadow:0 8px 24px rgba(0,0,0,.06)}.receipt-header{text-align:center}.clinic-name{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px;color:#17211b}.clinic-subtitle{margin:4px 0 0;font-size:11px;color:#78837d}.receipt-type{margin:18px 0 0;text-align:center;font-size:12px;font-weight:700;letter-spacing:1.2px;color:#4c5952}.divider{border:0;border-top:1px solid #dfe5e1;margin:20px 0}.receipt-info{width:100%;border-collapse:collapse}.receipt-info td{padding:7px 0;vertical-align:top;font-size:10px}.receipt-info .label{width:42%;color:#7a857f;font-size:9px;text-transform:uppercase;letter-spacing:.4px}.receipt-info .value{width:58%;text-align:right;font-weight:600;color:#202b25;word-break:break-word}.section-title{margin:20px 0 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#78837d}.amounts{width:100%;border-collapse:collapse}.amounts td{padding:7px 0;font-size:10px}.amounts .label{color:#68746d}.amounts .value{text-align:right;font-weight:600}.amounts .total-row td{padding-top:11px;font-size:11px;font-weight:700;border-top:1px solid #dfe5e1}.amounts .paid-row td{padding-top:12px;font-size:12px;font-weight:700;border-top:1px dashed #cfd8d3}.amounts .balance-row td{padding-top:8px;font-size:11px;font-weight:700}.amounts .balance-row .value{font-size:12px}.status{display:inline-block;margin-top:3px;padding:4px 9px;border:1px solid #d8e1db;border-radius:20px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}.receipt-footer{text-align:center;margin-top:24px;padding-top:16px;border-top:1px dashed #d4dcd7;color:#7b867f;font-size:8px;line-height:1.6}.receipt-actions{text-align:center;margin-top:20px}.receipt-print-button{border:0;border-radius:6px;padding:9px 18px;background:#16803d;color:#fff;font-size:9px;font-weight:600;cursor:pointer}@media print{body{padding:0;background:#fff}.receipt-page{max-width:420px;border:0;box-shadow:none;padding:24px}.receipt-actions{display:none}}</style></head><body><div class="receipt-page"><header class="receipt-header"><h1 class="clinic-name">DentaNueva Dental Clinic</h1><p class="clinic-subtitle">Official Payment Receipt</p><p class="receipt-type">PAYMENT RECEIPT</p></header><hr class="divider"><table class="receipt-info"><tr><td class="label">Transaction ID</td><td class="value">${escapeHtml(
-    transaction.id || "-",
-  )}</td></tr><tr><td class="label">Payment ID</td><td class="value">${escapeHtml(
-    payment?.id || `${transaction.id}-1`,
-  )}</td></tr><tr><td class="label">Patient</td><td class="value">${escapeHtml(
-    transaction.patient || "-",
-  )}</td></tr><tr><td class="label">Service</td><td class="value">${escapeHtml(
-    transaction.service || "-",
-  )}</td></tr><tr><td class="label">Date</td><td class="value">${escapeHtml(
-    formatLongDate(transaction.date),
-  )}</td></tr><tr><td class="label">Payment Method</td><td class="value">${escapeHtml(
-    paymentMethod,
-  )}</td></tr><tr><td class="label">Status</td><td class="value"><span class="status">${escapeHtml(
-    paymentStatus,
-  )}</span></td></tr></table><div class="section-title">Payment Summary</div><table class="amounts"><tr><td class="label">Total Charge</td><td class="value">${formatMoney(
-    totalCharge,
-  )}</td></tr><tr><td class="label">Discount</td><td class="value">${formatMoney(
-    transaction.discount || 0,
-  )}</td></tr><tr class="total-row"><td class="label">Net Amount</td><td class="value">${formatMoney(
-    netAmount,
-  )}</td></tr><tr class="paid-row"><td class="label">Amount Paid</td><td class="value">${formatMoney(
-    amountPaid,
-  )}</td></tr><tr class="balance-row"><td class="label">Remaining Balance</td><td class="value">${formatMoney(
-    remainingBalance,
-  )}</td></tr></table><footer class="receipt-footer">Thank you for your payment.<br>This receipt represents the selected payment transaction.</footer><div class="receipt-actions"><button class="receipt-print-button" onclick="window.focus();window.print()">Print Receipt</button></div></div></body></html>`;
-  receiptWindow.document.open();
-  receiptWindow.document.write(receiptHtml);
-  receiptWindow.document.close();
+
+  openPaymentReceipt(transaction);
 }
 function getTodayKey() {
   const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 function isCurrentMonth(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -1129,5 +1181,5 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 function escapeJs(value) {
-  return String(value).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return String(value).replace(/\\/g, "\\\\\\\\").replace(/'/g, "\\'");
 }

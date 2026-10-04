@@ -124,6 +124,40 @@ ALTER TABLE tbl_patient_appointments
 ALTER TABLE tbl_patient_appointments
     ADD UNIQUE KEY IF NOT EXISTS uq_appointments_uid (appointment_uid);
 
+CREATE TABLE IF NOT EXISTS tbl_finance_transactions (
+    transaction_id VARCHAR(80) NOT NULL,
+    patient_id VARCHAR(20) NOT NULL,
+    invoice_number VARCHAR(80) NULL,
+    service VARCHAR(150) NOT NULL,
+    transaction_date DATE NOT NULL,
+    transaction_time TIME NULL,
+    total DECIMAL(10,2) NOT NULL DEFAULT 0,
+    discount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    paid DECIMAL(10,2) NOT NULL DEFAULT 0,
+    payment_method VARCHAR(50) NOT NULL DEFAULT 'Cash',
+    payment_history JSON NULL,
+    created_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (transaction_id),
+    KEY idx_finance_patient (patient_id),
+    KEY idx_finance_date (transaction_date),
+    CONSTRAINT fk_finance_patient FOREIGN KEY (patient_id) REFERENCES tbl_patients(patient_id) ON DELETE CASCADE,
+    CONSTRAINT fk_finance_creator FOREIGN KEY (created_by) REFERENCES tbl_users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS tbl_staff_notifications (
+    notification_id VARCHAR(100) NOT NULL,
+    notification_type VARCHAR(50) NOT NULL,
+    payload JSON NOT NULL,
+    created_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (notification_id),
+    KEY idx_staff_notifications_type (notification_type),
+    CONSTRAINT fk_staff_notifications_creator FOREIGN KEY (created_by) REFERENCES tbl_users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS tbl_reschedule_requests (
     reschedule_request_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     appointment_id BIGINT UNSIGNED NOT NULL,

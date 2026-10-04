@@ -1,8 +1,5 @@
-const APPOINTMENTS_STORAGE_KEY = "appointments";
-const LEGACY_STORAGE_KEY = "dentanueva_appointments";
-const PATIENTS_STORAGE_KEY = "dentanueva_patients";
-const FINANCE_STORAGE_KEY = "dentaNuevaFinanceTransactions";
-const DASHBOARD_SAMPLE_STORAGE_KEY = "dentaNuevaDashboardChartSamples";
+const APPOINTMENTS_API = "../../api/appointments.php";
+const PATIENT_RECORDS_API = "../../api/patient_records.php";
 const DAILY_GOAL = 5000;
 const STATUS = {
   SCHEDULED: "scheduled",
@@ -10,11 +7,14 @@ const STATUS = {
   READY_COMPLETE: "ready_complete",
   COMPLETED: "completed",
 };
+let appointments = [];
+let patients = [];
+let transactions = [];
 document.addEventListener("DOMContentLoaded", () => {
   updateDateTime();
   setInterval(updateDateTime, 1000);
-  renderDashboard();
-  setInterval(renderDashboard, 2000);
+  void refreshDashboardData();
+  setInterval(() => void refreshDashboardData(), 2000);
 });
 function updateDateTime() {
   const now = new Date();
@@ -36,96 +36,53 @@ function updateDateTime() {
   }
 }
 function loadAppointments() {
-  let stored = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
-  if (!stored) {
-    stored = localStorage.getItem(LEGACY_STORAGE_KEY);
-  }
-  if (!stored) {
-    return [];
-  }
-  try {
-    const parsed = JSON.parse(stored);
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-  } catch (error) {
-    console.error("Unable to load appointments:", error);
-  }
-  return [];
+  return appointments;
 }
 function loadPatients() {
-  const stored = localStorage.getItem(PATIENTS_STORAGE_KEY);
-  if (!stored) {
-    return [];
-  }
-  try {
-    const parsed = JSON.parse(stored);
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-  } catch (error) {
-    console.error("Unable to load patients:", error);
-  }
-  return [];
+  return patients;
 }
 function loadFinanceTransactions() {
-  const stored = localStorage.getItem(FINANCE_STORAGE_KEY);
-  if (!stored) {
-    return [];
-  }
-  try {
-    const parsed = JSON.parse(stored);
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-  } catch (error) {
-    console.error("Unable to load finance transactions:", error);
-  }
-  return [];
+  return transactions;
 }
 function loadDashboardSampleTransactions() {
-  const stored = localStorage.getItem(DASHBOARD_SAMPLE_STORAGE_KEY);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    } catch (error) {
-      console.error("Unable to load dashboard sample transactions:", error);
+  return transactions;
+}
+async function refreshDashboardData() {
+  try {
+    const [appointmentResponse, patientResponse] = await Promise.all([
+      fetch(APPOINTMENTS_API, {
+        credentials: "same-origin",
+        cache: "no-store",
+      }),
+      fetch(PATIENT_RECORDS_API, {
+        credentials: "same-origin",
+        cache: "no-store",
+      }),
+    ]);
+    const appointmentResult = await appointmentResponse.json();
+    const patientResult = await patientResponse.json();
+    if (!appointmentResponse.ok || !appointmentResult.success) {
+      throw new Error(appointmentResult.message || "Appointments unavailable.");
     }
+    if (!patientResponse.ok || !patientResult.success) {
+      throw new Error(patientResult.message || "Patients unavailable.");
+    }
+    appointments = Array.isArray(appointmentResult.data)
+      ? appointmentResult.data
+      : [];
+    patients = Array.isArray(patientResult.data) ? patientResult.data : [];
+    transactions = appointments
+      .filter((appointment) => Number(appointment.paymentAmount) > 0)
+      .map((appointment) => ({
+        id: appointment.id || appointment.appointmentId,
+        date: appointment.date || appointment.appointment_date,
+        service: appointment.type || appointment.service,
+        paid: Number(appointment.paymentAmount) || 0,
+      }));
+    renderDashboard();
+  } catch (error) {
+    console.error("Unable to load dashboard data from database:", error);
   }
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(today);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(today.getDate() + mondayOffset);
-  const sampleAmounts = [3200, 1850, 2600, 3900, 3100, 4200, 2800];
-  const sampleServices = [
-    "Dental Cleaning",
-    "Tooth Filling",
-    "Consultation",
-    "Tooth Extraction",
-    "Emergency",
-    "Dental Cleaning",
-    "Tooth Filling",
-  ];
-  const sampleTransactions = sampleAmounts.map((amount, index) => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
-    return {
-      id: `DASHBOARD-SAMPLE-${index + 1}`,
-      date: formatDateKey(date),
-      service: sampleServices[index],
-      paid: amount,
-    };
-  });
-  localStorage.setItem(
-    DASHBOARD_SAMPLE_STORAGE_KEY,
-    JSON.stringify(sampleTransactions),
-  );
-  return sampleTransactions;
 }
 function getTodayKey() {
   const today = new Date();

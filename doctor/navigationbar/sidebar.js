@@ -126,20 +126,12 @@ function setActivePage() {
 function applySavedSidebarState() {
   const sidebar = document.getElementById("sidebar");
   const toggleIcon = document.getElementById("toggleIcon");
-  const savedState = localStorage.getItem("sidebarState");
   if (!sidebar || window.innerWidth <= 768) {
     return;
   }
-  if (savedState === "collapsed") {
-    sidebar.classList.add("collapsed");
-    if (toggleIcon) {
-      toggleIcon.className = "fa-solid fa-chevron-right";
-    }
-  } else {
-    sidebar.classList.remove("collapsed");
-    if (toggleIcon) {
-      toggleIcon.className = "fa-solid fa-chevron-left";
-    }
+  sidebar.classList.remove("collapsed");
+  if (toggleIcon) {
+    toggleIcon.className = "fa-solid fa-chevron-left";
   }
 }
 function initSidebarLogic() {
@@ -152,12 +144,10 @@ function initSidebarLogic() {
     sidebarToggle.addEventListener("click", () => {
       sidebar.classList.toggle("collapsed");
       if (sidebar.classList.contains("collapsed")) {
-        localStorage.setItem("sidebarState", "collapsed");
         if (toggleIcon) {
           toggleIcon.className = "fa-solid fa-chevron-right";
         }
       } else {
-        localStorage.setItem("sidebarState", "expanded");
         if (toggleIcon) {
           toggleIcon.className = "fa-solid fa-chevron-left";
         }
@@ -237,9 +227,6 @@ document.addEventListener("click", async (event) => {
       });
       const data = await response.json();
       if (data.success) {
-        localStorage.removeItem("isLoggedIn");
-        sessionStorage.removeItem("currentUser");
-        localStorage.removeItem("currentUser");
         window.location.href = "../../homepage/homepage.html";
       }
     } catch (error) {

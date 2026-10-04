@@ -1,8 +1,6 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const ITEMS_KEY = "dentanueva_inventory_items";
-  const MOVEMENTS_KEY = "dentanueva_inventory_movements";
+document.addEventListener("DOMContentLoaded", async () => {
+  void loadInventoryNotificationsFromDatabase();
   const NOTIFICATIONS_KEY = "dentanueva_inventory_notifications";
-  const RESET_VERSION_KEY = "dentanueva_inventory_reset_version";
   const RESET_VERSION = "inventory-reset-2026-08-16-v1";
   const INVENTORY_PAGE_SIZE = 10;
 
@@ -74,18 +72,33 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedDeleteItemId = null;
 
   function getInventoryNotifications() {
+    return window.dentanuevaInventoryNotifications || [];
+  }
+
+  async function loadInventoryNotificationsFromDatabase() {
     try {
-      const parsed = JSON.parse(
-        localStorage.getItem(NOTIFICATIONS_KEY) || "[]",
+      const response = await fetch(
+        "../../api/staff_notifications.php?type=inventory",
+        { credentials: "same-origin", cache: "no-store" },
       );
-      return Array.isArray(parsed) ? parsed : [];
+      const result = await response.json();
+      if (response.ok && result.success && Array.isArray(result.data)) {
+        window.dentanuevaInventoryNotifications = result.data;
+        renderInventoryNotifications();
+      }
     } catch (error) {
-      return [];
+      console.error("Unable to load inventory notifications:", error);
     }
   }
 
   function saveInventoryNotifications(notifications) {
-    localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    window.dentanuevaInventoryNotifications = notifications;
+    void fetch("../../api/staff_notifications.php?type=inventory", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notifications }),
+    });
   }
 
   function renderInventoryNotifications() {
@@ -164,9 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   renderInventoryNotifications();
-  window.addEventListener("storage", (event) => {
-    if (event.key === NOTIFICATIONS_KEY) renderInventoryNotifications();
-  });
   window.addEventListener(
     "inventory:notification-created",
     renderInventoryNotifications,
@@ -223,6 +233,10 @@ document.addEventListener("DOMContentLoaded", () => {
       typeof window.refreshDemandForecast === "function"
     ) {
       window.refreshDemandForecast();
+    }
+
+    if (requestedPage === 2) {
+      initializeForecastChart();
     }
   }
 
@@ -671,89 +685,652 @@ document.addEventListener("DOMContentLoaded", () => {
     movementCancelBtn.style.padding = "0 10px";
   }
 
-  function resetInventoryDataOnce() {
-    const completedVersion = localStorage.getItem(RESET_VERSION_KEY);
+  let backendInventoryItems = [];
+  let backendInventoryMovements = [];
 
-    if (completedVersion === RESET_VERSION) {
+  async function loadInventoryFromBackend() {
+    try {
+      const response = await fetch("../../api/inventory.php?action=list", {
+        method: "GET",
+        credentials: "same-origin",
+      });
+      const result = await response.json();
+
+      if (!result?.success) {
+        return { items: [], movements: [] };
+      }
+
+      backendInventoryItems = Array.isArray(result?.data?.items)
+        ? result.data.items
+        : [];
+      backendInventoryMovements = Array.isArray(result?.data?.movements)
+        ? result.data.movements
+        : [];
+
+      window.dentanueva_inventory_items = backendInventoryItems;
+      window.dentanueva_inventory_movements = backendInventoryMovements;
+      return {
+        items: backendInventoryItems,
+        movements: backendInventoryMovements,
+      };
+    } catch (error) {
+      console.error("Unable to load inventory from backend:", error);
+      return { items: [], movements: [] };
+    }
+  }
+
+  async function loadDemandForecast() {
+    const forecastBody = document.getElementById("demandForecastTableBody");
+    const emptyState = document.getElementById("demandForecastEmpty");
+
+    if (!forecastBody) return;
+
+    try {
+      const response = await fetch("../../api/inventory/forecast.php", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        throw new Error(
+          result?.message || "Unable to load inventory forecasts.",
+        );
+      }
+
+      const forecastItems = Array.isArray(result?.forecasts)
+        ? result.forecasts
+        : [];
+
+      forecastResults = forecastItems;
+
+      forecastChartData = Array.isArray(result?.history) ? result.history : [];
+
+      loadForecastChartItems(result.history_by_item || {});
+
+      const inventoryItems = getItems();
+
+      const normalizeItemName = (value) =>
+        String(value || "")
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, " ");
+
+      const forecastMap = new Map();
+
+      forecastItems.forEach((item) => {
+        const itemName = normalizeItemName(item?.item_name);
+
+        if (itemName) {
+          forecastMap.set(itemName, item);
+        }
+      });
+
+      const mergedItems = [...forecastItems];
+
+      inventoryItems.forEach((inventoryItem) => {
+        const itemName = String(
+          inventoryItem?.name ||
+            inventoryItem?.item_name ||
+            inventoryItem?.itemName ||
+            inventoryItem?.item ||
+            "",
+        ).trim();
+
+        if (!itemName) {
+          return;
+        }
+
+        const normalizedName = normalizeItemName(itemName);
+
+        if (forecastMap.has(normalizedName)) {
+          return;
+        }
+
+        mergedItems.push({
+          item_name: itemName,
+          forecast_date: null,
+          model_name: null,
+          sma_forecast: null,
+          random_forest_forecast: null,
+          selected_forecast: null,
+          accuracy: null,
+          mape: null,
+          rmse: null,
+          forecast_status: "no_consumption_data",
+          evaluation_available: false,
+        });
+      });
+
+      forecastBody.innerHTML = mergedItems
+        .map((item) => {
+          const forecastStatus = String(item.forecast_status || "");
+
+          const hasForecastData = forecastStatus !== "no_consumption_data";
+
+          const forecastDate =
+            item.forecast_date !== null && item.forecast_date !== undefined
+              ? String(item.forecast_date)
+              : null;
+
+          const smaForecast =
+            item.sma_forecast !== null && item.sma_forecast !== undefined
+              ? Number(item.sma_forecast)
+              : null;
+
+          const rfForecast =
+            item.random_forest_forecast !== null &&
+            item.random_forest_forecast !== undefined
+              ? Number(item.random_forest_forecast)
+              : null;
+
+          const accuracy =
+            item.accuracy !== null && item.accuracy !== undefined
+              ? Number(item.accuracy)
+              : null;
+
+          const mape =
+            item.mape !== null && item.mape !== undefined
+              ? Number(item.mape)
+              : null;
+
+          const rmse =
+            item.rmse !== null && item.rmse !== undefined
+              ? Number(item.rmse)
+              : null;
+
+          const selectedForecast =
+            item.selected_forecast !== null &&
+            item.selected_forecast !== undefined
+              ? Number(item.selected_forecast)
+              : null;
+
+          let statusLabel = "No Consumption Data";
+
+          const normalizedModelName = String(item.model_name || "")
+            .trim()
+            .toLowerCase();
+
+          if (
+            forecastStatus === "insufficient_historical_data" ||
+            forecastStatus === "insufficient_data"
+          ) {
+            statusLabel = "Insufficient Data";
+          } else if (
+            forecastStatus === "random_forest_evaluation_available" ||
+            (normalizedModelName === "randomforestregressor" &&
+              item.evaluation_available)
+          ) {
+            statusLabel = "Random Forest";
+          } else if (
+            forecastStatus === "random_forest_below_accuracy_threshold"
+          ) {
+            statusLabel = "SMA Selected";
+          } else if (normalizedModelName === "sma") {
+            statusLabel = "SMA Selected";
+          } else if (hasForecastData) {
+            statusLabel = "Forecast Available";
+          }
+
+          const modelName = hasForecastData
+            ? normalizedModelName === "randomforestregressor"
+              ? "Random Forest"
+              : normalizedModelName === "sma"
+                ? "SMA"
+                : String(item.model_name || "—")
+            : "—";
+
+          return `
+      <tr>
+        <td>
+          ${escapeHTML(item.item_name || "Unknown item")}
+        </td>
+
+        <td>
+          ${forecastDate ? escapeHTML(forecastDate) : "—"}
+        </td>
+
+        <td>
+          ${smaForecast !== null ? smaForecast.toFixed(2) : "—"}
+        </td>
+
+        <td>
+          ${rfForecast !== null ? rfForecast.toFixed(2) : "—"}
+        </td>
+
+        <td>
+          ${
+            mape !== null && item.evaluation_available
+              ? mape.toFixed(2) + "%"
+              : "—"
+          }
+        </td>
+
+        <td>
+          ${rmse !== null && item.evaluation_available ? rmse.toFixed(2) : "—"}
+        </td>
+
+        <td>
+          ${
+            accuracy !== null && item.evaluation_available
+              ? accuracy.toFixed(2) + "%"
+              : "—"
+          }
+        </td>
+
+        <td>
+          ${selectedForecast !== null ? selectedForecast.toFixed(2) : "—"}
+        </td>
+
+        <td>
+          ${escapeHTML(modelName)}
+        </td>
+
+        <td>
+  <span class="forecast-status-badge ${forecastStatus === "no_consumption_data" ? "forecast-status-no-data" : "forecast-status-insufficient"}">
+    ${escapeHTML(statusLabel)}
+  </span>
+</td>
+      </tr>
+    `;
+        })
+        .join("");
+
+      if (emptyState) {
+        emptyState.hidden = mergedItems.length > 0;
+      }
+    } catch (error) {
+      console.error("Unable to load demand forecast:", error);
+
+      forecastBody.innerHTML = "";
+
+      if (emptyState) {
+        emptyState.hidden = false;
+      }
+    }
+  }
+
+  window.refreshDemandForecast = loadDemandForecast;
+
+  let forecastDemandChart = null;
+  let forecastChartData = [];
+  let forecastResults = [];
+
+  function populateForecastChartItems() {
+    const select = document.getElementById("forecastChartItem");
+
+    if (!select) {
       return;
     }
 
-    localStorage.removeItem(ITEMS_KEY);
-    localStorage.removeItem(MOVEMENTS_KEY);
-    localStorage.setItem(RESET_VERSION_KEY, RESET_VERSION);
+    const currentValue = select.value;
+
+    select.innerHTML = `
+    <option value="">Select item</option>
+  `;
+
+    const itemNames = [
+      ...new Set(
+        forecastChartData
+          .map((item) => String(item.item_name || "").trim())
+          .filter(Boolean),
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+
+    itemNames.forEach((itemName) => {
+      const option = document.createElement("option");
+
+      option.value = itemName;
+      option.textContent = itemName;
+
+      select.appendChild(option);
+    });
+
+    if (currentValue && itemNames.includes(currentValue)) {
+      select.value = currentValue;
+    }
   }
 
-  resetInventoryDataOnce();
+  function normalizeForecastChartItemName(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
 
-  function initializeStorage() {
-    if (!localStorage.getItem(ITEMS_KEY)) {
-      localStorage.setItem(ITEMS_KEY, JSON.stringify([]));
+  function loadForecastChartItems(historyByItem) {
+    const select = document.getElementById("forecastChartItem");
+
+    if (!select) {
+      return;
     }
 
-    if (!localStorage.getItem(MOVEMENTS_KEY)) {
-      localStorage.setItem(MOVEMENTS_KEY, JSON.stringify([]));
+    const itemNames = Object.keys(historyByItem || {}).sort((a, b) =>
+      a.localeCompare(b),
+    );
+
+    const currentValue = select.value;
+
+    select.innerHTML = `
+    <option value="">Select item</option>
+  `;
+
+    itemNames.forEach((itemName) => {
+      const option = document.createElement("option");
+
+      option.value = itemName;
+      option.textContent = itemName;
+
+      select.appendChild(option);
+    });
+
+    if (currentValue && itemNames.includes(currentValue)) {
+      select.value = currentValue;
+    } else if (itemNames.length > 0) {
+      select.value = itemNames[0];
     }
   }
 
-  initializeStorage();
+  function getForecastChartItemHistory(itemName) {
+    const normalizedName = normalizeForecastChartItemName(itemName);
 
-  function getItems() {
-    try {
-      const raw = localStorage.getItem(ITEMS_KEY);
+    return forecastChartData.filter((record) => {
+      return (
+        normalizeForecastChartItemName(record.item_name) === normalizedName
+      );
+    });
+  }
 
-      if (!raw) {
-        return [];
+  function renderForecastDemandChart(itemName) {
+    const canvas = document.getElementById("forecastDemandChart");
+
+    const emptyState = document.getElementById("forecastChartEmpty");
+
+    if (!canvas || !emptyState) {
+      return;
+    }
+
+    if (forecastDemandChart) {
+      forecastDemandChart.destroy();
+      forecastDemandChart = null;
+    }
+
+    if (!itemName) {
+      canvas.hidden = true;
+      emptyState.hidden = false;
+
+      emptyState.querySelector("h3").textContent = "No chart data available";
+
+      emptyState.querySelector("p").textContent =
+        "Select an inventory item with historical demand data to display the chart.";
+
+      return;
+    }
+
+    const records = getForecastChartItemHistory(itemName);
+
+    if (!records.length) {
+      canvas.hidden = true;
+      emptyState.hidden = false;
+
+      emptyState.querySelector("h3").textContent = "No historical demand data";
+
+      emptyState.querySelector("p").textContent =
+        "This inventory item does not have recorded treatment consumption.";
+
+      return;
+    }
+
+    const sortedRecords = [...records].sort((a, b) => {
+      return String(a.demand_date).localeCompare(String(b.demand_date));
+    });
+
+    const labels = sortedRecords.map((record) => record.demand_date);
+
+    const actualDemand = sortedRecords.map((record) =>
+      Number(record.total_used || 0),
+    );
+
+    const smaWindow = 3;
+
+    const smaHistorical = actualDemand.map((value, index, values) => {
+      const startIndex = Math.max(0, index - smaWindow + 1);
+
+      const windowValues = values.slice(startIndex, index + 1);
+
+      const total = windowValues.reduce((sum, current) => sum + current, 0);
+
+      return total / windowValues.length;
+    });
+
+    const forecastItem = forecastResults.find(
+      (item) =>
+        normalizeForecastChartItemName(item.item_name) ===
+        normalizeForecastChartItemName(itemName),
+    );
+
+    let forecastDate = null;
+    let smaForecast = null;
+    let rfForecast = null;
+
+    if (forecastItem) {
+      forecastDate = forecastItem.forecast_date;
+
+      if (
+        forecastItem.sma_forecast !== null &&
+        forecastItem.sma_forecast !== undefined
+      ) {
+        smaForecast = Number(forecastItem.sma_forecast);
       }
 
-      const parsed = JSON.parse(raw);
+      if (
+        forecastItem.random_forest_forecast !== null &&
+        forecastItem.random_forest_forecast !== undefined
+      ) {
+        rfForecast = Number(forecastItem.random_forest_forecast);
+      }
+    }
 
-      return Array.isArray(parsed) ? parsed : [];
+    if (forecastDate) {
+      labels.push(forecastDate);
+    }
+
+    const historicalSmaData = [...smaHistorical];
+
+    const smaForecastData = Array(sortedRecords.length).fill(null);
+
+    const rfForecastData = Array(sortedRecords.length).fill(null);
+
+    if (forecastDate) {
+      smaForecastData.push(smaForecast);
+      rfForecastData.push(rfForecast);
+    }
+
+    canvas.hidden = false;
+    emptyState.hidden = true;
+
+    const chartContext = canvas.getContext("2d");
+
+    forecastDemandChart = new Chart(chartContext, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Historical Demand",
+            data: actualDemand.concat(forecastDate ? [null] : []),
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 3,
+          },
+          {
+            label: "SMA",
+            data: forecastDate ? smaForecastData : historicalSmaData,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 2,
+          },
+          {
+            label: "Random Forest",
+            data: rfForecastData,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            display: true,
+          },
+          tooltip: {
+            enabled: true,
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Date",
+            },
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Quantity Used",
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async function loadForecastChartData() {
+    const select = document.getElementById("forecastChartItem");
+
+    if (!select) {
+      return;
+    }
+
+    try {
+      const response = await fetch("../../api/inventory/forecast.php", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(
+          result.message || "Unable to load forecast chart data.",
+        );
+      }
+
+      forecastChartData = Array.isArray(result.history) ? result.history : [];
+
+      forecastResults = Array.isArray(result.forecasts) ? result.forecasts : [];
+
+      loadForecastChartItems(result.history_by_item || {});
+
+      if (select.value) {
+        renderForecastDemandChart(select.value);
+      } else {
+        renderForecastDemandChart("");
+      }
     } catch (error) {
-      console.error("Unable to load inventory items:", error);
-      return [];
+      console.error("Forecast chart error:", error);
+
+      forecastChartData = [];
+
+      select.innerHTML = `
+      <option value="">
+        Unable to load chart data
+      </option>
+    `;
+
+      renderForecastDemandChart("");
     }
   }
 
-  function saveItems(items) {
-    localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
+  function initializeForecastChart() {
+    const select = document.getElementById("forecastChartItem");
+
+    if (!select) {
+      return;
+    }
+
+    select.addEventListener("change", () => {
+      renderForecastDemandChart(select.value);
+    });
+
+    loadForecastChartData();
+  }
+
+  function getItems() {
+    if (backendInventoryItems.length) {
+      return backendInventoryItems;
+    }
+
+    if (Array.isArray(window.dentanueva_inventory_items)) {
+      backendInventoryItems = window.dentanueva_inventory_items;
+      return backendInventoryItems;
+    }
+
+    return [];
+  }
+
+  async function saveInventoryItemToBackend(item) {
+    const payload = {
+      action: "save_item",
+      name: item.name,
+      category: item.category,
+      unit: item.unit,
+      stock: Number(item.stock) || 0,
+      minimum: Number(item.minimum) || 0,
+      expiry: item.expiry || "",
+    };
+
+    if (item.databaseId) {
+      payload.id = item.databaseId;
+    }
+
+    const response = await fetch("../../api/inventory.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "same-origin",
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.message || "Unable to save inventory item.");
+    }
+
+    return result.data;
   }
 
   function getMovements() {
-    try {
-      const raw = localStorage.getItem(MOVEMENTS_KEY);
-
-      if (!raw) {
-        return [];
-      }
-
-      const parsed = JSON.parse(raw);
-
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error("Unable to load inventory movements:", error);
-      return [];
-    }
-  }
-
-  function saveMovements(movements) {
-    localStorage.setItem(MOVEMENTS_KEY, JSON.stringify(movements));
-  }
-
-  function generateItemId() {
-    const items = getItems();
-    let number = 1;
-    let id = `INV-${String(number).padStart(3, "0")}`;
-
-    while (items.some((item) => String(item.id) === String(id))) {
-      number++;
-      id = `INV-${String(number).padStart(3, "0")}`;
-    }
-
-    return id;
-  }
-
-  function generateMovementId() {
-    return "MOV-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+    return Array.isArray(backendInventoryMovements)
+      ? backendInventoryMovements
+      : [];
   }
 
   function escapeHTML(value) {
@@ -1218,7 +1795,7 @@ document.addEventListener("DOMContentLoaded", () => {
     itemModal.setAttribute("aria-hidden", "true");
   }
 
-  itemForm.addEventListener("submit", (event) => {
+  itemForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const name = itemName.value.trim();
@@ -1301,7 +1878,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       items.push({
-        id: generateItemId(),
         name,
         category,
         unit,
@@ -1312,21 +1888,72 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    saveItems(items);
-    inventoryCurrentPage = 1;
-    renderAll();
+    try {
+      const currentIndex = existingId
+        ? items.findIndex((item) => String(item.id) === String(existingId))
+        : items.length - 1;
 
-    if (inventoryCurrentSection === 2) {
-      window.refreshInventoryForecast?.();
-      window.refreshDemandForecast?.();
-    }
+      if (currentIndex === -1) {
+        throw new Error("Inventory item could not be found.");
+      }
 
-    closeItemModal();
+      const itemToSave = {
+        ...items[currentIndex],
+        name,
+        category,
+        unit,
+        stock,
+        minimum,
+        expiry,
+      };
 
-    if (existingId) {
-      showInventoryMessage("Inventory item updated successfully.");
-    } else {
-      showInventoryMessage("Inventory item added successfully.");
+      if (existingId) {
+        itemToSave.databaseId = existingId;
+      }
+
+      const savedItem = await saveInventoryItemToBackend(itemToSave);
+
+      if (!savedItem) {
+        throw new Error("The server did not return the saved inventory item.");
+      }
+
+      items[currentIndex] = {
+        ...items[currentIndex],
+        ...savedItem,
+        databaseId: savedItem.id,
+        id: savedItem.id,
+        name: savedItem.name,
+        category: savedItem.category,
+        unit: savedItem.unit,
+        stock: Number(savedItem.stock) || 0,
+        minimum: Number(savedItem.minimum) || 0,
+        expiry: savedItem.expiry || "",
+      };
+
+      backendInventoryItems = items;
+      window.dentanueva_inventory_items = backendInventoryItems;
+
+      inventoryCurrentPage = 1;
+      renderAll();
+
+      if (inventoryCurrentSection === 2) {
+        window.refreshInventoryForecast?.();
+        window.refreshDemandForecast?.();
+      }
+
+      closeItemModal();
+
+      if (existingId) {
+        showInventoryMessage("Inventory item updated successfully.");
+      } else {
+        showInventoryMessage("Inventory item added successfully.");
+      }
+    } catch (error) {
+      console.error("Unable to save inventory item:", error);
+      showInventoryMessage(
+        error.message || "Unable to save inventory item.",
+        "error",
+      );
     }
   });
 
@@ -1379,7 +2006,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  movementForm.addEventListener("submit", (event) => {
+  movementForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const selectedId = movementItem.value;
@@ -1433,26 +2060,41 @@ document.addEventListener("DOMContentLoaded", () => {
     item.stock = newStock;
     item.updatedAt = new Date().toISOString();
 
-    saveItems(items);
-
-    const movements = getMovements();
-
-    movements.push({
-      id: generateMovementId(),
+    const movementPayload = {
+      action: "record_movement",
+      item_id: item.id,
       itemId: item.id,
-      itemName: item.name,
+      movement_type: type,
       type,
       quantity,
+      unit: item.unit,
+      previous_stock: previousStock,
       previousStock,
+      new_stock: newStock,
       newStock,
       reason:
         reason ||
         (type === "stock-in" ? "Stock replenishment" : "Inventory usage"),
-      date: new Date().toISOString(),
+    };
+
+    const movementResponse = await fetch("../../api/inventory.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "same-origin",
+      body: JSON.stringify(movementPayload),
     });
 
-    saveMovements(movements);
+    const movementResult = await movementResponse.json();
 
+    if (!movementResponse.ok || !movementResult?.success) {
+      throw new Error(
+        movementResult?.message || "Unable to record inventory movement.",
+      );
+    }
+
+    await loadInventoryFromBackend();
     inventoryCurrentPage = 1;
     renderAll();
 
@@ -1825,7 +2467,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedDeleteItemId = null;
   }
 
-  function confirmDeleteItem() {
+  async function confirmDeleteItem() {
     if (!selectedDeleteItemId) {
       return;
     }
@@ -1848,18 +2490,36 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const remainingItems = items.filter(
-      (inventoryItem) =>
-        String(inventoryItem.id) !== String(selectedDeleteItemId),
-    );
+    try {
+      const response = await fetch("../../api/inventory.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          action: "delete_item",
+          id: selectedDeleteItemId,
+        }),
+      });
 
-    saveItems(remainingItems);
+      const result = await response.json();
 
-    const remainingMovements = getMovements().filter(
-      (movement) => String(movement.itemId) !== String(selectedDeleteItemId),
-    );
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || "Unable to delete inventory item.");
+      }
 
-    saveMovements(remainingMovements);
+      await loadInventoryFromBackend();
+    } catch (error) {
+      console.error("Unable to delete inventory item:", error);
+
+      showInventoryMessage(
+        error.message || "Unable to delete inventory item.",
+        "error",
+      );
+
+      return;
+    }
 
     closeDeleteItemModal();
 
@@ -2059,24 +2719,14 @@ document.addEventListener("DOMContentLoaded", () => {
     closeActionMenu();
   });
 
-  window.addEventListener("storage", (event) => {
-    if (event.key === ITEMS_KEY || event.key === MOVEMENTS_KEY) {
-      inventoryCurrentPage = 1;
-      renderAll();
-
-      if (inventoryCurrentSection === 2) {
-        window.refreshInventoryForecast?.();
-        window.refreshDemandForecast?.();
-      }
-    }
-  });
-
   function renderAll() {
     renderCategoryFilter();
     renderInventoryTable();
     updateStatistics();
     populateMovementItems();
   }
+  await loadInventoryFromBackend();
+  await loadDemandForecast();
   showInventorySection(inventoryCurrentSection);
   renderAll();
 });

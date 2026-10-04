@@ -898,3 +898,132 @@ a:focus-visible {
     font-size: 18px;
   }
 }
+/* ===== Today's Appointments panel ===== */
+.appointments-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.appointments-panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 184px;
+  max-height: 340px;
+  padding: 16px 18px;
+  overflow-y: auto;
+}
+
+/* Empty state: eksaktong gitna ng box */
+.appointments-panel-body .empty-state {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+/* I-center ang mga card sa loob ng box kapag kaunti lang */
+.appointments-panel-body > .appt-item:first-child {
+  margin-top: 50px;
+}
+.appointments-panel-body > .appt-item:last-child {
+  margin-bottom: auto;
+}
+
+/* ---------- Appointment card ---------- */
+.appointments-panel-body .appt-item {
+  flex-shrink: 0;
+  gap: 16px;
+  padding: 18px 22px;
+  background: var(--green-50);
+  border: 1px solid #dceee2;
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.appointments-panel-body .appt-item + .appt-item {
+  margin-top: 10px;
+}
+
+.appointments-panel-body .appt-item:hover {
+  background: var(--green-100);
+  border-color: #c6e2cf;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.appointments-panel-body .appt-avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 16px;
+  background: var(--white);
+  border: 2px solid #cfe6d6;
+}
+
+.appointments-panel-body .appt-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.appointments-panel-body .appt-name {
+  font-size: 15px;
+}
+
+.appointments-panel-body .appt-meta {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.appointments-panel-body .appt-service {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: #26332d;
+}
+
+.appointments-panel-body .badge {
+  align-self: center;
+  min-height: 28px;
+  padding: 6px 14px;
+  font-size: 10.5px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .appointments-panel-body {
+    max-height: 320px;
+    padding: 12px 14px;
+  }
+  .appointments-panel-body .appt-item {
+    padding: 14px 15px;
+    gap: 12px;
+  }
+  .appointments-panel-body .appt-avatar {
+    width: 46px;
+    height: 46px;
+    font-size: 13px;
+  }
+  .appointments-panel-body .appt-name {
+    font-size: 13.5px;
+  }
+  .appointments-panel-body .appt-meta {
+    font-size: 11px;
+  }
+  .appointments-panel-body .appt-service {
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .appointments-panel-body .appt-name {
+    font-size: 12.5px;
+  }
+  .appointments-panel-body .appt-meta,
+  .appointments-panel-body .appt-service {
+    font-size: 10px;
+  }
+  .appointments-panel-body .badge {
+    min-height: 24px;
+    padding: 4px 9px;
+    font-size: 9px;
+  }
+}

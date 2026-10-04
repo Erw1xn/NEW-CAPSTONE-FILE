@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign In - DentaNueva Dental Clinic</title>
+    <title>Log In - DentaNueva Dental Clinic</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
@@ -13,67 +13,91 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="login.css" />
+    <script>
+      if (window.top === window.self)
+        document.documentElement.classList.add("standalone");
+    </script>
   </head>
   <body>
     <div class="auth-card">
       <div class="auth-header">
+        <span class="auth-logo"
+          ><i class="fa-solid fa-tooth" aria-hidden="true"></i
+        ></span>
         <div class="auth-tag">Welcome Back</div>
-        <h1 class="auth-title">Log In to Your Account</h1>
-      </div>
-      <div id="loginErrorMsg" class="error-message-box" style="display: none">
-        <i class="fa-solid fa-circle-exclamation"></i>
-        <span id="errorText"
-          >Incorrect email or password. Please try again.</span
-        >
-      </div>
-      <form class="auth-form" action="login.php" method="POST">
-        <div class="form-group">
-          <label class="form-label" for="email">Email Address</label>
-          <div class="input-with-icon">
-            <i class="fa-regular fa-envelope"></i>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              class="form-input"
-              placeholder="name@example.com"
-              required
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <div class="input-with-icon">
-            <i class="fa-solid fa-lock"></i>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              class="form-input password-input"
-              placeholder="Enter your password"
-              required
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              id="togglePasswordBtn"
-              aria-label="Toggle password visibility"
-            >
-              <i class="fa-regular fa-eye" id="eyeIcon"></i>
-            </button>
-          </div>
-        </div>
-        <div class="form-options">
-          <label class="remember-me">
-            <input type="checkbox" name="remember" /> Remember me
-          </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
-        </div>
-        <button type="submit" class="btn-submit">Log In</button>
-        <p class="auth-footer-text">
-          Don't have an account yet? <a href="../signup/signup.html">Sign Up</a>
+        <h1 class="auth-title">Log in to your account</h1>
+        <p class="auth-subtitle">
+          Manage your appointments, records, and payments.
         </p>
-      </form>
+      </div>
+      <div class="auth-body">
+        <div
+          id="loginErrorMsg"
+          class="error-message-box"
+          role="alert"
+          style="display: none"
+        >
+          <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+          <span id="errorText"
+            >Incorrect email or password. Please try again.</span
+          >
+        </div>
+        <form class="auth-form" action="login.php" method="POST">
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <div class="input-with-icon">
+              <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-input"
+                placeholder="name@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input password-input"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                id="togglePasswordBtn"
+                aria-label="Toggle password visibility"
+              >
+                <i
+                  class="fa-regular fa-eye"
+                  id="eyeIcon"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-options">
+            <label class="remember-me">
+              <input type="checkbox" name="remember" /> Remember me
+            </label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-submit">Log In</button>
+          <p class="auth-footer-text">
+            Don't have an account yet?
+            <a href="../signup/signup.html">Sign Up</a>
+          </p>
+        </form>
+      </div>
     </div>
     <script src="login.js"></script>
   </body>

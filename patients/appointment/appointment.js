@@ -1,9 +1,3 @@
-const APPOINTMENTS_STORAGE_KEY = "appointments";
-const LEGACY_STORAGE_KEY = "dentanueva_appointments";
-const PATIENTS_STORAGE_KEY = "dentanueva_patients";
-const CURRENT_USER_KEY = "currentUser";
-const DOCTORS_STORAGE_KEY = "dentanueva_doctors";
-const RESCHEDULE_REQUESTS_STORAGE_KEY = "dentanueva_reschedule_requests";
 const PATIENT_RECORD_API = "../../api/patient_records.php";
 const DOCTORS_API = "../../api/doctors.php";
 const SERVICES = [
@@ -32,7 +26,7 @@ const SERVICES = [
 ];
 let DENTISTS = {};
 let doctors = [];
-const CLINIC_SCHEDULE = { startHour: 10, endHour: 20, slotMinutes: 30 };
+const CLINIC_SCHEDULE = { startHour: 10, endHour: 17.5, slotMinutes: 30 };
 let patients = [];
 let appointments = [];
 let rescheduleRequests = [];
@@ -49,16 +43,15 @@ let staffRequestTime = "";
 let rescheduleDetailsRequestId = null;
 let bookingStep = 1;
 let calendarDate = new Date();
+let currentUserFromDatabase = null;
 document.addEventListener("DOMContentLoaded", initializePage);
 async function initializePage() {
-  clearAppointmentCaches();
+  await hydrateCurrentUser();
   currentUser = getCurrentUser();
   loadPatients();
   normalizeSelectedDate();
   normalizeCalendarDate();
   setupEvents();
-  renderAll();
-  window.addEventListener("storage", handleStorageChange);
   await loadDoctors();
   await loadAppointments();
   await hydrateRescheduleRequestsFromDatabase();
@@ -73,19 +66,26 @@ async function initializePage() {
     await loadAppointments();
     await hydrateRescheduleRequestsFromDatabase();
     resolveCurrentPatient();
+    await hydrateCurrentPatientFromDatabase();
     normalizeSelectedDate();
     renderAll();
   }, 30000);
 }
-function clearAppointmentCaches() {
-  [
-    APPOINTMENTS_STORAGE_KEY,
-    LEGACY_STORAGE_KEY,
-    PATIENTS_STORAGE_KEY,
-    DOCTORS_STORAGE_KEY,
-    "currentPatient",
-    "loggedInPatient",
-  ].forEach((key) => localStorage.removeItem(key));
+async function hydrateCurrentUser() {
+  try {
+    const response = await fetch(PATIENT_RECORD_API, {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) {
+      throw new Error(result.message || "Patient account unavailable.");
+    }
+    currentUserFromDatabase = result.data;
+  } catch (error) {
+    console.error("Unable to load authenticated patient:", error);
+    currentUserFromDatabase = null;
+  }
 }
 function setupEvents() {
   document
@@ -232,34 +232,6 @@ function setupEvents() {
     closeTimePicker();
     closeMedicalRecordEditor();
   });
-}
-function handleStorageChange(event) {
-  if (event.key === CURRENT_USER_KEY) {
-    currentUser = getCurrentUser();
-    loadPatients();
-    loadDoctors();
-    renderDentistSelector();
-    loadAppointments();
-    resolveCurrentPatient();
-    normalizeSelectedDate();
-    renderAll();
-    return;
-  }
-  if (
-    event.key === APPOINTMENTS_STORAGE_KEY ||
-    event.key === LEGACY_STORAGE_KEY ||
-    event.key === PATIENTS_STORAGE_KEY ||
-    event.key === DOCTORS_STORAGE_KEY ||
-    event.key === RESCHEDULE_REQUESTS_STORAGE_KEY
-  ) {
-    loadPatients();
-    loadDoctors();
-    renderDentistSelector();
-    loadAppointments();
-    resolveCurrentPatient();
-    normalizeSelectedDate();
-    renderAll();
-  }
 }
 function renderAll() {
   renderPatientContext();
@@ -518,24 +490,7 @@ function getPatientStatusLabel(status, appointmentDate) {
   return "Scheduled";
 }
 function getCurrentUser() {
-  const storedCandidates = [
-    sessionStorage.getItem(CURRENT_USER_KEY),
-    localStorage.getItem(CURRENT_USER_KEY),
-  ];
-
-  for (const stored of storedCandidates) {
-    if (!stored) continue;
-    try {
-      const parsed = JSON.parse(stored);
-      if (parsed && typeof parsed === "object") {
-        return parsed;
-      }
-    } catch (error) {
-      console.warn("Unable to parse stored currentUser.", error);
-    }
-  }
-
-  return null;
+  return currentUserFromDatabase;
 }
 function loadPatients() {
   patients = [];
@@ -780,7 +735,6 @@ function resolveCurrentPatient() {
     if (resolvedPatientId) {
       currentUser.patientId = resolvedPatientId;
       currentUser.patient_id = resolvedPatientId;
-      sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
     }
   }
 }
@@ -811,13 +765,77 @@ async function hydrateCurrentPatientFromDatabase() {
       patients.push(currentPatient);
     }
     currentUser.patientId = remotePatientId;
-    sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
     renderAll();
   } catch (error) {
     console.warn(
       "Database patient record unavailable; using local record.",
       error,
     );
+  }
+}
+async function savePatientRecordToDatabase() {
+  if (!currentPatient) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(PATIENT_RECORD_API, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        patientId: currentPatient.patientId || currentPatient.id,
+        patient: currentPatient,
+        medicalForm: currentPatient.medicalForm || null,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Patient record was not saved.");
+    }
+
+    if (result.data) {
+      const savedPatient = result.data;
+      const savedPatientId = getCanonicalPatientId(savedPatient);
+
+      currentPatient = {
+        ...currentPatient,
+        ...savedPatient,
+        patientId: savedPatientId,
+        id: savedPatientId,
+      };
+
+      const patientIndex = patients.findIndex(
+        (patient) => getCanonicalPatientId(patient) === savedPatientId,
+      );
+
+      if (patientIndex !== -1) {
+        patients[patientIndex] = {
+          ...patients[patientIndex],
+          ...currentPatient,
+        };
+      } else {
+        patients.push(currentPatient);
+      }
+
+      if (currentUser) {
+        currentUser.patientId = savedPatientId;
+        currentUser.patient_id = savedPatientId;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Unable to save patient record to database:", error);
+    showToast(
+      error.message ||
+        "The medical record could not be saved. Please try again.",
+    );
+    return false;
   }
 }
 function getCurrentPatientId() {
@@ -1021,13 +1039,13 @@ function renderUpcomingAppointment() {
 
   if (!appointment) {
     container.innerHTML = `
-  <div class="empty-upcoming">
-  <div class="empty-upcoming-icon">
-  <i class="fa-regular fa-calendar-xmark"></i>
-  </div>
-  <p>No appointment recorded on this date.</p>
-  </div>
-  `;
+    <div class="empty-upcoming">
+    <div class="empty-upcoming-icon">
+    <i class="fa-regular fa-calendar-xmark"></i>
+    </div>
+    <p>No appointment recorded on this date.</p>
+    </div>
+    `;
     return;
   }
   const date = getAppointmentDate(appointment);
@@ -1045,42 +1063,42 @@ function renderUpcomingAppointment() {
   const statusLabel = getPatientStatusLabel(rawStatus, date);
   const statusClass = getStatusClass(rawStatus);
   container.innerHTML = `
-  <div class="upcoming-card-content">
-  <div>
-  <div class="upcoming-patient-avatar">${escapeHtml(initials.toUpperCase())}</div>
-  <div class="upcoming-patient-info">
-  <strong>${escapeHtml(patientName)}</strong>
-  <span>${escapeHtml(service)} • ${escapeHtml(dentist)}</span>
-  <span class="detail-status ${statusClass}">${escapeHtml(statusLabel)}</span>
-  </div>
-  </div>
-  <div class="upcoming-schedule">
-  <div class="upcoming-date">
-  <span class="upcoming-schedule-label">Appointment Date</span>
-  <strong>${escapeHtml(formatDate(date))}</strong>
-  </div>
-  <div class="upcoming-time-range">
-  <div>
-  <span class="upcoming-schedule-label">Start Time</span>
-  <strong>${escapeHtml(formatTime(time))}</strong>
-  </div>
-  <div class="upcoming-time-arrow">
-  <i class="fa-solid fa-arrow-right"></i>
-  </div>
-  <div>
-  <span class="upcoming-schedule-label">End Time</span>
-  <strong>${escapeHtml(endTime)}</strong>
-  </div>
-  </div>
-  </div>
-  <div class="upcoming-divider"></div>
-  <div class="upcoming-actions">
-  <button type="button" class="btn-secondary" data-appointment-action="details" data-appointment-id="${escapeHtml(getAppointmentId(appointment))}">
-  View Details
-  </button>
-  </div>
-  </div>
-  `;
+    <div class="upcoming-card-content">
+    <div>
+    <div class="upcoming-patient-avatar">${escapeHtml(initials.toUpperCase())}</div>
+    <div class="upcoming-patient-info">
+    <strong>${escapeHtml(patientName)}</strong>
+    <span>${escapeHtml(service)} • ${escapeHtml(dentist)}</span>
+    <span class="detail-status ${statusClass}">${escapeHtml(statusLabel)}</span>
+    </div>
+    </div>
+    <div class="upcoming-schedule">
+    <div class="upcoming-date">
+    <span class="upcoming-schedule-label">Appointment Date</span>
+    <strong>${escapeHtml(formatDate(date))}</strong>
+    </div>
+    <div class="upcoming-time-range">
+    <div>
+    <span class="upcoming-schedule-label">Start Time</span>
+    <strong>${escapeHtml(formatTime(time))}</strong>
+    </div>
+    <div class="upcoming-time-arrow">
+    <i class="fa-solid fa-arrow-right"></i>
+    </div>
+    <div>
+    <span class="upcoming-schedule-label">End Time</span>
+    <strong>${escapeHtml(endTime)}</strong>
+    </div>
+    </div>
+    </div>
+    <div class="upcoming-divider"></div>
+    <div class="upcoming-actions">
+    <button type="button" class="btn-secondary" data-appointment-action="details" data-appointment-id="${escapeHtml(getAppointmentId(appointment))}">
+    View Details
+    </button>
+    </div>
+    </div>
+    `;
 }
 function updateServiceDurationInfo() {
   const info = document.getElementById("serviceDurationInfo");
@@ -1096,18 +1114,12 @@ function updateServiceDurationInfo() {
 }
 async function openBookingModal(date = null, dentist = null) {
   currentUser = getCurrentUser();
-  loadAppointments();
+  await loadAppointments();
   await loadDoctors();
   renderDentistSelector();
   resolveCurrentPatient();
   await hydrateCurrentPatientFromDatabase();
   resolveCurrentPatient();
-  const restriction = getPatientBookingRestriction();
-  if (restriction.isRestricted) {
-    renderBookingRestrictionAlert();
-    showToast(getBookingRestrictionMessage(restriction));
-    return;
-  }
   const modal = document.getElementById("bookingModal");
   if (!modal) return;
   const serviceInput = document.getElementById("serviceInput");
@@ -1428,7 +1440,7 @@ function generateBookingSlotStatuses(
   );
   for (
     let minutes = CLINIC_SCHEDULE.startHour * 60;
-    minutes + duration <= CLINIC_SCHEDULE.endHour * 60;
+    minutes <= CLINIC_SCHEDULE.endHour * 60;
     minutes += CLINIC_SCHEDULE.slotMinutes
   ) {
     const hour = Math.floor(minutes / 60);
@@ -1721,6 +1733,7 @@ function getPatientBookingBlockMessage(
     }
 
     const status = normalizeStatus(getAppointmentStatus(appointment));
+
     if (
       status === "completed" ||
       status === "cancelled" ||
@@ -1731,20 +1744,19 @@ function getPatientBookingBlockMessage(
     }
 
     const appointmentDate = getAppointmentDate(appointment);
-    if (!appointmentDate || isPastDate(appointmentDate)) {
+    if (!appointmentDate) {
       return false;
     }
 
-    if (!date) return true;
-
-    return appointmentDate === date;
+    return true;
   });
 
   if (!existingAppointment) return "";
 
   const dateLabel = formatDate(existingAppointment.date);
   const timeLabel = formatTime(getAppointmentTime(existingAppointment));
-  return `You already have an active appointment scheduled on ${dateLabel} at ${timeLabel}. Please complete or delete that appointment before booking another one.`;
+
+  return `You already have an active appointment scheduled on ${dateLabel} at ${timeLabel}. Please complete your existing appointment before booking a new one.`;
 }
 function getPatientBookingRestriction() {
   const behavior = window.DentaNuevaAppointmentBehavior;
@@ -1980,6 +1992,32 @@ function setRecordEditorValues(name, values) {
 }
 function populateMedicalRecordEditor() {
   const medical = currentPatient?.medicalForm || {};
+  document.getElementById("recordEditFirstName").value =
+    currentPatient?.firstName || "";
+
+  document.getElementById("recordEditLastName").value =
+    currentPatient?.lastName || "";
+
+  document.getElementById("recordEditDateOfBirth").value =
+    currentPatient?.dateOfBirth || "";
+
+  document.getElementById("recordEditGender").value =
+    currentPatient?.gender || currentPatient?.patientGender || "";
+
+  document.getElementById("recordEditPhone").value =
+    currentPatient?.phone || "";
+
+  document.getElementById("recordEditEmail").value =
+    currentPatient?.email || "";
+
+  document.getElementById("recordEditAddress").value =
+    currentPatient?.address || "";
+
+  document.getElementById("recordEditEmergencyName").value =
+    currentPatient?.emergencyName || "";
+
+  document.getElementById("recordEditEmergencyContact").value =
+    currentPatient?.emergencyContact || "";
   setRecordEditorValues("recordEditDentalConcern", medical.dentalConcern);
   setRecordEditorValues("recordEditMedicalHistory", medical.medicalHistory);
   setRecordEditorValues("recordEditAllergies", medical.allergies);
@@ -2020,16 +2058,71 @@ function populateMedicalRecordEditor() {
   document.getElementById("recordEditConsent").checked =
     medical.consent === true;
 }
-function saveMedicalRecordEditor() {
+async function saveMedicalRecordEditor() {
   if (!currentPatient) return;
+
   const consent = document.getElementById("recordEditConsent")?.checked;
+
   if (!consent) {
     showToast("Please confirm that your medical information is accurate.");
     return;
   }
+  const firstName =
+    document.getElementById("recordEditFirstName")?.value.trim() || "";
+
+  const lastName =
+    document.getElementById("recordEditLastName")?.value.trim() || "";
+
+  const dateOfBirth =
+    document.getElementById("recordEditDateOfBirth")?.value || "";
+
+  const gender = document.getElementById("recordEditGender")?.value || "";
+
+  const phone = document.getElementById("recordEditPhone")?.value.trim() || "";
+
+  const email = document.getElementById("recordEditEmail")?.value.trim() || "";
+
+  const address =
+    document.getElementById("recordEditAddress")?.value.trim() || "";
+
+  const emergencyName =
+    document.getElementById("recordEditEmergencyName")?.value.trim() || "";
+
+  const emergencyContact =
+    document.getElementById("recordEditEmergencyContact")?.value.trim() || "";
+
+  if (
+    !firstName ||
+    !lastName ||
+    !dateOfBirth ||
+    !gender ||
+    !phone ||
+    !email ||
+    !address ||
+    !emergencyName ||
+    !emergencyContact
+  ) {
+    showToast("Please complete all personal information.");
+    return;
+  }
+
+  currentPatient.firstName = firstName;
+  currentPatient.lastName = lastName;
+  currentPatient.fullName = `${firstName} ${lastName}`.trim();
+  currentPatient.dateOfBirth = dateOfBirth;
+  currentPatient.gender = gender;
+  currentPatient.patientGender = gender;
+  currentPatient.phone = phone;
+  currentPatient.email = email;
+  currentPatient.address = address;
+  currentPatient.emergencyName = emergencyName;
+  currentPatient.emergencyContact = emergencyContact;
+
   const allergies = getRecordEditorValues("recordEditAllergies");
+
   const otherAllergy =
     document.getElementById("recordEditAllergyOther")?.value.trim() || "";
+
   if (
     allergies.includes("No Known Allergies") &&
     (allergies.length > 1 || otherAllergy)
@@ -2037,59 +2130,105 @@ function saveMedicalRecordEditor() {
     showToast("No Known Allergies cannot be selected with another allergy.");
     return;
   }
+
+  /* ================================
+      MEDICAL INFORMATION
+    ================================= */
+
   const now = new Date().toISOString();
   const existingMedical = currentPatient.medicalForm || {};
+
   const updatedMedicalForm = {
     ...existingMedical,
+
     dentalConcern: getRecordEditorValues("recordEditDentalConcern"),
+
     dentalConcernOther:
       document.getElementById("recordEditDentalConcernOther")?.value.trim() ||
       "",
+
     negativeExperience:
       document.querySelector(
         'input[name="recordEditNegativeExperience"]:checked',
       )?.value || "No",
+
     negativeExperienceNote:
       document
         .getElementById("recordEditNegativeExperienceNote")
         ?.value.trim() || "",
+
     medLastVisit:
       document.getElementById("recordEditLastDentalVisit")?.value || "",
+
     medLastTreatment:
       document.getElementById("recordEditLastDentalTreatment")?.value.trim() ||
       "",
+
     currentMedications:
       document.querySelector(
         'input[name="recordEditCurrentMedications"]:checked',
       )?.value || "No",
+
     currentMedicationsList:
       document.getElementById("recordEditMedicationList")?.value.trim() || "",
+
     medicalHistory: getRecordEditorValues("recordEditMedicalHistory"),
+
     medicalOther:
       document.getElementById("recordEditMedicalOther")?.value.trim() || "",
+
     allergies,
+
     allergyOther: otherAllergy,
+
     consent: true,
+
     completed: true,
+
     submittedBy: existingMedical.submittedBy || "patient",
+
     createdAt: existingMedical.createdAt || now,
+
     updatedAt: now,
   };
+
+  /* ================================
+      UPDATE PATIENT RECORD
+    ================================= */
+
   currentPatient.medicalForm = updatedMedicalForm;
   currentPatient.updatedAt = now;
+
   const patientId = getCanonicalPatientId(currentPatient);
+
   const patientIndex = patients.findIndex(
     (patient) => getCanonicalPatientId(patient) === patientId,
   );
+
   if (patientIndex !== -1) {
-    patients[patientIndex] = { ...patients[patientIndex], ...currentPatient };
+    patients[patientIndex] = {
+      ...patients[patientIndex],
+      ...currentPatient,
+    };
   } else {
     patients.push(currentPatient);
   }
+  const saved = await savePatientRecordToDatabase();
+
+  if (!saved) {
+    showToast("The medical record could not be saved. Please try again.");
+    return;
+  }
+
   updateMedicalRecordSummary();
+
+  loadBookingMedicalInformation();
+
   closeMedicalRecordEditor();
+
   showToast("Medical record updated successfully.");
 }
+
 function updateMedicalRecordSummary() {
   const summary = document.getElementById("medicalRecordSummary");
   if (!summary) return;
@@ -2276,13 +2415,18 @@ async function confirmBooking() {
     paymentAmount: 0,
   };
   appointments.push(appointment);
-  try {
-    await saveAppointments();
-  } catch (error) {
-    console.error("Unable to sync appointment to database:", error);
+
+  const saved = await saveAppointments();
+
+  if (!saved) {
+    appointments = appointments.filter(
+      (item) => getAppointmentId(item) !== getAppointmentId(appointment),
+    );
+
     showToast("Appointment could not be saved. Please try again.");
     return;
   }
+
   syncAppointmentToPatient(appointment);
   selectedDate = keyToDate(date);
   calendarDate = new Date(selectedDate);
@@ -2360,35 +2504,35 @@ function openAppointmentDetail(appointmentId) {
   if (subtitle)
     subtitle.textContent = `${formatShortDate(date)} · ${formatTime(time)}`;
   body.innerHTML = `
-  <div class="detail-grid">
-  <div class="detail-card full">
-  <span>Service</span>
-  <strong>${escapeHtml(service)}</strong>
-  </div>
-  <div class="detail-card">
-  <span>Date</span>
-  <strong>${escapeHtml(formatDate(date))}</strong>
-  </div>
-  <div class="detail-card">
-  <span>Time</span>
-  <strong>${escapeHtml(formatTime(time))}</strong>
-  </div>
-  <div class="detail-card">
-  <span>Dentist</span>
-  <strong>${escapeHtml(dentist)}</strong>
-  </div>
-  <div class="detail-card">
-  <span>Duration</span>
-  <strong>${duration ? `${duration} minutes` : "Not specified"}</strong>
-  </div>
-  <div class="detail-card full">
-  <span>Status</span>
-  <strong>
-  <span class="detail-status ${getStatusClass(status)}">${escapeHtml(getPatientStatusLabel(status, date))}</span>
-  </strong>
-  </div>
-  </div>
-  `;
+    <div class="detail-grid">
+    <div class="detail-card full">
+    <span>Service</span>
+    <strong>${escapeHtml(service)}</strong>
+    </div>
+    <div class="detail-card">
+    <span>Date</span>
+    <strong>${escapeHtml(formatDate(date))}</strong>
+    </div>
+    <div class="detail-card">
+    <span>Time</span>
+    <strong>${escapeHtml(formatTime(time))}</strong>
+    </div>
+    <div class="detail-card">
+    <span>Dentist</span>
+    <strong>${escapeHtml(dentist)}</strong>
+    </div>
+    <div class="detail-card">
+    <span>Duration</span>
+    <strong>${duration ? `${duration} minutes` : "Not specified"}</strong>
+    </div>
+    <div class="detail-card full">
+    <span>Status</span>
+    <strong>
+    <span class="detail-status ${getStatusClass(status)}">${escapeHtml(getPatientStatusLabel(status, date))}</span>
+    </strong>
+    </div>
+    </div>
+    `;
   const requestButton = document.getElementById("requestRescheduleBtn");
   const cancelButton = document.getElementById("cancelAppointmentBtn");
   const deleteButton = document.getElementById("deleteAppointmentBtn");
@@ -2602,9 +2746,9 @@ function openRescheduleRequestModal() {
   const requestDate = document.getElementById("requestDate");
   if (!modal || !current) return;
   current.innerHTML = `
-  <strong>${escapeHtml(getAppointmentService(appointment))}</strong>
-  <span>${escapeHtml(formatDate(getAppointmentDate(appointment)))} · ${escapeHtml(formatTime(getAppointmentTime(appointment)))} · ${escapeHtml(getDentistName(appointment))}</span>
-  `;
+    <strong>${escapeHtml(getAppointmentService(appointment))}</strong>
+    <span>${escapeHtml(formatDate(getAppointmentDate(appointment)))} · ${escapeHtml(formatTime(getAppointmentTime(appointment)))} · ${escapeHtml(getDentistName(appointment))}</span>
+    `;
   if (requestDate) {
     requestDate.min = dateToKey(new Date());
     requestDate.value = "";
@@ -2845,9 +2989,9 @@ function openStaffRescheduleModal(request) {
     request?.currentTime ||
     (appointment ? getAppointmentTime(appointment) : "");
   current.innerHTML = `
-  <strong>${escapeHtml(serviceName)}</strong>
-  <span>${escapeHtml(formatDate(currentDate))} · ${escapeHtml(formatTime(currentTime))} · ${escapeHtml(dentistName)}</span>
-  `;
+    <strong>${escapeHtml(serviceName)}</strong>
+    <span>${escapeHtml(formatDate(currentDate))} · ${escapeHtml(formatTime(currentTime))} · ${escapeHtml(dentistName)}</span>
+    `;
   if (reasonInput)
     reasonInput.value = request?.reasonLabel || request?.reason || "";
   if (messageInput) messageInput.value = request?.message || "";
@@ -2985,11 +3129,6 @@ async function confirmStaffRescheduleResponse() {
   );
   if (!appointment) {
     showToast("The appointment could not be found.");
-    return;
-  }
-  const restriction = getPatientBookingRestriction();
-  if (restriction.isRestricted) {
-    showToast(getBookingRestrictionMessage(restriction));
     return;
   }
   const duration = Number(
@@ -3359,37 +3498,37 @@ function handleRescheduleAlert() {
   statusElement.className = `reschedule-details-status ${status}`;
   statusElement.textContent = statusLabel;
   content.innerHTML = `
-      <div class="reschedule-detail-item">
-        <span>Reason</span>
-        <strong>${escapeHtml(latest?.reasonLabel || latest?.reason || "Reschedule Request")}</strong>
-      </div>
-      <div class="reschedule-detail-item">
-        <span>Service</span>
-        <strong>${escapeHtml(service)}</strong>
-      </div>
-      <div class="reschedule-detail-item full">
-        <span>Current Appointment</span>
-        <strong>${escapeHtml(formatDate(currentDate))} · ${escapeHtml(formatTime(currentTime))} · ${escapeHtml(dentist)}</strong>
-      </div>
-      <div class="reschedule-detail-item full">
-        <span>Requested New Schedule</span>
-        <strong>${preferredDate && preferredTime ? `${escapeHtml(formatDate(preferredDate))} · ${escapeHtml(formatTime(preferredTime))}` : "No preferred schedule provided"}</strong>
-      </div>
-      ${
-        status === "approved" && approvedDate && approvedTime
-          ? `
-      <div class="reschedule-detail-item full">
-        <span>Approved Schedule</span>
-        <strong>${escapeHtml(formatDate(approvedDate))} · ${escapeHtml(formatTime(approvedTime))}</strong>
-      </div>
-      `
-          : ""
-      }
-      <div class="reschedule-detail-item full">
-        <span>Message to Clinic</span>
-        <p>${escapeHtml(latest?.message || "No message provided.")}</p>
-      </div>
-    `;
+        <div class="reschedule-detail-item">
+          <span>Reason</span>
+          <strong>${escapeHtml(latest?.reasonLabel || latest?.reason || "Reschedule Request")}</strong>
+        </div>
+        <div class="reschedule-detail-item">
+          <span>Service</span>
+          <strong>${escapeHtml(service)}</strong>
+        </div>
+        <div class="reschedule-detail-item full">
+          <span>Current Appointment</span>
+          <strong>${escapeHtml(formatDate(currentDate))} · ${escapeHtml(formatTime(currentTime))} · ${escapeHtml(dentist)}</strong>
+        </div>
+        <div class="reschedule-detail-item full">
+          <span>Requested New Schedule</span>
+          <strong>${preferredDate && preferredTime ? `${escapeHtml(formatDate(preferredDate))} · ${escapeHtml(formatTime(preferredTime))}` : "No preferred schedule provided"}</strong>
+        </div>
+        ${
+          status === "approved" && approvedDate && approvedTime
+            ? `
+        <div class="reschedule-detail-item full">
+          <span>Approved Schedule</span>
+          <strong>${escapeHtml(formatDate(approvedDate))} · ${escapeHtml(formatTime(approvedTime))}</strong>
+        </div>
+        `
+            : ""
+        }
+        <div class="reschedule-detail-item full">
+          <span>Message to Clinic</span>
+          <p>${escapeHtml(latest?.message || "No message provided.")}</p>
+        </div>
+      `;
   rescheduleDetailsRequestId = latest?.id || latest?.request_id || null;
   const confirmButton = document.getElementById("confirmRescheduleDetails");
   if (confirmButton) {
@@ -3536,4 +3675,23 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+let toastTimer = null;
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+
+  if (!toast) {
+    return;
+  }
+
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3200);
 }

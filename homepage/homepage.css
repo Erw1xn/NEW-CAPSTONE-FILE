@@ -1369,7 +1369,7 @@ img {
 }
 .login-modal-container {
   position: relative;
-  width: min(480px, 92%);
+  width: min(520px, 92%);
   height: min(620px, 85vh);
   display: flex;
   flex-direction: column;
@@ -1680,7 +1680,7 @@ a:focus-visible {
     bottom: 16px;
   }
   .login-modal-container {
-    width: 94%;
+    width: min(520px, 96%);
     height: 82vh;
   }
 }

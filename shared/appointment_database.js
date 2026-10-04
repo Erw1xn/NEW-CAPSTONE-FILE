@@ -1,8 +1,6 @@
 (() => {
   "use strict";
-
   const API = "../../api/appointments.php";
-
   async function request(options = {}, url = API) {
     const response = await fetch(url, {
       credentials: "same-origin",
@@ -15,7 +13,26 @@
     }
     return result.data;
   }
-
+  async function attachBookingRestriction(data) {
+    if (!Array.isArray(data)) return data;
+    try {
+      const restriction = await request({}, `${API}?scope=booking_restriction`);
+      Object.defineProperty(data, "__bookingRestriction", {
+        value: restriction || {},
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+    } catch (error) {
+      Object.defineProperty(data, "__bookingRestriction", {
+        value: {},
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+    }
+    return data;
+  }
   window.DentaNuevaAppointmentDatabase = Object.freeze({
     async load(params = {}) {
       const url = new URL(API, window.location.href);
@@ -23,28 +40,27 @@
         if (value === undefined || value === null || value === "") return;
         url.searchParams.set(key, String(value));
       });
-      return (
-        (await request(
-          {
-            method: "GET",
-          },
-          url,
-        )) || []
-      );
+      const data = (await request({ method: "GET" }, url)) || [];
+      if (!params.scope) {
+        return attachBookingRestriction(data);
+      }
+      return data;
     },
     async save(appointments) {
-      return request({
+      const data = await request({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ appointments }),
       });
+      return attachBookingRestriction(data);
     },
     async reschedule(appointment) {
-      return request({
+      const data = await request({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reschedule: appointment }),
       });
+      return attachBookingRestriction(data);
     },
     async remove(id) {
       return request({

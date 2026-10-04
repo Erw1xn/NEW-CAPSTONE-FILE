@@ -737,6 +737,17 @@
                   />
                 </div>
               </div>
+              <div class="record-edit-section-heading consent-section-heading">
+                <div>
+                  <span class="record-edit-step">05</span>
+                  <div>
+                    <h4>Consent</h4>
+                    <p>
+                      Confirm that the information you provided is accurate.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div class="booking-consent">
                 <label>
                   <input type="checkbox" id="consentCheckbox" />
@@ -809,6 +820,124 @@
             <div class="record-edit-section-heading">
               <div>
                 <span class="record-edit-step">01</span>
+                <div>
+                  <h4>Personal Information</h4>
+                  <p>
+                    Make sure your personal information is complete and correct.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="record-edit-form-row">
+              <div class="record-edit-field">
+                <label for="recordEditFirstName">First Name</label>
+                <input
+                  type="text"
+                  id="recordEditFirstName"
+                  placeholder="Enter your first name"
+                  required
+                />
+              </div>
+
+              <div class="record-edit-field">
+                <label for="recordEditLastName">Last Name</label>
+                <input
+                  type="text"
+                  id="recordEditLastName"
+                  placeholder="Enter your last name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="record-edit-form-row">
+              <div class="record-edit-field">
+                <label for="recordEditDateOfBirth">Date of Birth</label>
+                <input type="date" id="recordEditDateOfBirth" required />
+              </div>
+
+              <div class="record-edit-field">
+                <label for="recordEditGender">Gender</label>
+                <select id="recordEditGender" required>
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="record-edit-form-row">
+              <div class="record-edit-field">
+                <label for="recordEditPhone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="recordEditPhone"
+                  placeholder="09XXXXXXXXX"
+                  required
+                />
+              </div>
+
+              <div class="record-edit-field">
+                <label for="recordEditEmail">Email Address</label>
+                <input
+                  type="email"
+                  id="recordEditEmail"
+                  placeholder="Enter your email address"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="record-edit-field">
+              <label for="recordEditAddress">Complete Address</label>
+              <input
+                type="text"
+                id="recordEditAddress"
+                placeholder="House/Unit, Street, Barangay, City"
+                required
+              />
+            </div>
+
+            <div class="record-edit-form-row">
+              <div class="record-edit-field">
+                <label for="recordEditEmergencyName"
+                  >Emergency Contact Name</label
+                >
+                <input
+                  type="text"
+                  id="recordEditEmergencyName"
+                  placeholder="Enter emergency contact name"
+                  required
+                />
+              </div>
+
+              <div class="record-edit-field">
+                <label for="recordEditEmergencyContact">
+                  Emergency Contact No.
+                </label>
+                <input
+                  type="tel"
+                  id="recordEditEmergencyContact"
+                  placeholder="09XXXXXXXXX"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="record-edit-info">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>
+                This information will be used to identify your patient record
+                and connect it with your appointments and clinic records.
+              </span>
+            </div>
+          </section>
+          <section class="record-edit-section">
+            <div class="record-edit-section-heading">
+              <div>
+                <span class="record-edit-step">02</span>
                 <div>
                   <h4>Dental Concern</h4>
                   <p>Select all that apply.</p>
@@ -906,7 +1035,7 @@
           <section class="record-edit-section">
             <div class="record-edit-section-heading">
               <div>
-                <span class="record-edit-step">02</span>
+                <span class="record-edit-step">03</span>
                 <div>
                   <h4>Dental History</h4>
                   <p>Tell us about your last dental visit.</p>
@@ -958,7 +1087,7 @@
           <section class="record-edit-section">
             <div class="record-edit-section-heading">
               <div>
-                <span class="record-edit-step">03</span>
+                <span class="record-edit-step">04</span>
                 <div>
                   <h4>Medical History &amp; Allergies</h4>
                   <p>Select any condition or allergy that applies.</p>
@@ -1099,13 +1228,6 @@
         </div>
         <div class="modal-body" id="appointmentDetailBody"></div>
         <div class="modal-actions detail-actions">
-          <button
-            type="button"
-            class="btn-secondary"
-            id="closeAppointmentDetail"
-          >
-            Close
-          </button>
           <button type="button" class="btn-delete" id="deleteAppointmentBtn">
             <i class="fa-solid fa-trash"></i>
             Delete

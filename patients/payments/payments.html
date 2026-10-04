@@ -24,9 +24,6 @@
         <div class="payments-content">
           <header class="payments-page-header">
             <div class="page-title-row">
-              <span class="page-icon"
-                ><i class="fa-solid fa-credit-card"></i
-              ></span>
               <div class="payments-heading">
                 <h1>Payments</h1>
                 <p>
@@ -149,43 +146,6 @@
           </button>
         </div>
         <div class="payment-modal-body" id="paymentModalBody"></div>
-      </div>
-    </div>
-    <div class="receipt-modal" id="receiptModal" hidden>
-      <div class="receipt-modal-overlay" id="receiptModalOverlay"></div>
-      <div class="receipt-modal-dialog">
-        <div class="receipt-modal-header">
-          <div>
-            <span class="section-eyebrow">PAYMENT RECEIPT</span>
-            <h2>Official Payment Receipt</h2>
-          </div>
-          <button
-            type="button"
-            class="receipt-modal-close"
-            id="receiptModalClose"
-            aria-label="Close"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-        <div class="receipt-modal-body" id="receiptModalBody"></div>
-        <div class="receipt-modal-actions">
-          <button
-            type="button"
-            class="receipt-secondary-button"
-            id="receiptCloseButton"
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            class="receipt-primary-button"
-            id="printReceiptButton"
-          >
-            <i class="fa-solid fa-print"></i>
-            Print Receipt
-          </button>
-        </div>
       </div>
     </div>
     <div class="patient-pay-modal" id="patientPayModal" hidden>
@@ -317,6 +277,7 @@
       </div>
     </div>
     <script src="../navigation_bar/sidebar.js"></script>
+    <script src="../../shared/receipt/receipt.js"></script>
     <script src="payments.js"></script>
   </body>
 </html>

@@ -174,20 +174,16 @@
             data-page-section="2"
           >
             <div class="forecasting-prototype">
-              <div
-                class="forecast-chart-section"
-                id="forecastChartSection"
-                hidden
-              >
                 <div class="forecast-chart-header">
                   <div>
                     <span class="forecast-chart-eyebrow"
-                      >HISTORICAL DEMAND</span
+                      >AGGREGATED DEMAND DATA</span
                     >
                     <h3>Demand Data and Forecast</h3>
                     <p>
-                      Shows the historical stock-out demand used by the
-                      forecasting models and their prediction results.
+                      Uses aggregated historical consumption, not raw movement
+                      ledger rows, as the training data for the SMA and Random
+                      Forest forecast models.
                     </p>
                   </div>
                   <div class="forecast-chart-select-wrapper">
@@ -217,8 +213,9 @@
                 <div class="prototype-header-content">
                   <h3>Inventory Demand Forecast</h3>
                   <p>
-                    Uses historical stock-out demand to compare a simple moving
-                    average baseline with the machine learning forecast.
+                    Python + scikit-learn pipeline using the last 4 months of
+                    aggregated usage demand to compare a simple moving average
+                    baseline with a Random Forest Regressor forecast.
                   </p>
                 </div>
                 <div class="forecast-header-search">
@@ -236,13 +233,14 @@
                   <thead>
                     <tr>
                       <th>ITEM</th>
-                      <th>RECORDS</th>
-                      <th>MOVING AVG.</th>
-                      <th>SMA MAPE</th>
-                      <th>SMA RMSE</th>
-                      <th>ML FORECAST</th>
-                      <th>ML MAPE</th>
-                      <th>ML RMSE</th>
+                      <th>FORECAST DATE</th>
+                      <th>SMA FORECAST</th>
+                      <th>RF FORECAST</th>
+                      <th>MAPE</th>
+                      <th>RMSE</th>
+                      <th>ACCURACY</th>
+                      <th>SELECTED FORECAST</th>
+                      <th>MODEL</th>
                       <th>STATUS</th>
                     </tr>
                   </thead>
@@ -588,11 +586,8 @@
     <script src="../../navigation_bar/sidebar.js"></script>
     <script src="../../shared/inventory/treatment_materials.js"></script>
     <script src="../../shared/inventory/inventory_service.js"></script>
-    <script src="inventory.js"></script>
-    <script src="moving_average.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="demand_forecasting.js"></script>
+    <script src="inventory.js"></script>
     <script src="../profile/profile.js"></script>
   </body>
 </html>

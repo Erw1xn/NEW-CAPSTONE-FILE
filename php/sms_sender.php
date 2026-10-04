@@ -75,9 +75,31 @@ function sendClinicSMS($toNumber, $message)
             "response" => $data
         ];
     }
+    $providerStatus = "";
+    $queueId = null;
+    $messageId = "";
+    if (is_array($data)) {
+        $providerStatus = isset($data["status"]) ? strtolower(trim((string) $data["status"])) : "";
+        $queueId = isset($data["queue_id"]) ? $data["queue_id"] : null;
+        $messageId = isset($data["message_id"]) ? trim((string) $data["message_id"]) : "";
+        if (isset($data["data"]) && is_array($data["data"])) {
+            if ($providerStatus === "" && isset($data["data"]["status"])) {
+                $providerStatus = strtolower(trim((string) $data["data"]["status"]));
+            }
+            if ($queueId === null && isset($data["data"]["queue_id"])) {
+                $queueId = $data["data"]["queue_id"];
+            }
+            if ($messageId === "" && isset($data["data"]["message_id"])) {
+                $messageId = trim((string) $data["data"]["message_id"]);
+            }
+        }
+    }
     return [
         "success" => true,
-        "message" => "SMS queued successfully.",
+        "message" => "SMS request accepted by SkySMS.",
+        "provider_status" => $providerStatus,
+        "queue_id" => $queueId,
+        "message_id" => $messageId,
         "response" => $data
     ];
 }

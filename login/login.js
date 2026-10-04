@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           localStorage.removeItem(REMEMBERED_EMAIL_KEY);
         }
+        const targetUrl = new URL(redirectPage, window.location.href).href;
         const storedUser = {
           ...validUser,
           name:
@@ -117,7 +118,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         localStorage.setItem("currentUser", JSON.stringify(storedUser));
         sessionStorage.setItem("currentUser", JSON.stringify(storedUser));
-        const targetUrl = new URL(redirectPage, window.location.href).href;
         window.top.location.href = targetUrl;
       } catch (error) {
         console.error("Login request error:", error);

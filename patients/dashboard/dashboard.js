@@ -1,11 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   initializePatientDashboard();
 });
-const APPOINTMENTS_STORAGE_KEY = "appointments";
-const PATIENTS_STORAGE_KEY = "dentanueva_patients";
-const TRANSACTIONS_STORAGE_KEY = "dentaNuevaFinanceTransactions";
-const RECORDS_STORAGE_KEY = "dentanueva_patient_records";
-const LOGGED_IN_PATIENT_KEY = "loggedInPatient";
+const PATIENT_RECORD_API = "../../api/patient_records.php";
+const DOCTORS_API = "../../api/doctors.php";
+const FINANCE_API = "../../api/finance/transactions.php";
+let dashboardDoctors = {};
 const patientDashboardData = {
   patient: null,
   appointments: [],
@@ -13,30 +12,16 @@ const patientDashboardData = {
   transactions: [],
   notifications: [],
 };
-function initializePatientDashboard() {
+async function initializePatientDashboard() {
   updateDateTime();
   setInterval(updateDateTime, 1000);
   setInterval(updateBookingAccess, 60000);
-  loadPatientDashboardData();
+  await loadPatientDashboardData();
   renderPatientDashboard();
   setupAppointmentInteractions();
   window.addEventListener("focus", () => {
-    loadPatientDashboardData();
+    void loadPatientDashboardData().then(renderPatientDashboard);
     renderPatientDashboard();
-  });
-  window.addEventListener("storage", (event) => {
-    if (
-      [
-        APPOINTMENTS_STORAGE_KEY,
-        PATIENTS_STORAGE_KEY,
-        TRANSACTIONS_STORAGE_KEY,
-        RECORDS_STORAGE_KEY,
-        LOGGED_IN_PATIENT_KEY,
-      ].includes(event.key)
-    ) {
-      loadPatientDashboardData();
-      renderPatientDashboard();
-    }
   });
   window.addEventListener("appointmentStatusChanged", refreshPatientDashboard);
   window.addEventListener("appointmentsUpdated", refreshPatientDashboard);
@@ -44,109 +29,162 @@ function initializePatientDashboard() {
   window.addEventListener("patientAdded", refreshPatientDashboard);
 }
 function refreshPatientDashboard() {
-  loadPatientDashboardData();
-  renderPatientDashboard();
+  void loadPatientDashboardData().then(renderPatientDashboard);
 }
-function loadPatientDashboardData() {
-  patientDashboardData.patient = getCurrentPatient();
-  patientDashboardData.appointments = getStoredAppointments();
-  patientDashboardData.records = getStoredRecords();
-  patientDashboardData.transactions = getStoredTransactions();
+async function loadPatientDashboardData() {
+  const [recordResponse, financeResponse, doctorsResponse] = await Promise.all([
+    fetch(PATIENT_RECORD_API, {
+      credentials: "same-origin",
+      cache: "no-store",
+    }),
+    fetch(FINANCE_API, { credentials: "same-origin", cache: "no-store" }),
+    fetch(DOCTORS_API, { credentials: "same-origin", cache: "no-store" }),
+  ]);
+  const recordResult = await recordResponse.json();
+  const financeResult = await financeResponse.json();
+  const doctorsResult = await doctorsResponse.json();
+  if (!recordResponse.ok || !recordResult.success || !recordResult.data) {
+    throw new Error(recordResult.message || "Patient record unavailable.");
+  }
+  patientDashboardData.patient = recordResult.data;
+  patientDashboardData.appointments = Array.isArray(
+    recordResult.data.appointments,
+  )
+    ? recordResult.data.appointments
+    : [];
+  patientDashboardData.records = [recordResult.data];
+  patientDashboardData.transactions =
+    financeResponse.ok &&
+    financeResult.success &&
+    Array.isArray(financeResult.data)
+      ? financeResult.data
+      : [];
+  dashboardDoctors = {};
+  if (
+    doctorsResponse.ok &&
+    doctorsResult.success &&
+    Array.isArray(doctorsResult.data)
+  ) {
+    doctorsResult.data.forEach((doctor) => {
+      registerDashboardDoctor(doctor);
+    });
+  }
+  patientDashboardData.appointments = patientDashboardData.appointments.map(
+    (appointment) => ({
+      ...appointment,
+      dentist: resolveDashboardDoctorName(appointment),
+      dentistRaw: resolveDashboardDoctorName(appointment),
+    }),
+  );
   patientDashboardData.notifications = getNotifications();
 }
+function normalizeDashboardDoctorKey(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  const text = String(value).trim().toLowerCase();
+  if (!text) {
+    return "";
+  }
+  if (/^doc-\d+$/i.test(text)) {
+    return text;
+  }
+  if (/^doc\d+$/i.test(text)) {
+    return `doc-${text.substring(3).padStart(4, "0")}`;
+  }
+  if (/^\d+$/.test(text)) {
+    return `doc-${text.padStart(4, "0")}`;
+  }
+  return text;
+}
+function registerDashboardDoctor(doctor) {
+  if (!doctor || typeof doctor !== "object") {
+    return;
+  }
+  const firstName = String(
+    doctor.firstname || doctor.firstName || doctor.first_name || "",
+  ).trim();
+  const lastName = String(
+    doctor.lastname || doctor.lastName || doctor.last_name || "",
+  ).trim();
+  const name = String(
+    doctor.name ||
+      doctor.fullName ||
+      doctor.full_name ||
+      doctor.doctorName ||
+      doctor.dentistName ||
+      `${firstName} ${lastName}`,
+  ).trim();
+  if (!name) {
+    return;
+  }
+  const identifiers = [
+    doctor.id,
+    doctor.user_id,
+    doctor.userId,
+    doctor.doctor_id,
+    doctor.doctorId,
+    doctor.dentist_id,
+    doctor.dentistId,
+  ];
+  identifiers.forEach((identifier) => {
+    const key = normalizeDashboardDoctorKey(identifier);
+    if (key) {
+      dashboardDoctors[key] = name;
+    }
+  });
+}
+function resolveDashboardDoctorName(appointment) {
+  if (!appointment || typeof appointment !== "object") {
+    return "Unassigned";
+  }
+  const details =
+    appointment.appointmentDetails ||
+    appointment.details ||
+    appointment.appointment_details ||
+    {};
+  const directName =
+    appointment.doctorName ||
+    appointment.doctor_name ||
+    appointment.dentistName ||
+    appointment.dentist_name ||
+    details.doctorName ||
+    details.doctor_name ||
+    details.dentistName ||
+    details.dentist_name ||
+    "";
+  const normalizedDirectName = String(directName).trim();
+  if (normalizedDirectName && !/^doc-\d+$/i.test(normalizedDirectName)) {
+    return normalizedDirectName;
+  }
+  const doctorValues = [
+    appointment.doctorId,
+    appointment.doctor_id,
+    appointment.dentistId,
+    appointment.dentist_id,
+    appointment.dentist,
+    appointment.doctor,
+    appointment.assignedDoctorId,
+    appointment.assignedDentistId,
+    appointment.assignedDoctor,
+    appointment.assignedDentist,
+    details.doctorId,
+    details.doctor_id,
+    details.dentistId,
+    details.dentist_id,
+    details.dentist,
+    details.doctor,
+  ];
+  for (const value of doctorValues) {
+    const key = normalizeDashboardDoctorKey(value);
+    if (key && dashboardDoctors[key]) {
+      return dashboardDoctors[key];
+    }
+  }
+  return normalizedDirectName || "Unassigned";
+}
 function getCurrentPatient() {
-  let currentUser = null;
-  try {
-    const storedUser = sessionStorage.getItem("currentUser");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      if (parsedUser && typeof parsedUser === "object") {
-        currentUser = parsedUser;
-      }
-    }
-  } catch (error) {
-    currentUser = null;
-  }
-  const patientsData = readJSON(PATIENTS_STORAGE_KEY);
-  const patients = extractPatients(patientsData);
-  const possiblePatientIds = [
-    currentUser?.patientId,
-    currentUser?.patientID,
-    currentUser?.patient_id,
-    currentUser?.id,
-    localStorage.getItem("currentPatientId"),
-    localStorage.getItem("patientId"),
-    localStorage.getItem("loggedInPatientId"),
-    localStorage.getItem("current_patient_id"),
-  ]
-    .filter(
-      (value) => value !== null && value !== undefined && String(value).trim(),
-    )
-    .map((value) => String(value).trim().toLowerCase());
-  for (const patient of patients) {
-    const patientIds = [
-      patient?.patientId,
-      patient?.patientID,
-      patient?.patient_id,
-      patient?.id,
-      patient?.user_id,
-      patient?.userId,
-    ]
-      .filter(
-        (value) =>
-          value !== null && value !== undefined && String(value).trim(),
-      )
-      .map((value) => String(value).trim().toLowerCase());
-    if (possiblePatientIds.some((id) => patientIds.includes(id))) {
-      return patient;
-    }
-  }
-  const currentUsername =
-    currentUser?.username ||
-    localStorage.getItem("currentPatientUsername") ||
-    localStorage.getItem("username") ||
-    localStorage.getItem("loggedInUsername");
-  if (currentUsername) {
-    const matchedPatient = patients.find(
-      (patient) =>
-        String(patient?.username || "")
-          .trim()
-          .toLowerCase() === String(currentUsername).trim().toLowerCase(),
-    );
-    if (matchedPatient) {
-      return matchedPatient;
-    }
-  }
-  const currentEmail =
-    currentUser?.email ||
-    localStorage.getItem("currentPatientEmail") ||
-    localStorage.getItem("patientEmail") ||
-    localStorage.getItem("email");
-  if (currentEmail) {
-    const matchedPatient = patients.find(
-      (patient) =>
-        String(patient?.email || "")
-          .trim()
-          .toLowerCase() === String(currentEmail).trim().toLowerCase(),
-    );
-    if (matchedPatient) {
-      return matchedPatient;
-    }
-  }
-  const currentPatient =
-    readJSON("currentPatient") || readJSON("loggedInPatient");
-  if (currentPatient && typeof currentPatient === "object") {
-    return currentPatient;
-  }
-  if (patients.length === 1) {
-    return patients[0];
-  }
-  return {
-    id: "",
-    firstName: "Patient",
-    lastName: "",
-    fullName: "Patient",
-  };
+  return patientDashboardData.patient || { id: "", fullName: "Patient" };
 }
 function getPatientName(patient) {
   if (!patient) {
@@ -178,11 +216,7 @@ function getPatientIdentity(patient) {
     .toLowerCase();
 }
 function getStoredAppointments() {
-  const data = readJSON(APPOINTMENTS_STORAGE_KEY);
-  if (!Array.isArray(data)) {
-    return [];
-  }
-  return data
+  return patientDashboardData.appointments
     .map(normalizeAppointment)
     .filter((appointment) => isAppointmentForCurrentPatient(appointment));
 }
@@ -224,27 +258,8 @@ function normalizeAppointment(appointment) {
     details.patient_name ||
     details.name ||
     details.fullName ||
-    "";
-  const dentist =
-    appointment.dentistName ||
-    appointment.doctorName ||
-    appointment.dentist ||
-    appointment.doctor ||
-    appointment.assignedDentist ||
-    appointment.assignedDoctor ||
-    appointment.dentistId ||
-    appointment.doctorId ||
-    appointment.assignedDentistId ||
-    appointment.assignedDoctorId ||
-    details.dentistName ||
-    details.doctorName ||
-    details.dentist ||
-    details.doctor ||
-    details.assignedDentist ||
-    details.assignedDoctor ||
-    details.dentistId ||
-    details.doctorId ||
-    "";
+    getPatientName(patientDashboardData.patient);
+  const dentist = resolveDashboardDoctorName(appointment);
   const service =
     appointment.serviceType ||
     appointment.service ||
@@ -303,7 +318,7 @@ function normalizeAppointment(appointment) {
       "",
     patientId: String(patientId),
     patientName: String(patientName).trim(),
-    dentist: resolveDentistName(dentist),
+    dentist: String(dentist).trim() || "Unassigned",
     dentistRaw: String(dentist).trim(),
     service: String(service).trim(),
     date: normalizeAppointmentDate(date),
@@ -317,7 +332,7 @@ function normalizeAppointmentStatus(status) {
   const value = String(status || "")
     .trim()
     .toLowerCase()
-    .replace(/[\_\-]+/g, " ")
+    .replace(/[\\\\\\_\\\\-]+/g, " ")
     .replace(/\s+/g, " ");
   if (
     value === "" ||
@@ -361,38 +376,14 @@ function resolveDentistName(value) {
   if (!original) {
     return "Unassigned";
   }
-  const normalized = original
-    .toLowerCase()
-    .replace(/^dr\.\s*/i, "")
-    .replace(/^dr\s+/i, "")
-    .replace(/^doctor\s+/i, "")
-    .replace(/\s+/g, "")
-    .replace(/[-_]/g, "");
-  const dentistMap = {
-    santos: "Dr. Santos",
-    msantos: "Dr. Santos",
-    drsantos: "Dr. Santos",
-    reyes: "Dr. Reyes",
-    mreyes: "Dr. Reyes",
-    drreyes: "Dr. Reyes",
-    garcia: "Dr. Garcia",
-    mgarcia: "Dr. Garcia",
-    drgarcia: "Dr. Garcia",
-    cruz: "Dr. Cruz",
-    lcruz: "Dr. Cruz",
-    drcruz: "Dr. Cruz",
-    ramos: "Dr. Ramos",
-    jramos: "Dr. Ramos",
-    drramos: "Dr. Ramos",
-  };
-  if (dentistMap[normalized]) {
-    return dentistMap[normalized];
-  }
   if (
     /^dr\./i.test(original) ||
     /^dr\s/i.test(original) ||
     /^doctor\s/i.test(original)
   ) {
+    return original;
+  }
+  if (/^doc-\d+$/i.test(original)) {
     return original;
   }
   return capitalizeDentistName(original);
@@ -422,30 +413,7 @@ function isAppointmentForCurrentPatient(appointment) {
     if (currentPatientId === appointmentPatientId) {
       return true;
     }
-    const patientsData = readJSON(PATIENTS_STORAGE_KEY);
-    const patients = extractPatients(patientsData);
-    const matchedPatient = patients.find((item) => {
-      const ids = [
-        item?.patientId,
-        item?.patientID,
-        item?.patient_id,
-        item?.id,
-        item?.user_id,
-        item?.userId,
-      ]
-        .filter(
-          (value) =>
-            value !== null && value !== undefined && String(value).trim(),
-        )
-        .map((value) => String(value).trim().toLowerCase());
-      return ids.includes(appointmentPatientId);
-    });
-    if (matchedPatient) {
-      const matchedId = getPatientIdentity(matchedPatient);
-      if (matchedId === currentPatientId) {
-        return true;
-      }
-    }
+    return false;
   }
   const currentPatientName = getPatientName(patient).trim().toLowerCase();
   const appointmentPatientName = String(appointment.patientName || "")
@@ -676,24 +644,15 @@ function renderAppointmentBehavior(summary) {
 }
 function updateBookingAccess() {
   const button = document.getElementById("dashboardNewAppointmentBtn");
+  if (!button) return;
   const behavior = getAppointmentBehavior({
     completed: patientDashboardData.appointments.filter(
       (appointment) => appointment.status === "completed",
     ).length,
   });
-  if (!button || !behavior) return;
-  button.disabled = behavior.isRestricted;
-  button.title = behavior.isRestricted
+  button.title = behavior?.isRestricted
     ? "Appointment booking is temporarily restricted"
     : "Book a new appointment";
-  if (!button.dataset.behaviorClickBound) {
-    button.dataset.behaviorClickBound = "true";
-    button.addEventListener("click", () => {
-      if (!button.disabled) {
-        window.location.href = "../appointment/appointment.html";
-      }
-    });
-  }
 }
 function isAppointmentRescheduled(appointment) {
   if (!appointment || typeof appointment !== "object") {
@@ -761,7 +720,9 @@ function renderTodayAppointments() {
     .join("");
 }
 function createAppointmentHTML(appointment) {
-  const initials = getInitials(appointment.patientName);
+  const displayPatientName =
+    appointment.patientName || getPatientName(patientDashboardData.patient);
+  const initials = getInitials(displayPatientName);
   const statusClass = getAppointmentBadgeClass(appointment.status);
   const statusText = getAppointmentStatusLabel(appointment.status);
   const displayDate = formatAppointmentDate(appointment.date);
@@ -769,16 +730,23 @@ function createAppointmentHTML(appointment) {
   const displayService = appointment.service || "Appointment";
   const displayDentist = appointment.dentist || "Unassigned";
   return `
-<div class="appt-item" data-appointment-id="${escapeHTML(appointment.id)}" role="button" tabindex="0">
-<div class="appt-avatar">${escapeHTML(initials)}</div>
-<div class="appt-info">
-<div class="appt-name">${escapeHTML(appointment.patientName)}</div>
-<div class="appt-meta"><strong>${escapeHTML(displayDate)}</strong><span> • </span><strong>${escapeHTML(displayTime)}</strong></div>
-<div class="appt-service">${escapeHTML(displayService)}<span> • </span>${escapeHTML(displayDentist)}</div>
-</div>
-<span class="badge ${statusClass}">${escapeHTML(statusText)}</span>
-</div>
-`;
+    <div class="appt-item" data-appointment-id="${escapeHTML(appointment.id)}" role="button" tabindex="0">
+      <div class="appt-avatar">${escapeHTML(initials)}</div>
+      <div class="appt-info">
+        <div class="appt-service">
+          <strong>${escapeHTML(displayService)}</strong>
+          <span>•</span>
+          <strong>${escapeHTML(displayDentist)}</strong>
+        </div>
+        <div class="appt-meta">
+          <span>${escapeHTML(displayDate)}</span>
+          <span>•</span>
+          <span>${escapeHTML(displayTime)}</span>
+        </div>
+      </div>
+      <span class="badge ${statusClass}">${escapeHTML(statusText)}</span>
+    </div>
+    `;
 }
 function setupAppointmentInteractions() {
   document.addEventListener("click", (event) => {
@@ -979,25 +947,7 @@ function isMedicalRecordComplete() {
   return false;
 }
 function getStoredRecords() {
-  const data = readJSON(RECORDS_STORAGE_KEY);
-  if (Array.isArray(data)) {
-    return data.filter(isRecordForCurrentPatient);
-  }
-  if (data && typeof data === "object") {
-    const collections = [
-      data.records,
-      data.patientRecords,
-      data.patient_records,
-      data.items,
-      data.data,
-    ];
-    for (const collection of collections) {
-      if (Array.isArray(collection)) {
-        return collection.filter(isRecordForCurrentPatient);
-      }
-    }
-  }
-  return [];
+  return patientDashboardData.records.filter(isRecordForCurrentPatient);
 }
 function isRecordForCurrentPatient(record) {
   if (!record || typeof record !== "object") {
@@ -1031,11 +981,9 @@ function isRecordForCurrentPatient(record) {
   return true;
 }
 function getStoredTransactions() {
-  const data = readJSON(TRANSACTIONS_STORAGE_KEY);
-  if (!Array.isArray(data)) {
-    return [];
-  }
-  return data.filter(isTransactionForCurrentPatient);
+  return patientDashboardData.transactions.filter(
+    isTransactionForCurrentPatient,
+  );
 }
 function isTransactionForCurrentPatient(transaction) {
   if (!transaction || typeof transaction !== "object") {
@@ -1153,15 +1101,7 @@ function extractPatients(data) {
   );
 }
 function readJSON(key) {
-  try {
-    const stored = localStorage.getItem(key);
-    if (!stored) {
-      return null;
-    }
-    return JSON.parse(stored);
-  } catch (error) {
-    return null;
-  }
+  return null;
 }
 function normalizeAppointmentDate(value) {
   if (!value) {
@@ -1221,16 +1161,13 @@ function formatDisplayTime(value) {
   if (!match) {
     return text;
   }
-
   let hour = Number(match[1]);
   const minute = Number(match[2]);
   const suffix = (match[4] || (hour >= 12 ? "PM" : "AM")).toUpperCase();
-
   if (match[4]) {
     if (suffix === "AM" && hour === 12) hour = 0;
     if (suffix === "PM" && hour < 12) hour += 12;
   }
-
   return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${suffix}`;
 }
 function compareAppointments(a, b) {
@@ -1297,11 +1234,11 @@ function getInitials(name) {
 }
 function createEmptyState(icon, message) {
   return `
-<div class="empty-state" title="${escapeHTML(message)}">
-<i class="fa-solid ${escapeHTML(icon)}"></i>
-<p>${escapeHTML(message)}</p>
-</div>
-`;
+    <div class="empty-state" title="${escapeHTML(message)}">
+      <i class="fa-solid ${escapeHTML(icon)}"></i>
+      <p>${escapeHTML(message)}</p>
+    </div>
+    `;
 }
 function getTodayDate() {
   return formatDateForComparison(new Date());

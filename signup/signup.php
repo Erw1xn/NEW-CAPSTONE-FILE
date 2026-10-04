@@ -1,7 +1,5 @@
 <?php
-
 header("Content-Type: application/json; charset=UTF-8");
-
 require_once "../php/db_connect.php";
 
 function response($success, $message)
@@ -67,11 +65,7 @@ $check->store_result();
 
 if ($check->num_rows > 0) {
     $check->close();
-
-    response(
-        false,
-        "An account with this email already exists! Please log in."
-    );
+    response(false, "An account with this email already exists! Please log in.");
 }
 
 $check->close();
@@ -121,14 +115,101 @@ $stmt->bind_param(
 if (!$stmt->execute()) {
     $stmt->close();
     $conn->close();
-
-    response(
-        false,
-        "Unable to create the account. Please try again."
-    );
+    response(false, "Unable to create the account. Please try again.");
 }
 
+$userId = $conn->insert_id;
 $stmt->close();
+
+$existingPatientStmt = $conn->prepare("
+    SELECT patient_id
+    FROM tbl_patients
+    WHERE user_id = ?
+    LIMIT 1
+");
+
+if (!$existingPatientStmt) {
+    $conn->close();
+    response(false, "Database error while checking the patient record.");
+}
+
+$existingPatientStmt->bind_param("i", $userId);
+$existingPatientStmt->execute();
+$existingPatientResult = $existingPatientStmt->get_result();
+$existingPatient = $existingPatientResult->fetch_assoc();
+$existingPatientStmt->close();
+
+if (!$existingPatient) {
+    $nextPatientNumber = 1;
+
+    while (true) {
+        $candidatePatientId = "PN-" . str_pad((string) $nextPatientNumber, 4, "0", STR_PAD_LEFT);
+
+        $candidateStmt = $conn->prepare("
+            SELECT patient_id
+            FROM tbl_patients
+            WHERE patient_id = ?
+            LIMIT 1
+        ");
+
+        if (!$candidateStmt) {
+            $conn->close();
+            response(false, "Database error while generating the patient ID.");
+        }
+
+        $candidateStmt->bind_param("s", $candidatePatientId);
+        $candidateStmt->execute();
+        $candidateResult = $candidateStmt->get_result();
+        $candidateExists = $candidateResult->num_rows > 0;
+        $candidateStmt->close();
+
+        if (!$candidateExists) {
+            $patientId = $candidatePatientId;
+            break;
+        }
+
+        $nextPatientNumber++;
+    }
+
+    $patientStmt = $conn->prepare("
+        INSERT INTO tbl_patients
+        (
+            patient_id,
+            user_id,
+            first_name,
+            last_name,
+            email,
+            patient_type,
+            status,
+            created_by
+        )
+        VALUES (?, ?, ?, ?, ?, 'registered', 'active', ?)
+    ");
+
+    if (!$patientStmt) {
+        $conn->close();
+        response(false, "Database error while creating the patient record.");
+    }
+
+    $patientStmt->bind_param(
+        "sisssi",
+        $patientId,
+        $userId,
+        $firstname,
+        $lastname,
+        $email,
+        $userId
+    );
+
+    if (!$patientStmt->execute()) {
+        $patientStmt->close();
+        $conn->close();
+        response(false, "Unable to create the patient record. Please try again.");
+    }
+
+    $patientStmt->close();
+}
+
 $conn->close();
 
 response(

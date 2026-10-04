@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-09-23T13:10:52.636423+00:00",
+  "lookback_months": 4,
+  "movement_ledger_not_forecast_dataset": true,
+  "ml_model": "RandomForestRegressor",
+  "historical_usage_source": "Excel Historical Data with procedure and stock features",
+  "overall_accuracy": 38.77727863299711,
+  "target_accuracy": 80.0,
+  "passes_accuracy_target": false,
+  "mape": 47.03182262809481,
+  "rmse": 2.1082427394535603,
+  "items": [
+    {
+      "item": "Composite Resin",
+      "accuracy": 12.74838709677418,
+      "mape": 48.542307692307695,
+      "rmse": 1.6330046869780586,
+      "wape": 87.25161290322582,
+      "rf_forecast": 2.996,
+      "sma_forecast": 1.0,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Dental Bonding Agent",
+      "accuracy": 0.0,
+      "mape": 69.6969696969697,
+      "rmse": 1.0886490376943008,
+      "wape": 110.2,
+      "rf_forecast": 0.332,
+      "sma_forecast": 0.75,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Dental Cotton Rolls",
+      "accuracy": 77.82745098039214,
+      "mape": 24.59459212719821,
+      "rmse": 4.572699467606923,
+      "wape": 22.17254901960785,
+      "rf_forecast": 29.49,
+      "sma_forecast": 13.75,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Dental Etchant",
+      "accuracy": 25.703448275862073,
+      "mape": 52.321111111111115,
+      "rmse": 1.4749646775431609,
+      "wape": 74.29655172413793,
+      "rf_forecast": 1.324,
+      "sma_forecast": 1.25,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Dental Gauze",
+      "accuracy": 77.45229357798165,
+      "mape": 23.20570170660857,
+      "rmse": 3.181456794195598,
+      "wape": 22.54770642201835,
+      "rf_forecast": 15.58,
+      "sma_forecast": 6.0,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Dental Impression Material",
+      "accuracy": 0.0,
+      "mape": 98.33999999999999,
+      "rmse": 1.2306616106793937,
+      "wape": 116.43333333333332,
+      "rf_forecast": 0.204,
+      "sma_forecast": 0.25,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Dental Needles",
+      "accuracy": 14.16000000000001,
+      "mape": 46.8,
+      "rmse": 0.786003816784626,
+      "wape": 85.83999999999999,
+      "rf_forecast": 0.816,
+      "sma_forecast": 0.0,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Disposable Examination Gloves",
+      "accuracy": 77.78364779874214,
+      "mape": 25.474466994993307,
+      "rmse": 2.300439774889736,
+      "wape": 22.216352201257862,
+      "rf_forecast": 12.834,
+      "sma_forecast": 7.0,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Fluoride Varnish",
+      "accuracy": 0.0,
+      "mape": 56.760606060606065,
+      "rmse": 1.5424400975549926,
+      "wape": 102.62105263157895,
+      "rf_forecast": 0.942,
+      "sma_forecast": 1.5,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Local Anesthetic Cartridges",
+      "accuracy": 48.90952380952381,
+      "mape": 29.215266106442574,
+      "rmse": 1.4676559943144232,
+      "wape": 51.09047619047619,
+      "rf_forecast": 1.866,
+      "sma_forecast": 0.75,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Prophylaxis Paste",
+      "accuracy": 19.89375000000001,
+      "mape": 71.78333333333333,
+      "rmse": 1.2380291595919701,
+      "wape": 80.10624999999999,
+      "rf_forecast": 1.916,
+      "sma_forecast": 0.75,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Saliva Ejectors",
+      "accuracy": 72.00627802690583,
+      "mape": 28.842286264293183,
+      "rmse": 4.7063077572426515,
+      "wape": 27.99372197309417,
+      "rf_forecast": 0.0,
+      "sma_forecast": 3.0,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Suction Tips",
+      "accuracy": 70.29895833333333,
+      "mape": 34.382987003794454,
+      "rmse": 3.5365373702858807,
+      "wape": 29.701041666666665,
+      "rf_forecast": 14.856,
+      "sma_forecast": 10.0,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Surgical Face Masks",
+      "accuracy": 72.59851851851852,
+      "mape": 29.801044657097293,
+      "rmse": 2.043997734059924,
+      "wape": 27.401481481481483,
+      "rf_forecast": 10.432,
+      "sma_forecast": 7.75,
+      "model_name": "RandomForestRegressor"
+    },
+    {
+      "item": "Topical Anesthetic",
+      "accuracy": 12.276923076923069,
+      "mape": 65.71666666666668,
+      "rmse": 0.820793112381758,
+      "wape": 87.72307692307693,
+      "rf_forecast": 0.896,
+      "sma_forecast": 1.0,
+      "model_name": "RandomForestRegressor"
+    }
+  ]
+}

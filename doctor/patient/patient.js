@@ -9,6 +9,7 @@ const LEGACY_APPOINTMENTS_STORAGE_KEY = "dentanueva_appointments";
 let patients = [];
 let doctorAppointments = [];
 let currentDoctorDentistId = null;
+let currentUserFromDatabase = null;
 
 let currentPatientId = null;
 let currentMedicalPatientId = null;
@@ -29,7 +30,8 @@ const patientSearch = $("patientSearch");
 const sortPatients = $("sortPatients");
 const patientActionMenu = $("patientActionMenu");
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await hydrateCurrentUser();
   loadPatients();
   void hydratePatientsFromDatabase();
 
@@ -62,43 +64,35 @@ async function hydratePatientsFromDatabase() {
       credentials: "same-origin",
       cache: "no-store",
     });
-    if (!response.ok) return;
+
+    if (!response.ok) {
+      throw new Error(`Patient API returned HTTP ${response.status}.`);
+    }
+
     const result = await response.json();
-    if (!result.success || !Array.isArray(result.data)) return;
-    const localById = new Map(
-      patients.map((patient) => [
-        String(patient.patientId || patient.id),
-        patient,
-      ]),
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error(result.message || "Invalid patient data returned.");
+    }
+
+    // DATABASE IS THE SOURCE OF TRUTH.
+    // Do not merge with previous/local patient records.
+    patients = result.data.map((remotePatient) =>
+      normalizePatient(remotePatient),
     );
-    patients = result.data.map((remotePatient) => {
-      const localPatient = localById.get(
-        String(remotePatient.patientId || remotePatient.id),
-      );
-      return normalizePatient({
-        ...localPatient,
-        ...remotePatient,
-        appointments: remotePatient.appointments?.length
-          ? remotePatient.appointments
-          : localPatient?.appointments || [],
-        treatments: remotePatient.treatments?.length
-          ? remotePatient.treatments
-          : localPatient?.treatments || [],
-        clinicalImages: remotePatient.clinicalImages?.length
-          ? remotePatient.clinicalImages
-          : localPatient?.clinicalImages || [],
-        dentalChart: Object.keys(remotePatient.dentalChart?.teeth || {}).length
-          ? remotePatient.dentalChart
-          : localPatient?.dentalChart || remotePatient.dentalChart,
-      });
-    });
+
     renderPatients();
+    updateTotalPatientCount();
     openSelectedDoctorPatient();
   } catch (error) {
-    console.warn(
-      "Database patient list unavailable; using local records.",
-      error,
-    );
+    console.error("Unable to load patients from database.", error);
+
+    // Do not restore or merge stale local records.
+    // Keep the current database-backed state untouched.
+    patients = [];
+
+    renderPatients();
+    updateTotalPatientCount();
   }
 }
 
@@ -116,6 +110,9 @@ async function syncPatientProfileToDatabase(patient) {
       }),
     });
     const result = await response.json();
+
+    console.debug("Patient record API response:", result);
+
     if (!response.ok || !result.success) {
       throw new Error(result.message || "Patient record was not saved.");
     }
@@ -139,78 +136,47 @@ function isStaffReadOnly() {
   );
 }
 
-function getCurrentUser() {
+async function hydrateCurrentUser() {
   try {
-    const storedUser = sessionStorage.getItem("currentUser");
-    if (!storedUser) {
-      return null;
+    const response = await fetch("../profile/profile.php", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.user) {
+      throw new Error(result.message || "Doctor profile unavailable.");
     }
-    const user = JSON.parse(storedUser);
-    return user && typeof user === "object" ? user : null;
+    currentUserFromDatabase = result.user;
   } catch (error) {
-    console.error("Unable to read current user:", error);
-    return null;
+    console.error("Unable to load the authenticated doctor:", error);
+    currentUserFromDatabase = null;
   }
 }
 
+function getCurrentUser() {
+  return currentUserFromDatabase;
+}
+
 function normalizeDentistId(value) {
-  const raw = String(value ?? "")
+  return String(value ?? "")
     .trim()
     .toLowerCase();
-  if (!raw) {
-    return "";
-  }
-  const normalized = raw
-    .replace(/^dr\.\s*/i, "")
-    .replace(/^doctor\s+/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  const aliases = {
-    "nathalia villanueva": "villanueva",
-    "dr. nathalia villanueva": "villanueva",
-    nathalia: "villanueva",
-    villanueva: "villanueva",
-    "m. santos": "santos",
-    "maria santos": "santos",
-    maria: "santos",
-    santos: "santos",
-    "l. cruz": "cruz",
-    "lucas cruz": "cruz",
-    "luis cruz": "cruz",
-    cruz: "cruz",
-    "j. ramos": "ramos",
-    "juan ramos": "ramos",
-    "james ramos": "ramos",
-    ramos: "ramos",
-  };
-  return aliases[normalized] || normalized;
 }
 function getCurrentDoctorDentistId() {
   const currentUser = getCurrentUser();
+
   if (!currentUser) {
     return null;
   }
-  const dentistId =
-    currentUser.dentistId ||
-    currentUser.dentistID ||
-    currentUser.dentist_id ||
+
+  const doctorId =
     currentUser.doctorId ||
     currentUser.doctor_id ||
+    currentUser.dentistId ||
+    currentUser.dentist_id ||
     "";
-  if (dentistId) {
-    return normalizeDentistId(dentistId);
-  }
-  const fullName = String(
-    currentUser.fullName ||
-      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`,
-  ).trim();
-  if (fullName) {
-    const normalizedName = normalizeDentistId(fullName);
-    if (normalizedName) {
-      return normalizedName;
-    }
-  }
-  return null;
+
+  return doctorId ? normalizeDentistId(doctorId) : null;
 }
 async function loadDoctorAppointments() {
   try {
@@ -223,12 +189,10 @@ async function loadDoctorAppointments() {
       throw new Error(result.message || "Appointments unavailable.");
     }
     doctorAppointments = result.data;
+
     renderPatients();
   } catch (error) {
-    console.warn(
-      "Database appointments unavailable; using local records.",
-      error,
-    );
+    console.error("Unable to load doctor appointments from database.", error);
     doctorAppointments = [];
   }
 }
@@ -327,31 +291,13 @@ function getDoctorPatients() {
 }
 
 function openSelectedDoctorPatient() {
-  const staffSelectedPatientId = sessionStorage.getItem(
-    "staffSelectedPatientId",
+  const selectedPatientId = new URLSearchParams(window.location.search).get(
+    "patient_id",
   );
-
-  if (staffSelectedPatientId) {
-    sessionStorage.removeItem("staffSelectedPatientId");
-
-    const patient = findPatientById(staffSelectedPatientId);
-
-    if (!patient) {
-      console.warn("Staff patient record not found:", staffSelectedPatientId);
-      return;
-    }
-
-    openPatientDetails(patient);
-    return;
-  }
-
-  const selectedPatientId = sessionStorage.getItem("doctorSelectedPatientId");
 
   if (!selectedPatientId) {
     return;
   }
-
-  sessionStorage.removeItem("doctorSelectedPatientId");
 
   const patient = findPatientById(selectedPatientId);
 
@@ -371,7 +317,7 @@ function startAppointmentRealtimeRefresh() {
   appointmentRefreshInterval = setInterval(() => {
     loadDoctorAppointments();
     renderPatients();
-  }, 1000);
+  }, 30000);
 }
 
 function removeMedicalFormFromActionMenu() {
@@ -406,10 +352,10 @@ function setupPatientFormValidation() {
   if (phoneField) {
     phoneField.type = "tel";
     phoneField.required = true;
-    phoneField.pattern = "^(09\\d{9}|\\+639\\d{9})$";
+    phoneField.pattern = "^\\+639\\d{9}$";
     phoneField.title =
-      "Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX).";
-    phoneField.setAttribute("placeholder", "09XXXXXXXXX");
+      "Please enter a valid Philippine phone number in +63 format (+639XXXXXXXXX).";
+    phoneField.setAttribute("placeholder", "+639XXXXXXXXX");
   }
 
   const emergencyContactField = $("emergencyContact");
@@ -417,10 +363,10 @@ function setupPatientFormValidation() {
   if (emergencyContactField) {
     emergencyContactField.type = "tel";
     emergencyContactField.required = true;
-    emergencyContactField.pattern = "^(09\\d{9}|\\+639\\d{9})$";
+    emergencyContactField.pattern = "^\\+639\\d{9}$";
     emergencyContactField.title =
-      "Please enter a valid Philippine emergency contact number (09XXXXXXXXX or +639XXXXXXXXX).";
-    emergencyContactField.setAttribute("placeholder", "09XXXXXXXXX");
+      "Please enter a valid Philippine emergency contact number (+639XXXXXXXXX).";
+    emergencyContactField.setAttribute("placeholder", "+639XXXXXXXXX");
   }
 
   const emailField = $("email");
@@ -447,12 +393,12 @@ function setupPatientFormValidation() {
 
     const phoneValue = phoneField?.value.trim() || "";
 
-    if (phoneValue && !/^(09\d{9}|\+639\d{9})$/.test(phoneValue)) {
+    if (!/^\+639\d{9}$/.test(phoneValue)) {
       event.preventDefault();
 
       if (phoneField) {
         phoneField.setCustomValidity(
-          "Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX).",
+          "Please enter a valid Philippine phone number in +63 format (+639XXXXXXXXX).",
         );
 
         phoneField.reportValidity();
@@ -473,15 +419,12 @@ function setupPatientFormValidation() {
 
     const emergencyContactValue = emergencyContactField?.value.trim() || "";
 
-    if (
-      emergencyContactValue &&
-      !/^(09\d{9}|\+639\d{9})$/.test(emergencyContactValue)
-    ) {
+    if (emergencyContactValue && !/^\+639\d{9}$/.test(emergencyContactValue)) {
       event.preventDefault();
 
       if (emergencyContactField) {
         emergencyContactField.setCustomValidity(
-          "Please enter a valid Philippine emergency contact number (09XXXXXXXXX or +639XXXXXXXXX).",
+          "Please enter a valid Philippine emergency contact number in +63 format (e.g. +639XXXXXXXXX).",
         );
 
         emergencyContactField.reportValidity();
@@ -530,6 +473,14 @@ function normalizePatient(patient) {
 
   if (!Array.isArray(normalized.appointments)) {
     normalized.appointments = [];
+  }
+
+  if (Array.isArray(normalized.treatments)) {
+    normalized.treatments = normalized.treatments.map((treatment) => ({
+      ...treatment,
+      id: treatment.id || treatment.treatmentId || "",
+      treatmentId: treatment.treatmentId || treatment.id || "",
+    }));
   }
 
   return normalized;
@@ -955,10 +906,10 @@ async function savePatientFromForm(event) {
 
   const phoneValue = phoneField?.value.trim() || "";
 
-  if (!/^(09\d{9}|\+639\d{9})$/.test(phoneValue)) {
+  if (!/^\+639\d{9}$/.test(phoneValue)) {
     if (phoneField) {
       phoneField.setCustomValidity(
-        "Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX).",
+        "Please enter a valid Philippine phone number in +63 format (e.g. +639XXXXXXXXX).",
       );
 
       phoneField.reportValidity();
@@ -981,10 +932,10 @@ async function savePatientFromForm(event) {
 
   const emergencyContactValue = emergencyContactField?.value.trim() || "";
 
-  if (!/^(09\d{9}|\+639\d{9})$/.test(emergencyContactValue)) {
+  if (!/^\+639\d{9}$/.test(emergencyContactValue)) {
     if (emergencyContactField) {
       emergencyContactField.setCustomValidity(
-        "Please enter a valid Philippine emergency contact number (09XXXXXXXXX or +639XXXXXXXXX).",
+        "Please enter a valid Philippine emergency contact number in +63 format (+639XXXXXXXXX).",
       );
 
       emergencyContactField.reportValidity();
@@ -2951,33 +2902,28 @@ function buildTreatmentWorkspace(patient) {
                 Select appointment
               </option>
 
-              ${appointments
-                .map((appointment) => {
-                  const appointmentId =
-                    appointment.id || appointment.appointmentId || "";
+${appointments
+  .map((appointment) => {
+    const appointmentId = getTreatmentAppointmentId(appointment);
 
-                  const date =
-                    appointment.date || appointment.appointment_date || "";
+    const date = appointment.date || appointment.appointment_date || "";
 
-                  const time =
-                    appointment.start || appointment.appointment_time || "";
+    const time = appointment.start || appointment.appointment_time || "";
 
-                  const service =
-                    appointment.type ||
-                    appointment.service_type ||
-                    "Appointment";
+    const service =
+      appointment.type || appointment.service_type || "Appointment";
 
-                  return `
-                    <option value="${escapeHTML(appointmentId)}">
-                      ${escapeHTML(
-                        `${date || "No date"}${
-                          time ? ` · ${formatTime12Hour(time)}` : ""
-                        } · ${service}`,
-                      )}
-                    </option>
-                  `;
-                })
-                .join("")}
+    return `
+      <option value="${escapeHTML(appointmentId)}">
+        ${escapeHTML(
+          `${date || "No date"}${
+            time ? ` · ${formatTime12Hour(time)}` : ""
+          } · ${service}`,
+        )}
+      </option>
+    `;
+  })
+  .join("")}
             </select>
           </div>
 
@@ -3169,28 +3115,44 @@ function buildTreatmentWorkspace(patient) {
                       <div
                         style="display:flex;gap:6px;align-items:center;margin-left:auto;"
                       >
-                        <button
-                          type="button"
-                          class="patient-record-edit-btn"
-                          data-treatment-edit="${escapeHTML(
-                            treatment.id || "",
-                          )}"
-                          title="Edit Treatment"
-                        >
-                          <i class="fa-solid fa-pen"></i>
-                        </button>
+${(() => {
+  const treatmentId =
+    treatment.treatmentId || treatment.treatment_id || treatment.id || "";
 
-                        <button
-                          type="button"
-                          class="patient-record-edit-btn"
-                          data-treatment-delete="${escapeHTML(
-                            treatment.id || "",
-                          )}"
-                          title="Delete Treatment"
-                        >
-                          <i class="fa-solid fa-trash"></i>
-                        </button>
-                      </div>
+  return `
+  <div class="treatment-finance-action">
+
+<button
+  type="button"
+  class="treatment-charge-action"
+  data-treatment-charge="${escapeHTML(treatmentId)}"
+  title="Create Finance Charge"
+>
+  <i class="fa-solid fa-file-invoice-dollar"></i>
+  <span>Create Finance Charge</span>
+</button>
+
+    <button
+      type="button"
+      class="patient-record-edit-btn"
+      data-treatment-edit="${escapeHTML(treatmentId)}"
+      title="Edit Treatment"
+    >
+      <i class="fa-solid fa-pen"></i>
+    </button>
+
+    <button
+      type="button"
+      class="patient-record-edit-btn"
+      data-treatment-delete="${escapeHTML(treatmentId)}"
+      title="Delete Treatment"
+    >
+      <i class="fa-solid fa-trash"></i>
+    </button>
+
+  </div>
+`;
+})()}
                     </div>
                   `;
                 })
@@ -3371,7 +3333,18 @@ function getTreatmentMaterialsForProcedures(procedures) {
 
   return [...mergedMaterials.values()];
 }
+function getTreatmentAppointmentId(appointment) {
+  if (!appointment || typeof appointment !== "object") {
+    return "";
+  }
 
+  return String(
+    appointment.appointmentId ??
+      appointment.appointment_id ??
+      appointment.id ??
+      "",
+  ).trim();
+}
 function bindTreatmentWorkspace(patient) {
   const patientId = String(
     patient.patientId || patient.patient_id || patient.id || "",
@@ -3454,10 +3427,10 @@ function bindTreatmentWorkspace(patient) {
 
   const getInventoryItems = () => {
     try {
-      const parsed = JSON.parse(
-        localStorage.getItem("dentanueva_inventory_items") || "[]",
-      );
-      return Array.isArray(parsed) ? parsed : [];
+      const items = Array.isArray(window["dentanueva_inventory_items"])
+        ? window["dentanueva_inventory_items"]
+        : [];
+      return items;
     } catch (error) {
       return [];
     }
@@ -3618,8 +3591,9 @@ function bindTreatmentWorkspace(patient) {
 
     workspace.hidden = false;
 
-    appointmentInput.value =
-      treatment.appointmentId || treatment.appointment_id || "";
+    appointmentInput.value = getTreatmentAppointmentId({
+      appointmentId: treatment.appointmentId || treatment.appointment_id || "",
+    });
 
     toothInput.value = treatment.toothNumber || treatment.tooth || "";
 
@@ -3643,40 +3617,89 @@ function bindTreatmentWorkspace(patient) {
 
   addButton.addEventListener("click", openAddForm);
 
+  cancelButton.addEventListener("click", () => {
+    closeForm();
+  });
+
   appointmentInput.addEventListener("change", () => {
+    const selectedAppointmentId = String(appointmentInput.value || "").trim();
+
+    if (!selectedAppointmentId) {
+      toothInput.value = "";
+      procedureInput.value = "";
+      noteInput.value = "";
+      renderMaterials([]);
+      closeProcedureSuggestions();
+      return;
+    }
+
     const appointment = patientAppointments.find(
-      (item) =>
-        String(item.id || item.appointmentId || "") === appointmentInput.value,
+      (item) => getTreatmentAppointmentId(item) === selectedAppointmentId,
     );
-    if (!appointment) return;
-    dateInput.value =
-      getTreatmentAppointmentDate(appointment) || dateInput.value;
+
+    if (!appointment) {
+      console.warn(
+        "Treatment appointment could not be resolved:",
+        selectedAppointmentId,
+        patientAppointments,
+      );
+      return;
+    }
+
+    const appointmentDate = getTreatmentAppointmentDate(appointment);
+
+    if (appointmentDate) {
+      dateInput.value = appointmentDate;
+    }
+
     const chartEntries = getDentalChartEntriesForAppointment(
       patient,
       appointment,
     );
+
     if (chartEntries.length) {
+      toothInput.value = [
+        ...new Set(
+          chartEntries
+            .map((entry) => String(entry.toothNumber || "").trim())
+            .filter(Boolean),
+        ),
+      ].join(", ");
+
       const chartProcedures = getUniqueDentalChartProcedures(chartEntries);
 
-      toothInput.value = [
-        ...new Set(chartEntries.map((entry) => entry.toothNumber)),
-      ].join(", ");
       procedureInput.value = chartProcedures.length
         ? chartProcedures.join(" + ")
         : getTreatmentProcedureFromAppointment(appointment);
-      noteInput.value = chartEntries
-        .map((entry) => entry.note)
-        .filter(Boolean)
-        .join("\n");
 
-      loadMaterialsForProcedures(chartProcedures);
+      noteInput.value = [
+        ...new Set(
+          chartEntries
+            .map((entry) => String(entry.note || "").trim())
+            .filter(Boolean),
+        ),
+      ].join("\n");
+
+      if (chartProcedures.length) {
+        loadMaterialsForProcedures(chartProcedures);
+      } else {
+        loadMaterialsForProcedure(procedureInput.value);
+      }
     } else {
-      procedureInput.value = getTreatmentProcedureFromAppointment(appointment);
+      const procedure = getTreatmentProcedureFromAppointment(appointment);
+
+      toothInput.value = "";
+      procedureInput.value = procedure;
       noteInput.value = "";
-      loadMaterialsForProcedure(procedureInput.value);
+
+      loadMaterialsForProcedure(procedure);
     }
+
     closeProcedureSuggestions();
-    showSuggestions(procedureInput.value);
+
+    if (procedureInput.value.trim()) {
+      showSuggestions(procedureInput.value);
+    }
   });
 
   suggestions.addEventListener("click", (event) => {
@@ -3726,6 +3749,60 @@ function bindTreatmentWorkspace(patient) {
   const historyList = document.querySelector(".treatment-history-list");
 
   historyList?.addEventListener("click", (event) => {
+    const chargeButton = event.target.closest("[data-treatment-charge]");
+
+    if (chargeButton) {
+      const treatmentId = chargeButton.dataset.treatmentCharge || "";
+
+      const targetPatient = findPatientById(patientId);
+
+      if (!targetPatient) {
+        return;
+      }
+
+      const treatment = Array.isArray(targetPatient.treatments)
+        ? targetPatient.treatments.find(
+            (item) =>
+              String(item.treatmentId || item.treatment_id || item.id || "") ===
+              String(treatmentId),
+          )
+        : null;
+
+      if (!treatment) {
+        return;
+      }
+
+      const patientIdValue = String(
+        targetPatient.patientId ||
+          targetPatient.patient_id ||
+          targetPatient.id ||
+          "",
+      ).trim();
+
+      const appointmentId = String(
+        treatment.appointmentId || treatment.appointment_id || "",
+      ).trim();
+
+      const treatmentDbId = String(
+        treatment.treatmentId || treatment.treatment_id || treatment.id || "",
+      ).trim();
+
+      const service = String(
+        treatment.procedure || treatment.treatment || "Dental Treatment",
+      ).trim();
+
+      const params = new URLSearchParams({
+        patient_id: patientIdValue,
+        treatment_id: treatmentDbId,
+        appointment_id: appointmentId,
+        service,
+      });
+
+      window.location.href = `../finance/finance.html?${params.toString()}`;
+
+      return;
+    }
+
     const editButton = event.target.closest("[data-treatment-edit]");
 
     if (editButton) {
@@ -3814,7 +3891,7 @@ function bindTreatmentWorkspace(patient) {
     }
   });
 
-  saveButton.addEventListener("click", () => {
+  saveButton.addEventListener("click", async () => {
     const procedure = procedureInput.value.trim();
 
     const tooth = toothInput.value.trim();
@@ -3844,6 +3921,11 @@ function bindTreatmentWorkspace(patient) {
     }
 
     const appointmentId = appointmentInput.value || "";
+    if (!appointmentId) {
+      alert("Please select the appointment/visit for this treatment.");
+      appointmentInput.focus();
+      return;
+    }
 
     const now = new Date().toISOString();
 
@@ -3883,30 +3965,9 @@ function bindTreatmentWorkspace(patient) {
         updatedAt: now,
       };
 
-      const inventoryUsage = inventoryService
-        ? inventoryService.deductForTreatment(
-            newTreatment,
-            targetPatient,
-            newTreatment.consumedMaterials,
-          )
-        : {
-            success: false,
-            message:
-              "Inventory service is unavailable. Treatment was not saved.",
-          };
-
-      if (!inventoryUsage.success) {
-        window.alert(inventoryUsage.message);
-        return;
-      }
-
-      newTreatment.inventoryDeductedAt = inventoryUsage.movements.length
-        ? now
-        : null;
-      newTreatment.inventoryMovementIds = inventoryUsage.movements.map(
-        (movement) => movement.id,
-      );
-      newTreatment.inventoryWarnings = inventoryUsage.unresolvedMaterials || [];
+      newTreatment.inventoryDeductedAt = null;
+      newTreatment.inventoryMovementIds = [];
+      newTreatment.inventoryWarnings = [];
       targetPatient.treatments.push(newTreatment);
     }
 
@@ -3924,7 +3985,19 @@ function bindTreatmentWorkspace(patient) {
 
     currentPatientRecord = targetPatient;
 
-    savePatients();
+    const savedPatient = await syncPatientProfileToDatabase(targetPatient);
+
+    if (!savedPatient) {
+      alert(
+        "The treatment could not be saved to the database. Please try again.",
+      );
+      return;
+    }
+
+    Object.assign(targetPatient, savedPatient);
+
+    currentPatientRecord = targetPatient;
+    patients[patientIndex] = targetPatient;
 
     $("patientPageTreatments").innerHTML =
       buildTreatmentWorkspace(targetPatient);
@@ -4503,7 +4576,19 @@ function openPatientDetails(patient) {
 
   bindClinicalImagesWorkspace(patient);
 
+  console.log("=== DENTANUEVA TREATMENT DEBUG ===");
+  console.log("Patient ID:", patient.patientId || patient.id);
+  console.log("Patient Name:", getFullName(patient));
+  console.log("Patient Object:", patient);
+  console.log("Treatments:", patient.treatments);
+  console.log(
+    "Treatment Count:",
+    Array.isArray(patient.treatments) ? patient.treatments.length : "NOT ARRAY",
+  );
+
   $("patientPageTreatments").innerHTML = buildTreatmentWorkspace(patient);
+
+  console.log("Rendered Treatment HTML:", $("patientPageTreatments").innerHTML);
 
   bindTreatmentWorkspace(patient);
 

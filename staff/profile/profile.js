@@ -59,7 +59,6 @@ async function loadStaffProfile() {
       return null;
     }
     currentStaffData = data.user;
-    localStorage.setItem("currentUser", JSON.stringify(currentStaffData));
     updateSidebarProfile(currentStaffData);
     return currentStaffData;
   } catch (error) {
@@ -69,21 +68,7 @@ async function loadStaffProfile() {
 }
 
 function getCurrentUser() {
-  if (currentStaffData) {
-    return currentStaffData;
-  }
-  try {
-    const currentUser = localStorage.getItem("currentUser");
-
-    if (!currentUser) {
-      return null;
-    }
-
-    return JSON.parse(currentUser);
-  } catch (error) {
-    console.error("Failed to read current user:", error);
-    return null;
-  }
+  return currentStaffData;
 }
 
 function getStaffData() {
@@ -171,7 +156,6 @@ async function saveStaffData(data) {
       return false;
     }
     currentStaffData = result.user;
-    localStorage.setItem("currentUser", JSON.stringify(currentStaffData));
     return true;
   } catch (error) {
     console.error("Failed to save profile:", error);

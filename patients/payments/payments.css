@@ -1692,3 +1692,78 @@ button {
     max-height: calc(100vh - 20px);
   }
 }
+.page-icon {
+  display: none !important;
+}
+.payments-main {
+  padding: 24px 30px 32px;
+}
+.payments-page-header {
+  min-height: 74px;
+  margin-bottom: 16px;
+  padding: 16px 22px;
+}
+.page-title-row {
+  gap: 0;
+}
+.payments-heading h1 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+.payments-heading p {
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+.payment-summary-grid {
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.payment-summary-card {
+  min-height: 108px;
+  padding: 15px 18px;
+  column-gap: 11px;
+}
+.summary-icon {
+  width: 34px;
+  height: 34px;
+  font-size: 12px;
+}
+.payment-summary-card strong {
+  font-size: 23px;
+}
+.payment-history-card {
+  margin-bottom: 16px;
+}
+.payment-history-header {
+  min-height: 72px;
+  padding: 16px 22px;
+}
+.payment-filters {
+  min-height: 48px;
+  padding: 8px 22px;
+}
+.payment-table th {
+  height: 48px;
+}
+.payment-table td {
+  height: 78px;
+}
+@media (max-width: 800px) {
+  .payments-main {
+    padding: 15px;
+  }
+  .payments-page-header {
+    padding: 15px;
+  }
+  .payment-history-header {
+    padding: 14px 16px;
+  }
+  .payment-filters {
+    padding: 8px 16px;
+  }
+}
+@media (max-width: 480px) {
+  .payments-main {
+    padding: 10px;
+  }
+}

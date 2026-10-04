@@ -1054,26 +1054,26 @@ document.addEventListener("DOMContentLoaded", function () {
       paymentProcessWrapper.style.display = "block";
       paymentProcessBox.dataset.method = method;
       paymentProcessBox.innerHTML = `
-        <div class="payment-process-header">
-          <i data-lucide="${method === "GCash" ? "smartphone" : "building-2"}"></i>
-          <span>${escapeHtml(method)} Payment</span>
-        </div>
-        <div class="process-row">
-          <div class="process-field">
-            <label for="onlinePaymentAmount">Amount to Pay</label>
-            <div class="amount-input">
-              <span>₱</span>
-              <input type="number" id="onlinePaymentAmount" min="0.01" max="${amountDue.toFixed(2)}" step="0.01" value="${amount > 0 ? amount.toFixed(2) : ""}" placeholder="0.00" required>
+          <div class="payment-process-header">
+            <i data-lucide="${method === "GCash" ? "smartphone" : "building-2"}"></i>
+            <span>${escapeHtml(method)} Payment</span>
+          </div>
+          <div class="process-row">
+            <div class="process-field">
+              <label for="onlinePaymentAmount">Amount to Pay</label>
+              <div class="amount-input">
+                <span>₱</span>
+                <input type="number" id="onlinePaymentAmount" min="0.01" max="${amountDue.toFixed(2)}" step="0.01" value="${amount > 0 ? amount.toFixed(2) : ""}" placeholder="0.00" required>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="payment-process-status">
-          <div>
-            <i data-lucide="lock"></i>
-            <span>${escapeHtml(method)} payment will continue securely through Xendit. The payment will only be recorded in Finance after Xendit confirms it.</span>
+          <div class="payment-process-status">
+            <div>
+              <i data-lucide="lock"></i>
+              <span>${escapeHtml(method)} payment will continue securely through Xendit. The payment will only be recorded in Finance after Xendit confirms it.</span>
+            </div>
           </div>
-        </div>
-      `;
+        `;
       const onlineAmountInput = document.getElementById("onlinePaymentAmount");
       if (onlineAmountInput) {
         onlineAmountInput.addEventListener("input", function () {
@@ -1155,16 +1155,16 @@ document.addEventListener("DOMContentLoaded", function () {
     updatePaymentCalculation();
     if (paymentProcessBox) {
       paymentProcessBox.innerHTML = `
-        <div class="payment-process-status">
-          <div class="payment-process-status-icon">
-            <i data-lucide="check-circle"></i>
+          <div class="payment-process-status">
+            <div class="payment-process-status-icon">
+              <i data-lucide="check-circle"></i>
+            </div>
+            <div>
+              <strong>Payment Process Confirmed</strong>
+              <span>Cash payment of ${escapeHtml(formatCurrency(finalAmount))} is ready to be saved.</span>
+            </div>
           </div>
-          <div>
-            <strong>Payment Process Confirmed</strong>
-            <span>Cash payment of ${escapeHtml(formatCurrency(finalAmount))} is ready to be saved.</span>
-          </div>
-        </div>
-      `;
+        `;
     }
     if (window.lucide) {
       lucide.createIcons();
@@ -1332,37 +1332,37 @@ document.addEventListener("DOMContentLoaded", function () {
         : "";
     paymentProcessWrapper.style.display = "block";
     paymentProcessBox.innerHTML = `
-    <div class="payment-process-status">
-      <div class="payment-process-status-main">
-        <div class="payment-process-status-icon">
-          <i data-lucide="clock-3"></i>
-        </div>
-        <div>
-          <strong>Waiting for Xendit Confirmation</strong>
-          <span>${escapeHtml(method)} payment is currently ${escapeHtml(status)}.</span>
+      <div class="payment-process-status">
+        <div class="payment-process-status-main">
+          <div class="payment-process-status-icon">
+            <i data-lucide="clock-3"></i>
+          </div>
+          <div>
+            <strong>Waiting for Xendit Confirmation</strong>
+            <span>${escapeHtml(method)} payment is currently ${escapeHtml(status)}.</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="payment-process-instructions">
-      <div class="payment-process-instructions-header">
-        <i data-lucide="${icon}"></i>
-        <span>Complete the ${escapeHtml(method)} payment using the instructions below.</span>
+      <div class="payment-process-instructions">
+        <div class="payment-process-instructions-header">
+          <i data-lucide="${icon}"></i>
+          <span>Complete the ${escapeHtml(method)} payment using the instructions below.</span>
+        </div>
+        ${
+          actionValue
+            ? `<div class="process-static-amount">${escapeHtml(actionValue)}</div>`
+            : `<div class="payment-process-description">Complete the payment using the instructions provided by Xendit.</div>`
+        }
       </div>
       ${
-        actionValue
-          ? `<div class="process-static-amount">${escapeHtml(actionValue)}</div>`
-          : `<div class="payment-process-description">Complete the payment using the instructions provided by Xendit.</div>`
+        paymentId
+          ? `<div class="payment-process-meta">Xendit Payment ID: ${escapeHtml(paymentId)}</div>`
+          : ""
       }
-    </div>
-    ${
-      paymentId
-        ? `<div class="payment-process-meta">Xendit Payment ID: ${escapeHtml(paymentId)}</div>`
-        : ""
-    }
-    <div class="payment-process-meta">
-      Do not save this online payment manually. Finance will record it after Xendit confirmation.
-    </div>
-  `;
+      <div class="payment-process-meta">
+        Do not save this online payment manually. Finance will record it after Xendit confirmation.
+      </div>
+    `;
     if (window.lucide) {
       lucide.createIcons();
     }
@@ -1382,13 +1382,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     paymentProcessWrapper.style.display = "block";
     paymentProcessBox.innerHTML = `
-      <div class="payment-process-status">
-        <div>
-          <i data-lucide="circle-alert"></i>
-          <span>Xendit could not start the ${escapeHtml(paymentMethodInput.value || "online")} payment.</span>
+        <div class="payment-process-status">
+          <div>
+            <i data-lucide="circle-alert"></i>
+            <span>Xendit could not start the ${escapeHtml(paymentMethodInput.value || "online")} payment.</span>
+          </div>
         </div>
-      </div>
-    `;
+      `;
     setOnlinePaymentMode(true);
     if (savePaymentBtn) {
       savePaymentBtn.disabled = false;
@@ -2005,50 +2005,13 @@ document.addEventListener("DOMContentLoaded", function () {
   function printReceipt() {
     const transactionId = detailsModal?.dataset.transactionId || "";
     const transaction = getPaymentDetails(transactionId);
+
     if (!transaction) {
       alert("Unable to find the selected transaction.");
       return;
     }
-    const history = Array.isArray(transaction.paymentHistory)
-      ? transaction.paymentHistory
-          .filter(function (payment) {
-            return Number(payment.amount) > 0;
-          })
-          .slice()
-          .reverse()
-      : [];
-    const totalCharge = Math.max(
-      Number(transaction.total || 0) - Number(transaction.discount || 0),
-      0,
-    );
-    const amountPaid = getTransactionPaid(transaction);
-    const remainingBalance = getTransactionBalance(transaction);
-    const paymentMethod = getLatestPaymentMethod(transaction);
-    const paymentStatus = getStatus(amountPaid, remainingBalance);
-    const patientName = transaction.patientName || transaction.patient || "-";
-    const patientId = transaction.patientId || "-";
-    const historyRows = history.length
-      ? history
-          .map(function (payment, index) {
-            const paymentId =
-              payment.id || `${transaction.id}-${history.length - index}`;
-            return `<tr><td>${escapeHtml(formatDate(payment.date))}</td><td>${escapeHtml(payment.paymentMethod || "-")}</td><td>${escapeHtml(formatCurrency(payment.amount))}</td><td>${escapeHtml(paymentId)}</td></tr>`;
-          })
-          .join("")
-      : `<tr><td colspan="4" class="empty-history">No payment history recorded.</td></tr>`;
-    const receiptWindow = window.open("", "_blank", "width=760,height=900");
-    if (!receiptWindow) {
-      alert("Please allow pop-ups to print the receipt.");
-      return;
-    }
-    const receiptHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Payment Receipt - ${escapeHtml(transaction.id || "-")}</title><style>*{box-sizing:border-box}html,body{margin:0;padding:0;background:#f3f5f4;color:#1d2822;font-family:Poppins,Arial,Helvetica,sans-serif}.print-page{padding:32px}.receipt-page{width:100%;max-width:680px;margin:0 auto;background:#fff;padding:36px 40px;border:1px solid #dfe6e2;box-shadow:0 10px 30px rgba(0,0,0,.05)}.receipt-header{text-align:center}.clinic-name{margin:0;color:#17211b;font-size:23px;font-weight:700;line-height:1.25}.clinic-subtitle{margin:5px 0 0;color:#16803d;font-size:11px;font-weight:600}.receipt-title{margin:18px 0 0;color:#303b34;font-size:13px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase}.divider{margin:22px 0;border:0;border-top:1px solid #dfe5e1}.receipt-info{width:100%;border-collapse:collapse}.receipt-info td{padding:8px 0;border-bottom:1px solid #edf1ee;vertical-align:top;font-size:10.5px}.receipt-info tr:last-child td{border-bottom:0}.receipt-info .label{width:38%;color:#7b8780;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.35px}.receipt-info .value{width:62%;color:#202b25;text-align:right;font-weight:600;word-break:break-word}.status{display:inline-block;padding:4px 9px;border:1px solid #d9e7de;border-radius:20px;background:#f5faf7;color:#16803d;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}.section-title{margin:24px 0 9px;color:#303b34;font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase}.history-wrapper{border:1px solid #e0e7e3;border-radius:10px;overflow:hidden}.history-table{width:100%;border-collapse:collapse}.history-table th{padding:9px 10px;background:#f7faf8;color:#7b8780;font-size:8px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:.45px}.history-table td{padding:10px;border-top:1px solid #edf1ee;color:#303b34;font-size:9.5px}.history-table th:nth-child(3),.history-table td:nth-child(3){text-align:right}.history-table th:nth-child(4),.history-table td:nth-child(4){text-align:right}.empty-history{text-align:center!important;color:#9aa39e!important;padding:15px!important}.summary{margin-top:20px;padding-top:4px}.summary-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;color:#68746d;font-size:10px}.summary-row strong{color:#253129;font-weight:600}.summary-row.total{margin-top:3px;padding-top:11px;border-top:1px solid #dfe5e1;color:#303b34;font-weight:700}.summary-row.paid{margin-top:5px;padding-top:12px;border-top:1px dashed #cfd8d3;color:#303b34;font-weight:700}.summary-row.paid strong{color:#16803d;font-size:13px}.summary-row.balance{padding-top:8px;color:#303b34;font-weight:700}.summary-row.balance strong{font-size:12px}.receipt-footer{margin-top:26px;padding-top:16px;border-top:1px dashed #d4dcd7;text-align:center;color:#7b867f;font-size:8.5px;line-height:1.6}.receipt-footer strong{color:#4c5952;font-weight:600}@media print{html,body{background:#fff}.print-page{padding:0}.receipt-page{max-width:none;border:0;box-shadow:none;padding:20px 24px}.history-wrapper{break-inside:avoid}.summary{break-inside:avoid}.receipt-footer{break-inside:avoid}}@media(max-width:600px){.print-page{padding:10px}.receipt-page{padding:25px 22px}.receipt-info .label{width:42%}.receipt-info .value{width:58%}}</style></head><body><main class="print-page"><article class="receipt-page"><header class="receipt-header"><h1 class="clinic-name">DentaNueva Dental Clinic</h1><p class="clinic-subtitle">Official Payment Receipt</p><p class="receipt-title">Payment Receipt</p></header><hr class="divider"><table class="receipt-info"><tr><td class="label">Transaction ID</td><td class="value">${escapeHtml(transaction.id || "-")}</td></tr><tr><td class="label">Payment ID</td><td class="value">${escapeHtml(history[0]?.id || `${transaction.id || "TXN"}-1`)}</td></tr><tr><td class="label">Patient</td><td class="value">${escapeHtml(patientName)}</td></tr><tr><td class="label">Patient ID</td><td class="value">${escapeHtml(patientId)}</td></tr><tr><td class="label">Service</td><td class="value">${escapeHtml(transaction.service || "-")}</td></tr><tr><td class="label">Date</td><td class="value">${escapeHtml(formatDate(transaction.date))}</td></tr><tr><td class="label">Payment Method</td><td class="value">${escapeHtml(paymentMethod)}</td></tr><tr><td class="label">Status</td><td class="value"><span class="status">${escapeHtml(paymentStatus)}</span></td></tr></table><section><h2 class="section-title">Payment History</h2><div class="history-wrapper"><table class="history-table"><thead><tr><th>Date</th><th>Method</th><th>Amount</th><th>Payment ID</th></tr></thead><tbody>${historyRows}</tbody></table></div></section><section class="summary"><div class="summary-row"><span>Total Charge</span><strong>${formatCurrency(transaction.total || 0)}</strong></div><div class="summary-row"><span>Discount</span><strong>${formatCurrency(transaction.discount || 0)}</strong></div><div class="summary-row total"><span>Net Amount</span><strong>${formatCurrency(totalCharge)}</strong></div><div class="summary-row paid"><span>Amount Paid</span><strong>${formatCurrency(amountPaid)}</strong></div><div class="summary-row balance"><span>Remaining Balance</span><strong>${formatCurrency(remainingBalance)}</strong></div></section><footer class="receipt-footer"><strong>Thank you for your payment.</strong><br>This receipt represents the recorded payment transaction for DentaNueva Dental Clinic.</footer></article></main></body></html>`;
-    receiptWindow.document.open();
-    receiptWindow.document.write(receiptHtml);
-    receiptWindow.document.close();
-    receiptWindow.focus();
-    setTimeout(function () {
-      receiptWindow.print();
-    }, 300);
+
+    window.openPaymentReceipt(transaction);
   }
   tableBody.addEventListener("click", function (event) {
     const viewButton = event.target.closest(".view-details-btn");

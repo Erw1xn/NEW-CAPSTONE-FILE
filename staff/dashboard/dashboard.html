@@ -73,6 +73,9 @@
             class="stat-card"
             title="Total number of registered patients in the system"
           >
+            <div class="stat-icon stat-icon-patients">
+              <i class="fa-solid fa-user-group"></i>
+            </div>
             <div class="stat-body">
               <span class="stat-label">Total Patients</span>
               <span class="stat-value" id="statTotalPatients">0</span>
@@ -82,6 +85,9 @@
             </div>
           </div>
           <div class="stat-card" title="Appointments scheduled for today">
+            <div class="stat-icon stat-icon-appointments">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
             <div class="stat-body">
               <span class="stat-label">Appointments Today</span>
               <span class="stat-value" id="statTodayAppointments">0</span>
@@ -94,6 +100,9 @@
             class="stat-card"
             title="Total payment transactions recorded today"
           >
+            <div class="stat-icon stat-icon-today-revenue">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
             <div class="stat-body">
               <span class="stat-label">Today's Revenue</span>
               <span class="stat-value" id="statTodayRevenue">₱0.00</span>
@@ -106,11 +115,14 @@
             class="stat-card"
             title="Total accumulated revenue generated this month"
           >
+            <div class="stat-icon stat-icon-monthly-revenue">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
             <div class="stat-body">
               <span class="stat-label">Monthly Revenue</span>
               <span class="stat-value" id="statMonthlyRevenue">₱0.00</span>
               <span class="stat-trend up" id="statMonthlyRevenueTrend"
-                >August revenue</span
+                >Monthly collection</span
               >
             </div>
           </div>
@@ -119,16 +131,12 @@
           <div class="stacked-panel-column">
             <section class="panel">
               <div class="panel-header">
-                <div class="panel-heading">
-                  <h3>Today's Appointments</h3>
-                  <p class="panel-subtitle">Today's scheduled patients</p>
-                </div>
-                <a href="../appointment/appointment.html" class="btn-link"
-                  >View All <i class="fa-solid fa-arrow-right"></i
-                ></a>
+                <div class="panel-heading"></div>
               </div>
               <div class="panel-body" id="appointmentsList"></div>
             </section>
+          </div>
+          <div class="stacked-panel-column">
             <section class="panel">
               <div class="panel-header">
                 <div class="panel-heading">
@@ -141,87 +149,11 @@
               </div>
               <div class="panel-body" id="inventoryAlerts"></div>
             </section>
-          </div>
-          <div class="stacked-panel-column">
             <section class="panel">
               <div class="panel-header">
                 <div class="panel-heading">
-                  <h3>Today's Clinic Summary</h3>
-                  <p class="panel-subtitle">
-                    Real-time overview of today's operations
-                  </p>
-                </div>
-              </div>
-              <div class="panel-body">
-                <div class="clinic-summary-grid">
-                  <div
-                    class="summary-item summary-clickable"
-                    data-summary-status="scheduled"
-                    title="Appointments scheduled today that are waiting for check-in"
-                  >
-                    <div class="summary-icon summary-waiting">
-                      <i class="fa-solid fa-calendar-check"></i>
-                    </div>
-                    <div class="summary-content">
-                      <span class="summary-label">Scheduled</span>
-                      <strong id="summaryScheduled" class="summary-value"
-                        >0</strong
-                      >
-                    </div>
-                  </div>
-                  <div
-                    class="summary-item summary-clickable"
-                    data-summary-status="checkedin"
-                    title="Patients who have checked in and are not yet in consultation"
-                  >
-                    <div class="summary-icon summary-checkin">
-                      <i class="fa-solid fa-user-check"></i>
-                    </div>
-                    <div class="summary-content">
-                      <span class="summary-label">Checked In</span>
-                      <strong id="summaryCheckedIn" class="summary-value"
-                        >0</strong
-                      >
-                    </div>
-                  </div>
-                  <div
-                    class="summary-item summary-clickable"
-                    data-summary-status="in consultation"
-                    title="Patients currently in consultation"
-                  >
-                    <div class="summary-icon summary-consultation">
-                      <i class="fa-solid fa-tooth"></i>
-                    </div>
-                    <div class="summary-content">
-                      <span class="summary-label">In Consultation</span>
-                      <strong id="summaryInConsultation" class="summary-value"
-                        >0</strong
-                      >
-                    </div>
-                  </div>
-                  <div
-                    class="summary-item summary-clickable"
-                    data-summary-status="completed"
-                    title="Appointments completed today"
-                  >
-                    <div class="summary-icon summary-completed">
-                      <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <div class="summary-content">
-                      <span class="summary-label">Completed</span>
-                      <strong id="summaryCompleted" class="summary-value"
-                        >0</strong
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <section class="panel">
-              <div class="panel-header">
-                <div class="panel-heading">
-                  <h3>Dentist Availability</h3>
-                  <p class="panel-subtitle">Current dentist status</p>
+                  <h3>Dentist Schedule</h3>
+                  <p class="panel-subtitle">Today's dentist schedule</p>
                 </div>
               </div>
               <div class="panel-body" id="dentistList"></div>

@@ -52,7 +52,7 @@
             </button>
             <button type="button" class="primary-btn" id="recordPaymentButton">
               <i class="fa-solid fa-plus"></i>
-              Record Payment
+              Create Treatment Charge
             </button>
           </div>
         </header>
@@ -261,23 +261,24 @@
         </div>
         <div class="payment-form">
           <div class="form-group">
-            <label>Patient</label>
+            <label for="paymentPatient">Patient</label>
             <input
               type="text"
               id="paymentPatient"
-              placeholder="Select patient"
+              list="paymentPatientList"
+              placeholder="Type or select patient"
               autocomplete="off"
             />
-            <input type="hidden" id="paymentPatientId" />
             <datalist id="paymentPatientList"></datalist>
+            <input type="hidden" id="paymentPatientId" />
           </div>
           <div class="form-group">
-            <label>Service</label>
+            <label for="paymentService">Service</label>
             <input type="text" id="paymentService" placeholder="Service" />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Treatment Price</label>
+              <label for="paymentTotal">Treatment Price</label>
               <div class="currency-input">
                 <span class="currency-symbol">₱</span>
                 <input
@@ -290,7 +291,7 @@
               </div>
             </div>
             <div class="form-group">
-              <label>Discount</label>
+              <label for="paymentDiscount">Discount</label>
               <div class="currency-input">
                 <span class="currency-symbol">₱</span>
                 <input
@@ -303,6 +304,7 @@
               </div>
             </div>
           </div>
+          <input type="hidden" id="paymentDate" />
         </div>
         <div class="modal-actions">
           <button type="button" class="secondary-btn" id="cancelPaymentButton">
@@ -402,6 +404,7 @@
     </div>
     <script src="../navigationbar/sidebar.js"></script>
     <script src="../profile/profile.js"></script>
+    <script src="../../shared/receipt/receipt.js"></script>
     <script src="finance.js"></script>
   </body>
 </html>

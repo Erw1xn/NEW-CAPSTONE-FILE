@@ -1,4 +1,3 @@
-const DOCTORS_STORAGE_KEY = "dentanueva_doctors";
 const START_HOUR = 10;
 const END_HOUR = 20;
 const SLOT_MIN = 30;
@@ -20,6 +19,8 @@ let statusActionType = null;
 let toastTimer = null;
 let currentDoctorDentistId = null;
 let currentDoctor = null;
+let doctorRegistry = [];
+let currentUserFromDatabase = null;
 document.addEventListener("DOMContentLoaded", async () => {
   await initializeCurrentDoctor();
   initializeDate();
@@ -38,54 +39,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }, 1000);
 });
-function getCurrentUser() {
-  const storedUser = sessionStorage.getItem("currentUser");
-  if (!storedUser) {
-    return null;
-  }
+async function hydrateCurrentUser() {
   try {
-    const user = JSON.parse(storedUser);
-    if (user && typeof user === "object") {
-      return user;
+    const response = await fetch("../profile/profile.php", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.user) {
+      throw new Error(result.message || "Doctor profile unavailable.");
     }
-    return null;
+    currentUserFromDatabase = result.user;
   } catch (error) {
-    console.error("Unable to read current user:", error);
-    return null;
+    console.error("Unable to load the authenticated doctor:", error);
+    currentUserFromDatabase = null;
   }
 }
+function getCurrentUser() {
+  return currentUserFromDatabase;
+}
 function getStoredDoctors() {
-  try {
-    const stored = localStorage.getItem(DOCTORS_STORAGE_KEY);
-    if (!stored) {
-      return [];
-    }
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed.filter((user) => {
-      if (!user || typeof user !== "object") {
-        return false;
-      }
-      const role = String(user.role || user.userRole || user.accountType || "")
-        .trim()
-        .toLowerCase();
-      const doctorId = String(
-        user.doctorId ||
-          user.doctor_id ||
-          user.doctorID ||
-          user.dentistId ||
-          user.dentist_id ||
-          user.dentistID ||
-          "",
-      ).trim();
-      return role === "doctor" || Boolean(doctorId);
-    });
-  } catch (error) {
-    console.error("Unable to load doctor accounts:", error);
-    return [];
-  }
+  return doctorRegistry;
 }
 function getDoctorIdFromUser(user) {
   if (!user || typeof user !== "object") {
@@ -205,19 +179,7 @@ function registerCurrentDoctor() {
       currentUser.department ||
       "Dental Care",
   ).trim();
-  let doctors = [];
-  try {
-    const stored = localStorage.getItem(DOCTORS_STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        doctors = parsed;
-      }
-    }
-  } catch (error) {
-    console.error("Unable to read doctor registry:", error);
-    doctors = [];
-  }
+  const doctors = getStoredDoctors();
   const doctorRecord = {
     ...currentUser,
     doctorId:
@@ -246,7 +208,7 @@ function registerCurrentDoctor() {
       ...doctorRecord,
     };
   }
-  localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(doctors));
+  doctorRegistry = doctors;
 }
 function getCurrentDoctorDentistId() {
   const currentUser = getCurrentUser();
@@ -276,15 +238,16 @@ async function refreshDoctorRegistryFromDatabase() {
     if (!response.ok || !result.success || !Array.isArray(result.data)) {
       throw new Error(result.message || "Doctors unavailable.");
     }
-    localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(result.data));
+    doctorRegistry = result.data;
     return result.data;
   } catch (error) {
     console.warn("Unable to reload doctor registry from database.", error);
-    return getStoredDoctors();
+    return doctorRegistry;
   }
 }
 
 async function initializeCurrentDoctor() {
+  await hydrateCurrentUser();
   const currentUser = getCurrentUser();
   const doctors = await refreshDoctorRegistryFromDatabase();
   registerCurrentDoctor();
@@ -406,17 +369,23 @@ async function hydrateAppointmentsFromDatabase() {
     console.error("Appointment database API is unavailable.");
     return;
   }
+
   try {
-    const remoteAppointments =
-      await window.DentaNuevaAppointmentDatabase.load();
+    const remoteAppointments = await window.DentaNuevaAppointmentDatabase.load({
+      scope: "doctor_appointments",
+    });
+
     appointments = Array.isArray(remoteAppointments)
       ? remoteAppointments.map(normalizeAppointment)
       : [];
+
     renderCalendar();
     renderTimeline();
     renderWaitingQueue();
   } catch (error) {
-    console.error("Unable to load appointments from database:", error);
+    console.error("Unable to load doctor appointments from database:", error);
+
+    appointments = [];
   }
 }
 async function saveAppointmentsToDatabase() {
@@ -625,64 +594,174 @@ function getStatusLabel(status) {
       return "Scheduled";
   }
 }
-function filteredAppts() {
-  const doctorDentistId = String(currentDoctorDentistId || "")
+function appointmentBelongsToCurrentDoctor(appt) {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || !appt) {
+    return false;
+  }
+
+  const currentIdentities = [
+    currentUser.user_id,
+    currentUser.userId,
+    currentUser.id,
+    currentUser.doctor_id,
+    currentUser.doctorId,
+    currentUser.dentist_id,
+    currentUser.dentistId,
+  ]
+    .filter(
+      (value) =>
+        value !== undefined && value !== null && String(value).trim() !== "",
+    )
+    .map((value) => String(value).trim().toLowerCase());
+
+  const appointmentIdentities = [
+    appt.doctor_id,
+    appt.doctorId,
+    appt.dentist_id,
+    appt.dentistId,
+    appt.dentist,
+  ]
+    .filter(
+      (value) =>
+        value !== undefined && value !== null && String(value).trim() !== "",
+    )
+    .map((value) => String(value).trim().toLowerCase());
+
+  /*
+   * Direct identity match.
+   */
+  if (
+    currentIdentities.some((identity) =>
+      appointmentIdentities.includes(identity),
+    )
+  ) {
+    return true;
+  }
+
+  /*
+   * DOC-0001 <-> user_id 1 compatibility.
+   */
+  const currentDoctorId = String(
+    currentUser.doctor_id ||
+      currentUser.doctorId ||
+      currentUser.dentist_id ||
+      currentUser.dentistId ||
+      "",
+  )
     .trim()
     .toLowerCase();
-  if (!doctorDentistId) {
+
+  if (currentDoctorId) {
+    const numericDoctorMatch = currentDoctorId.match(/^doc-(\d+)$/i);
+
+    if (numericDoctorMatch) {
+      const numericId = numericDoctorMatch[1];
+
+      if (appointmentIdentities.includes(numericId)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+function filteredAppts() {
+  if (!getCurrentUser()) {
     return [];
   }
+
   const selectedDateKey = dateToKey(selectedDate);
+
   const searchInput = document.getElementById("searchInput");
+
   const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
   let filtered = appointments.filter((appt) => {
-    const appointmentDoctorId = String(
-      appt.dentist || appt.dentistId || appt.dentist_id || "",
-    )
-      .trim()
-      .toLowerCase();
-    if (appointmentDoctorId !== doctorDentistId) return false;
-    if (appt.status !== APPOINTMENT_STATUS.CANCELLED) return true;
+    /*
+     * Only show appointments assigned
+     * to the currently logged-in doctor.
+     */
+    if (!appointmentBelongsToCurrentDoctor(appt)) {
+      return false;
+    }
+
+    /*
+     * Cancelled appointments are hidden when
+     * a replacement appointment exists.
+     */
+    if (appt.status !== APPOINTMENT_STATUS.CANCELLED) {
+      return true;
+    }
+
     return !appointments.some((replacement) => {
-      if (replacement.id === appt.id) return false;
-      if (replacement.date !== appt.date) return false;
-      if (replacement.status === APPOINTMENT_STATUS.CANCELLED) return false;
-      const replacementDoctorId = String(
-        replacement.dentist ||
-          replacement.dentistId ||
-          replacement.dentist_id ||
-          "",
-      )
-        .trim()
-        .toLowerCase();
-      if (replacementDoctorId !== doctorDentistId) return false;
+      if (replacement.id === appt.id) {
+        return false;
+      }
+
+      if (replacement.date !== appt.date) {
+        return false;
+      }
+
+      if (replacement.status === APPOINTMENT_STATUS.CANCELLED) {
+        return false;
+      }
+
+      /*
+       * Replacement must also belong
+       * to the currently logged-in doctor.
+       */
+      if (!appointmentBelongsToCurrentDoctor(replacement)) {
+        return false;
+      }
+
       const cancelledStart = timeToMinutes(appt.start);
+
       const replacementStart = timeToMinutes(replacement.start);
+
       const cancelledEnd = cancelledStart + Number(appt.duration || 30);
+
       const replacementEnd =
         replacementStart + Number(replacement.duration || 30);
+
       return replacementStart < cancelledEnd && replacementEnd > cancelledStart;
     });
   });
+
+  /*
+   * Only appointments for the selected date.
+   */
   filtered = filtered.filter((appt) => {
     return appt.date === selectedDateKey;
   });
+
+  /*
+   * Patient/service search.
+   */
   if (searchTerm) {
     filtered = filtered.filter((appt) => {
       const patientName = String(appt.patient || "")
         .trim()
         .toLowerCase();
+
       const serviceType = String(appt.type || "")
         .trim()
         .toLowerCase();
+
       return (
         patientName.includes(searchTerm) || serviceType.includes(searchTerm)
       );
     });
   }
+
+  /*
+   * Sort by appointment time.
+   */
   filtered.sort((a, b) => {
     return timeToMinutes(a.start) - timeToMinutes(b.start);
   });
+
   return filtered;
 }
 function renderAll() {
@@ -993,18 +1072,10 @@ function openViewModal(id) {
     return;
   }
   selectedAppointmentId = appt.id;
-  sessionStorage.setItem(
-    "doctorSelectedPatientId",
-    String(appt.patientId || appt.patient_id || ""),
-  );
   document.getElementById("modalTitle").textContent = "Appointment Details";
   document.getElementById("modalSubtitle").textContent =
     `${formatDateLong(appt.date)} · ${fmtTime(appt.start)} – ${fmtTime(getAppointmentEndTime(appt))}`;
   document.getElementById("f_patient").value = appt.patient;
-  sessionStorage.setItem(
-    "doctorSelectedPatientId",
-    String(appt.patientId || appt.patient_id || ""),
-  );
   const patientRecordButton = document.getElementById("viewPatientRecordBtn");
   if (patientRecordButton) {
     patientRecordButton.onclick = () => {
@@ -1013,8 +1084,7 @@ function openViewModal(id) {
         console.warn("This appointment has no patient ID.", appt);
         return;
       }
-      sessionStorage.setItem("doctorSelectedPatientId", String(patientId));
-      window.location.href = "../patient/patient.html";
+      window.location.href = `../patient/patient.html?patient_id=${encodeURIComponent(patientId)}`;
     };
   }
   document.getElementById("f_date").value = appt.date;

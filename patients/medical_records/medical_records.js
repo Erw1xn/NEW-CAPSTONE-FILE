@@ -1,31 +1,74 @@
 "use strict";
-
-const CURRENT_USER_KEY = "currentUser";
 const PATIENT_RECORD_API = "../../api/patient_records.php";
 const APPOINTMENTS_API = "../../api/appointments.php";
-
+const CLINICAL_IMAGES_API = "../../api/clinical_images/get.php";
 let currentUser = null;
 let currentPatient = null;
-
 let currentStep = 1;
 const TOTAL_STEPS = 5;
-
 const $ = (id) => document.getElementById(id);
-
 document.addEventListener("DOMContentLoaded", async () => {
   await initializeMedicalRecords();
 });
-
 async function initializeMedicalRecords() {
-  currentUser = getCurrentUser();
+  currentUser = await hydrateCurrentUser();
   loadOrCreatePatientRecord();
   await hydratePatientRecordFromDatabase();
   await hydratePatientAppointmentsFromDatabase();
+  await hydratePatientClinicalImagesFromDatabase();
   bindEvents();
   bindClinicalImageViewer();
   populatePatientProfile();
   updatePageState();
   openPatientRecordTab(null);
+}
+async function hydratePatientClinicalImagesFromDatabase() {
+  if (!currentPatient) {
+    return;
+  }
+  const patientId = String(
+    currentPatient.patientId ||
+      currentPatient.patient_id ||
+      currentPatient.id ||
+      "",
+  ).trim();
+  if (!patientId) {
+    currentPatient.clinicalImages = [];
+    return;
+  }
+  try {
+    const response = await fetch(
+      `${CLINICAL_IMAGES_API}?patient_id=${encodeURIComponent(patientId)}`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+      },
+    );
+    const result = await response.json();
+    if (!response.ok || !result.success || !Array.isArray(result.data)) {
+      throw new Error(result.message || "Clinical images unavailable.");
+    }
+    currentPatient.clinicalImages = result.data;
+  } catch (error) {
+    console.error("Unable to load clinical images from database.", error);
+    currentPatient.clinicalImages = [];
+  }
+}
+async function hydrateCurrentUser() {
+  try {
+    const response = await fetch(PATIENT_RECORD_API, {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) {
+      throw new Error(result.message || "Patient account unavailable.");
+    }
+    return result.data;
+  } catch (error) {
+    console.error("Unable to load authenticated patient:", error);
+    return null;
+  }
 }
 
 async function hydratePatientAppointmentsFromDatabase() {
@@ -71,8 +114,6 @@ async function hydratePatientRecordFromDatabase() {
       patients[index] = { ...patients[index], ...currentPatient };
     }
     savePatients(patients);
-    currentUser.patientId = currentPatient.patientId;
-    sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
   } catch (error) {
     console.warn(
       "Database patient record unavailable; using local record.",
@@ -176,20 +217,7 @@ function openClinicalImageViewer(title, beforeImage, afterImage) {
 }
 
 function getCurrentUser() {
-  try {
-    const stored = sessionStorage.getItem(CURRENT_USER_KEY);
-
-    if (!stored) {
-      return null;
-    }
-
-    const parsed = JSON.parse(stored);
-
-    return parsed && typeof parsed === "object" ? parsed : null;
-  } catch (error) {
-    console.error("Unable to read currentUser:", error);
-    return null;
-  }
+  return currentUser;
 }
 
 function getPatients() {
@@ -266,7 +294,6 @@ function loadOrCreatePatientRecord() {
     const patientId = currentPatient.patientId || currentPatient.id;
     if (patientId && currentUser.patientId !== patientId) {
       currentUser.patientId = patientId;
-      sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
     }
     return;
   }
@@ -309,7 +336,6 @@ function loadOrCreatePatientRecord() {
   void savePatientRecordToDatabase();
   currentPatient = newPatient;
   currentUser.patientId = patientId;
-  sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
 }
 
 function normalizePatient(patient) {
@@ -608,7 +634,7 @@ function saveProfileEdit(event) {
   const phone = $("editPhone").value.trim();
   const emergencyContact = $("editEmergencyContact").value.trim();
 
-  if (!/^(09\d{9}|\+639\d{9})$/.test(phone)) {
+  if (!/^\+639\d{9}$/.test(phone)) {
     $("editPhone").setCustomValidity(
       "Please enter a valid Philippine phone number.",
     );
@@ -617,7 +643,7 @@ function saveProfileEdit(event) {
     return;
   }
 
-  if (!/^(09\d{9}|\+639\d{9})$/.test(emergencyContact)) {
+  if (!/^\+639\d{9}$/.test(emergencyContact)) {
     $("editEmergencyContact").setCustomValidity(
       "Please enter a valid Philippine emergency contact number.",
     );
@@ -685,7 +711,6 @@ function saveProfileEdit(event) {
     currentUser.address = currentPatient.address;
     currentUser.emergencyName = currentPatient.emergencyName;
     currentUser.emergencyContact = currentPatient.emergencyContact;
-    sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
   }
 
   closeProfileEditModal();
@@ -2055,7 +2080,7 @@ function validateCurrentStep() {
 
     if (!isValidPhilippinePhone($("phone").value)) {
       $("phone").setCustomValidity(
-        "Please enter a valid Philippine phone number.",
+        "Please enter a valid Philippine mobile number in +639XXXXXXXXX format. Example: +639123456789.",
       );
 
       $("phone").reportValidity();
@@ -2067,7 +2092,7 @@ function validateCurrentStep() {
 
     if (!isValidPhilippinePhone($("emergencyContact").value)) {
       $("emergencyContact").setCustomValidity(
-        "Please enter a valid Philippine emergency contact number.",
+        "Please enter a valid Philippine emergency contact number in +639XXXXXXXXX format. Example: +639123456789.",
       );
 
       $("emergencyContact").reportValidity();
@@ -2276,7 +2301,6 @@ async function saveMedicalRecord(event) {
     currentUser.address = currentPatient.address;
     currentUser.emergencyName = currentPatient.emergencyName;
     currentUser.emergencyContact = currentPatient.emergencyContact;
-    sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
   }
 
   closeMedicalModal();
@@ -2370,11 +2394,13 @@ function updateOtherFieldState() {
 }
 
 function sanitizePhone(event) {
-  event.target.value = event.target.value.replace(/\D/g, "").slice(0, 11);
+  let value = event.target.value.replace(/[^\d+]/g, "");
+  value = value.replace(/(?!^)\+/g, "");
+  event.target.value = value.slice(0, 13);
 }
 
 function isValidPhilippinePhone(value) {
-  return /^09\d{9}$/.test(String(value || "").trim());
+  return /^\+639\d{9}$/.test(String(value || "").trim());
 }
 
 function buildReview() {

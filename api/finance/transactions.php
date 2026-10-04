@@ -1,15 +1,19 @@
 <?php
-
 declare(strict_types=1);
-
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-
 require_once __DIR__ . '/../../php/db_connect.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+if (empty($_SESSION['logged_in']) || empty($_SESSION['user_id'])) {
+    jsonResponse(false, 'Authentication required.', [], 401);
+}
+
+$role = strtolower(trim((string)($_SESSION['role'] ?? '')));
+$userId = (int)$_SESSION['user_id'];
 
 function jsonResponse(
     bool $success,
@@ -18,13 +22,11 @@ function jsonResponse(
     int $status = 200
 ): void {
     http_response_code($status);
-
     echo json_encode([
         'success' => $success,
         'message' => $message,
         'data' => $data
     ]);
-
     exit;
 }
 
@@ -167,7 +169,6 @@ function getPaymentHistoryByTransactionIds(
     }
 
     $result = $stmt->get_result();
-
     $paymentsByTransaction = [];
 
     while ($payment = $result->fetch_assoc()) {
@@ -190,6 +191,39 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'GET') {
     $patientId = trim((string)($_GET['patient_id'] ?? ''));
     $transactionUid = trim((string)($_GET['transaction_uid'] ?? ''));
+
+    if ($role === 'user') {
+        $ownPatientStmt = $conn->prepare(
+            'SELECT patient_id FROM tbl_patients WHERE user_id = ? AND status = "active" LIMIT 1'
+        );
+
+        if (!$ownPatientStmt) {
+            jsonResponse(false, 'Unable to verify patient access.', [], 500);
+        }
+
+        $ownPatientStmt->bind_param('i', $userId);
+        $ownPatientStmt->execute();
+
+        $ownPatient = $ownPatientStmt->get_result()->fetch_assoc();
+        $ownPatientStmt->close();
+
+        if (!$ownPatient) {
+            jsonResponse(false, 'Patient record not found.', [], 404);
+        }
+
+        $ownPatientId = (string)$ownPatient['patient_id'];
+
+        if ($patientId !== '' && $patientId !== $ownPatientId) {
+            jsonResponse(
+                false,
+                'You may access only your own finance transactions.',
+                [],
+                403
+            );
+        }
+
+        $patientId = $ownPatientId;
+    }
 
     $selectFields = getTransactionSelectFields();
 
@@ -229,7 +263,6 @@ if ($method === 'GET') {
 
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-
         $stmt->close();
 
         if (!$row) {
@@ -238,6 +271,15 @@ if ($method === 'GET') {
                 'Finance transaction not found.',
                 [],
                 404
+            );
+        }
+
+        if ($role === 'user' && (string)$row['patient_id'] !== $patientId) {
+            jsonResponse(
+                false,
+                'You may access only your own finance transactions.',
+                [],
+                403
             );
         }
 
@@ -333,7 +375,6 @@ if ($method === 'GET') {
         $transactionId = (int)$row['transaction_id'];
 
         $transactionIds[] = $transactionId;
-
         $records[] = $row;
     }
 
@@ -364,6 +405,15 @@ if ($method === 'GET') {
 }
 
 if ($method === 'POST') {
+    if ($role !== 'staff' && $role !== 'doctor') {
+        jsonResponse(
+            false,
+            'Only staff or doctors may modify finance records.',
+            [],
+            403
+        );
+    }
+
     $rawInput = file_get_contents('php://input');
 
     $input = json_decode(
@@ -380,10 +430,16 @@ if ($method === 'POST') {
         );
     }
 
-    /*
-     * RECORD PAYMENT
-     */
     if (($input['action'] ?? '') === 'record_payment') {
+        if ($role !== 'staff' && $role !== 'doctor') {
+            jsonResponse(
+                false,
+                'Only staff or doctors may record payments manually.',
+                [],
+                403
+            );
+        }
+
         $transactionUid = trim(
             (string)($input['transactionUid'] ?? '')
         );
@@ -440,10 +496,6 @@ if ($method === 'POST') {
         $conn->begin_transaction();
 
         try {
-            /*
-             * Lock the transaction row so two payments
-             * cannot update the same balance incorrectly.
-             */
             $transactionStmt = $conn->prepare(
                 "
                 SELECT
@@ -540,10 +592,11 @@ if ($method === 'POST') {
                     ? (int)$_SESSION['user_id']
                     : null;
 
-            /*
-             * Store the payment using the exact DB enum values:
-             * cash, gcash, bank_transfer
-             */
+            $paymentSource =
+                $role === 'doctor'
+                    ? 'doctor'
+                    : 'staff';
+
             $paymentStmt = $conn->prepare(
                 "
                 INSERT INTO tbl_finance_payments
@@ -565,7 +618,7 @@ if ($method === 'POST') {
                     ?,
                     ?,
                     ?,
-                    'staff',
+                    ?,
                     'paid',
                     ?,
                     ?
@@ -580,19 +633,19 @@ if ($method === 'POST') {
             }
 
             $paymentStmt->bind_param(
-                'sisdssi',
+                'sisdsssi',
                 $paymentUid,
                 $transactionId,
                 $patientId,
                 $amount,
                 $paymentMethod,
+                $paymentSource,
                 $paymentDateTime,
                 $createdBy
             );
 
             if (!$paymentStmt->execute()) {
                 $paymentError = $paymentStmt->error;
-
                 $paymentStmt->close();
 
                 throw new RuntimeException(
@@ -605,9 +658,6 @@ if ($method === 'POST') {
 
             $paymentStmt->close();
 
-            /*
-             * Update transaction totals.
-             */
             $paidAmount =
                 $currentPaid + $amount;
 
@@ -649,7 +699,6 @@ if ($method === 'POST') {
 
             if (!$updateStmt->execute()) {
                 $updateError = $updateStmt->error;
-
                 $updateStmt->close();
 
                 throw new RuntimeException(
@@ -677,7 +726,7 @@ if ($method === 'POST') {
                     'patient_id' => $patientId,
                     'amount' => $amount,
                     'payment_method' => $paymentMethod,
-                    'payment_source' => 'staff',
+                    'payment_source' => $paymentSource,
                     'status' => 'paid',
                     'paid_at' => $paymentDateTime,
                     'paid_amount' => $paidAmount,
@@ -706,9 +755,6 @@ if ($method === 'POST') {
         }
     }
 
-    /*
-     * CREATE TREATMENT CHARGE
-     */
     $patientId = trim(
         (string)(
             $input['patientId'] ??
@@ -801,9 +847,6 @@ if ($method === 'POST') {
         );
     }
 
-    /*
-     * Validate patient.
-     */
     $patientStmt = $conn->prepare(
         "
         SELECT
@@ -868,18 +911,13 @@ if ($method === 'POST') {
         )
     );
 
-    /*
-     * Create initial transaction.
-     */
     $netAmount = max(
         $totalAmount - $discountAmount,
         0
     );
 
     $paidAmount = 0;
-
     $balanceAmount = $netAmount;
-
     $status = 'unpaid';
 
     $transactionUid =
@@ -956,7 +994,6 @@ if ($method === 'POST') {
 
     if (!$stmt->execute()) {
         $error = $stmt->error;
-
         $stmt->close();
 
         jsonResponse(

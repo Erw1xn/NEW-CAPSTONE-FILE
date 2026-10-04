@@ -1,0 +1,374 @@
+[
+  {
+    "date": "2026-05-02",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-05-03",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-05-05",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-05-07",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-05-10",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-05-13",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-05-15",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-05-18",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-05-20",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-05-23",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-05-27",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-05-29",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-06-02",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-06-05",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-06-07",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-06-10",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-06-12",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-06-15",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-06-18",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-06-21",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-06-25",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-06-28",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-07-01",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-07-04",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-07-06",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-07-10",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-07-12",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-07-15",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-07-18",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-07-22",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-07-25",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-07-28",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-08-02",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-08-05",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-08-08",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-08-11",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-08-15",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-08-18",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-08-21",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-08-24",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-08-27",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-08-30",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-09-02",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-09-05",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-09-08",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-09-11",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-09-15",
+    "itemName": "Gloves",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-09-18",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-09-19",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-09-20",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-09-21",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-09-22",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-09-23",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-09-24",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-09-25",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-09-26",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 4
+  },
+  {
+    "date": "2026-09-27",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-09-28",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-09-29",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 5
+  },
+  {
+    "date": "2026-09-30",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 3
+  },
+  {
+    "date": "2026-10-01",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 2
+  },
+  {
+    "date": "2026-10-02",
+    "itemName": "Cotton Rolls",
+    "type": "stock-out",
+    "quantity": 4
+  }
+]

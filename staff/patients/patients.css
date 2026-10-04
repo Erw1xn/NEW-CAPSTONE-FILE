@@ -25,39 +25,32 @@
   --font-body: "Inter", sans-serif;
   --font-heading: "Poppins", sans-serif;
 }
-
 * {
   box-sizing: border-box;
 }
-
 html,
 body {
   margin: 0;
   min-height: 100%;
 }
-
 html {
   scroll-behavior: smooth;
 }
-
 body {
   background: var(--page-bg);
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
-
 button,
 input,
 select,
 textarea {
   font: inherit;
 }
-
 button {
   cursor: pointer;
 }
-
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -65,32 +58,26 @@ textarea:focus-visible {
   outline: 3px solid rgba(22, 128, 61, 0.13);
   outline-offset: 1px;
 }
-
 .patients-layout {
   min-height: 100vh;
   display: flex;
 }
-
 #sidebar-container {
   flex: 0 0 auto;
 }
-
 .patients-main {
   flex: 1;
   min-width: 0;
   padding: 24px 28px 36px;
 }
-
 .patients-main.patient-record-open {
   padding-top: 0;
 }
-
 .patients-content {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
 }
-
 .patient-page-header {
   width: 100%;
   min-height: 70px;
@@ -108,12 +95,10 @@ textarea:focus-visible {
 .patient-page-header[hidden] {
   display: none !important;
 }
-
 .patient-page-title {
   min-width: 0;
   flex: 1 1 auto;
 }
-
 .patient-page-title h1 {
   margin: 0 0 4px;
   color: #17231b;
@@ -123,7 +108,6 @@ textarea:focus-visible {
   font-weight: 700;
   letter-spacing: -0.025em;
 }
-
 .patient-page-title p {
   margin: 0;
   color: var(--text-soft);
@@ -131,7 +115,6 @@ textarea:focus-visible {
   line-height: 1.45;
   font-weight: 500;
 }
-
 .patient-page-header .btn-add-patient {
   flex: 0 0 auto;
   height: 36px;
@@ -139,7 +122,6 @@ textarea:focus-visible {
   border-radius: 8px;
   font-size: 9px;
 }
-
 .patient-list-card {
   width: 100%;
   background: var(--white);
@@ -148,7 +130,6 @@ textarea:focus-visible {
   overflow: hidden;
   box-shadow: var(--shadow);
 }
-
 .patient-card-header {
   min-height: 78px;
   padding: 16px 20px;
@@ -159,14 +140,12 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--border);
   background: #fff;
 }
-
 .patient-card-title {
   min-width: 0;
   flex: 0 0 0;
   width: 0;
   overflow: hidden;
 }
-
 .patient-card-title h2 {
   margin: 0 0 3px;
   color: var(--text);
@@ -176,7 +155,6 @@ textarea:focus-visible {
   font-weight: 700;
   letter-spacing: -0.02em;
 }
-
 .patient-card-title p {
   margin: 0;
   color: var(--text-soft);
@@ -184,7 +162,6 @@ textarea:focus-visible {
   line-height: 1.45;
   font-weight: 500;
 }
-
 .patient-card-header-right {
   flex: 1 1 auto;
   width: 100%;
@@ -194,14 +171,12 @@ textarea:focus-visible {
   gap: 7px;
   min-width: 0;
 }
-
 .patient-search {
   position: relative;
   width: 205px;
   flex: 0 0 205px;
   margin-right: auto;
 }
-
 .patient-search > i {
   position: absolute;
   left: 11px;
@@ -211,7 +186,6 @@ textarea:focus-visible {
   font-size: 9px;
   pointer-events: none;
 }
-
 .patient-search input {
   width: 100%;
   height: 34px;
@@ -225,17 +199,14 @@ textarea:focus-visible {
     border-color 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .patient-search input::placeholder {
   color: #929d96;
 }
-
 .patient-search input:focus {
   outline: none;
   border-color: rgba(22, 128, 61, 0.45);
   box-shadow: 0 0 0 3px rgba(22, 128, 61, 0.065);
 }
-
 .patient-count-label {
   display: inline-flex;
   align-items: center;
@@ -248,7 +219,6 @@ textarea:focus-visible {
   font-size: 9px;
   font-weight: 700;
 }
-
 .patient-select {
   width: 106px;
   height: 34px;
@@ -264,13 +234,11 @@ textarea:focus-visible {
     border-color 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .patient-select:focus {
   outline: none;
   border-color: rgba(22, 128, 61, 0.45);
   box-shadow: 0 0 0 3px rgba(22, 128, 61, 0.065);
 }
-
 .btn-add-patient {
   height: 30px;
   padding: 0 9px;
@@ -291,34 +259,28 @@ textarea:focus-visible {
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .btn-add-patient i {
   font-size: 9px;
 }
-
 .btn-add-patient:hover {
   background: var(--green-dark);
   transform: translateY(-1px);
   box-shadow: 0 5px 13px rgba(22, 128, 61, 0.16);
 }
-
 .btn-add-patient:active {
   transform: translateY(0);
 }
-
 .patient-table-wrapper {
   position: relative;
   width: 100%;
   overflow: visible;
 }
-
 .patient-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
 }
-
 .patient-table th {
   height: 40px;
   padding: 0 17px;
@@ -331,7 +293,6 @@ textarea:focus-visible {
   text-align: left;
   white-space: nowrap;
 }
-
 .patient-table td {
   height: 70px;
   padding: 9px 17px;
@@ -339,20 +300,16 @@ textarea:focus-visible {
   vertical-align: middle;
   font-size: 10.5px;
 }
-
 .patient-table tbody tr:last-child td {
   border-bottom: 0;
 }
-
 .patient-table tbody tr {
   background: #fff;
   transition: background 0.15s ease;
 }
-
 .patient-table tbody tr:hover {
   background: #fbfdfc;
 }
-
 .patient-table tbody tr.patient-row-open {
   cursor: pointer;
   transition:
@@ -376,39 +333,31 @@ textarea:focus-visible {
 .patient-table tbody tr.patient-row-open textarea {
   cursor: pointer;
 }
-
 .patient-column {
   width: 24%;
 }
-
 .contact-column {
   width: 17%;
 }
-
 .age-column {
   width: 13%;
 }
-
 .appointment-column {
   width: 19%;
 }
-
 .medical-form-column {
   width: 18%;
 }
-
 .action-column {
   width: 9%;
   text-align: center !important;
 }
-
 .patient-cell {
   display: flex;
   align-items: center;
   gap: 9px;
   min-width: 0;
 }
-
 .patient-avatar {
   width: 34px;
   height: 34px;
@@ -422,14 +371,12 @@ textarea:focus-visible {
   font-size: 8.5px;
   font-weight: 800;
 }
-
 .patient-main-info {
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-
 .patient-name {
   margin: 0 0 2px;
   color: #19251e;
@@ -441,7 +388,6 @@ textarea:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .patient-id {
   display: block;
   color: var(--green);
@@ -449,11 +395,9 @@ textarea:focus-visible {
   line-height: 1.3;
   font-weight: 600;
 }
-
 .patient-form-status {
   display: none !important;
 }
-
 .contact-primary {
   display: block;
   margin-bottom: 2px;
@@ -462,7 +406,6 @@ textarea:focus-visible {
   font-weight: 600;
   white-space: nowrap;
 }
-
 .contact-secondary {
   display: block;
   color: #89938d;
@@ -471,7 +414,6 @@ textarea:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .age-primary {
   display: block;
   margin-bottom: 2px;
@@ -479,17 +421,14 @@ textarea:focus-visible {
   font-size: 10px;
   font-weight: 600;
 }
-
 .age-secondary {
   color: #8b958f;
   font-size: 9px;
 }
-
 .appointment-none {
   color: #929d96;
   font-size: 9.5px;
 }
-
 .patient-table td .appointment-date {
   margin: 0;
   color: #25332a;
@@ -497,7 +436,6 @@ textarea:focus-visible {
   line-height: 1.35;
   font-weight: 700;
 }
-
 .patient-table td .appointment-time {
   margin-top: 2px;
   color: #8a958e;
@@ -505,7 +443,6 @@ textarea:focus-visible {
   line-height: 1.35;
   font-weight: 500;
 }
-
 .patient-table td .appointment-meta {
   display: flex;
   align-items: center;
@@ -513,7 +450,6 @@ textarea:focus-visible {
   gap: 4px;
   margin-top: 5px;
 }
-
 .patient-table td .appointment-doctor,
 .patient-table td .appointment-status {
   display: inline-flex;
@@ -534,22 +470,18 @@ textarea:focus-visible {
   vertical-align: middle;
   box-sizing: border-box;
 }
-
 .patient-table td .appointment-doctor i {
   font-size: 6.5px;
   line-height: 1;
 }
-
 .patient-table td .appointment-status-row {
   display: contents !important;
 }
-
 .patient-table td .appointment-status.completed {
   border-color: #cfe3d6;
   background: #eaf8ef;
   color: #247342;
 }
-
 .appointment-completed {
   display: inline-flex;
   align-items: center;
@@ -565,7 +497,6 @@ textarea:focus-visible {
   line-height: 1.2;
   white-space: nowrap;
 }
-
 .medical-form-button {
   min-width: 104px;
   height: 32px;
@@ -582,31 +513,25 @@ textarea:focus-visible {
     border-color 0.18s ease,
     transform 0.18s ease;
 }
-
 .medical-form-button:hover {
   transform: translateY(-1px);
 }
-
 .medical-form-button.pending {
   border: 1px solid #efdcc2;
   color: #b66d1d;
   background: #fffaf4;
 }
-
 .medical-form-button.pending:hover {
   background: #fff5e9;
 }
-
 .medical-form-button.completed {
   border: 1px solid #d4e4da;
   color: #247342;
   background: #f7fbf8;
 }
-
 .medical-form-button.completed:hover {
   background: #eff8f2;
 }
-
 .patient-table .medical-form-button i,
 .patient-table .medical-form-btn i,
 .patient-table .fill-form-btn i,
@@ -615,12 +540,10 @@ textarea:focus-visible {
 .patient-table .btn-view-form i {
   display: none !important;
 }
-
 .patient-action-cell {
   position: relative;
   text-align: center;
 }
-
 .patient-action-trigger {
   width: 32px;
   height: 32px;
@@ -636,19 +559,16 @@ textarea:focus-visible {
     border-color 0.18s ease,
     color 0.18s ease;
 }
-
 .patient-action-trigger:hover,
 .patient-action-trigger.active {
   background: #f2f8f4;
   border-color: #cfe0d4;
   color: var(--green);
 }
-
 .patient-empty-state {
   padding: 48px 20px;
   text-align: center;
 }
-
 .empty-icon {
   width: 46px;
   height: 46px;
@@ -661,20 +581,17 @@ textarea:focus-visible {
   color: var(--green);
   font-size: 16px;
 }
-
 .patient-empty-state h3 {
   margin: 0 0 4px;
   color: var(--text);
   font-family: var(--font-heading);
   font-size: 14px;
 }
-
 .patient-empty-state p {
   margin: 0;
   color: var(--text-muted);
   font-size: 10.5px;
 }
-
 .patient-action-menu {
   position: fixed;
   z-index: 5000;
@@ -688,11 +605,9 @@ textarea:focus-visible {
     0 14px 32px rgba(21, 48, 31, 0.13),
     0 2px 7px rgba(21, 48, 31, 0.05);
 }
-
 .patient-action-menu.open {
   display: block;
 }
-
 .patient-action-menu button {
   width: 100%;
   min-height: 37px;
@@ -708,32 +623,26 @@ textarea:focus-visible {
   font-size: 11px;
   font-weight: 600;
 }
-
 .patient-action-menu button:hover {
   background: #f3f8f5;
   color: var(--green);
 }
-
 .patient-action-menu button i {
   width: 16px;
   color: #77837c;
   text-align: center;
 }
-
 .patient-action-menu button:hover i {
   color: var(--green);
 }
-
 .patient-action-menu .danger-action,
 .patient-action-menu .danger-action i {
   color: var(--danger);
 }
-
 .patient-action-menu .danger-action:hover {
   background: var(--danger-bg);
   color: var(--danger);
 }
-
 .patient-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -746,11 +655,9 @@ textarea:focus-visible {
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
-
 .patient-modal-backdrop.open {
   display: flex;
 }
-
 .patient-modal {
   position: relative;
   width: min(760px, 100%);
@@ -763,11 +670,9 @@ textarea:focus-visible {
   border-radius: 16px;
   box-shadow: var(--shadow-modal);
 }
-
 .patient-profile-modal {
   width: min(760px, 100%);
 }
-
 .patient-modal-header {
   flex: 0 0 auto;
   min-height: 84px;
@@ -779,7 +684,6 @@ textarea:focus-visible {
   border-bottom: 1px solid #e3e9e5;
   background: #fff;
 }
-
 .modal-eyebrow {
   display: block;
   margin-bottom: 5px;
@@ -790,7 +694,6 @@ textarea:focus-visible {
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-
 .patient-modal-header h2 {
   margin: 0;
   color: #164f2f;
@@ -800,7 +703,6 @@ textarea:focus-visible {
   font-weight: 700;
   letter-spacing: -0.025em;
 }
-
 .modal-close-btn {
   width: 32px;
   height: 32px;
@@ -819,20 +721,17 @@ textarea:focus-visible {
     color 0.18s ease,
     transform 0.18s ease;
 }
-
 .modal-close-btn:hover {
   background: #f1f7f3;
   border-color: #dce8e0;
   color: var(--green);
   transform: translateY(-1px);
 }
-
 #patientForm {
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-
 .profile-form-body {
   flex: 1;
   min-height: 0;
@@ -840,21 +739,17 @@ textarea:focus-visible {
   padding: 22px 25px 20px;
   background: #f9fbfa;
 }
-
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 15px 17px;
 }
-
 .form-field {
   min-width: 0;
 }
-
 .form-field-full {
   grid-column: 1 / -1;
 }
-
 .form-field label {
   display: block;
   margin: 0 0 6px;
@@ -863,7 +758,6 @@ textarea:focus-visible {
   line-height: 1.35;
   font-weight: 700;
 }
-
 .form-field input,
 .form-field select,
 .form-field textarea {
@@ -878,24 +772,20 @@ textarea:focus-visible {
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
-
 .form-field input,
 .form-field select {
   height: 41px;
   padding: 0 12px;
 }
-
 .form-field textarea {
   min-height: 84px;
   padding: 10px 12px;
   resize: vertical;
 }
-
 .form-field input::placeholder,
 .form-field textarea::placeholder {
   color: #9aa59f;
 }
-
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
@@ -904,7 +794,6 @@ textarea:focus-visible {
   box-shadow: 0 0 0 3px rgba(22, 128, 61, 0.065);
   background: #fff;
 }
-
 .form-hint {
   margin: 16px 0 0;
   padding: 10px 12px;
@@ -915,7 +804,6 @@ textarea:focus-visible {
   font-size: 9px;
   line-height: 1.55;
 }
-
 .patient-modal-actions {
   flex: 0 0 auto;
   min-height: 64px;
@@ -927,7 +815,6 @@ textarea:focus-visible {
   border-top: 1px solid #e3e9e5;
   background: #fff;
 }
-
 .btn-modal-secondary,
 .btn-modal-primary {
   min-height: 37px;
@@ -947,53 +834,45 @@ textarea:focus-visible {
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .btn-modal-secondary {
   border: 1px solid #d9e3dd;
   background: #fff;
   color: #56645c;
 }
-
 .btn-modal-secondary:hover {
   background: #f5f8f6;
   border-color: #cbd8d0;
   color: #3f5047;
   transform: translateY(-1px);
 }
-
 .btn-modal-primary {
   border: 1px solid var(--green);
   background: var(--green);
   color: #fff;
   box-shadow: 0 3px 9px rgba(22, 128, 61, 0.12);
 }
-
 .btn-modal-primary:hover {
   background: var(--green-dark);
   border-color: var(--green-dark);
   box-shadow: 0 5px 13px rgba(22, 128, 61, 0.16);
   transform: translateY(-1px);
 }
-
 .medform-modal {
   width: min(900px, 100%);
   max-height: min(820px, calc(100vh - 40px));
 }
-
 .medical-last-updated {
   margin: 5px 0 0;
   color: #8a958e;
   font-size: 9px;
   line-height: 1.4;
 }
-
 .medform-progress {
   flex: 0 0 auto;
   padding: 13px 25px 14px;
   background: #fff;
   border-bottom: 1px solid #e3e9e5;
 }
-
 .medform-progress-track {
   position: relative;
   width: 100%;
@@ -1003,7 +882,6 @@ textarea:focus-visible {
   border-radius: 10px;
   overflow: hidden;
 }
-
 .medform-progress-fill {
   width: 0%;
   height: 100%;
@@ -1011,13 +889,11 @@ textarea:focus-visible {
   background: var(--green);
   transition: width 0.25s ease;
 }
-
 .medform-progress-steps {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
-
 .medform-progress-step {
   min-width: 0;
   display: flex;
@@ -1027,7 +903,6 @@ textarea:focus-visible {
   color: #9aa59e;
   text-align: center;
 }
-
 .medform-progress-step i {
   width: 28px;
   height: 28px;
@@ -1046,7 +921,6 @@ textarea:focus-visible {
     color 0.2s ease,
     box-shadow 0.2s ease;
 }
-
 .medform-progress-step em {
   max-width: 100%;
   overflow: hidden;
@@ -1057,12 +931,10 @@ textarea:focus-visible {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .medform-progress-step.active,
 .medform-progress-step.completed {
   color: var(--green);
 }
-
 .medform-progress-step.active i,
 .medform-progress-step.completed i {
   border-color: #bfe0ca;
@@ -1070,14 +942,12 @@ textarea:focus-visible {
   color: var(--green);
   box-shadow: 0 2px 6px rgba(22, 128, 61, 0.08);
 }
-
 #medicalForm {
   min-height: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
-
 .medform-step-viewport {
   position: relative;
   flex: 1;
@@ -1086,15 +956,12 @@ textarea:focus-visible {
   padding: 20px 25px 22px;
   background: #f9fbfa;
 }
-
 .medform-step {
   display: none;
 }
-
 .medform-step.active {
   display: block;
 }
-
 .medform-section {
   margin: 0 0 14px;
   padding: 18px;
@@ -1103,11 +970,9 @@ textarea:focus-visible {
   background: #fff;
   box-shadow: 0 2px 8px rgba(20, 57, 36, 0.025);
 }
-
 .medform-section:last-child {
   margin-bottom: 0;
 }
-
 .medform-section h3 {
   margin: 0 0 6px;
   color: #185b34;
@@ -1117,7 +982,6 @@ textarea:focus-visible {
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-
 .medform-section-heading {
   margin-bottom: 17px;
   display: flex;
@@ -1125,18 +989,15 @@ textarea:focus-visible {
   justify-content: space-between;
   gap: 18px;
 }
-
 .medform-section-heading > div {
   min-width: 0;
 }
-
 .medform-section-heading p {
   margin: 4px 0 0;
   color: #818d85;
   font-size: 9.5px;
   line-height: 1.55;
 }
-
 .readonly-badge {
   flex: 0 0 auto;
   display: inline-flex;
@@ -1152,39 +1013,32 @@ textarea:focus-visible {
   font-weight: 700;
   white-space: nowrap;
 }
-
 .medform-subtext {
   margin: 0 0 13px;
   color: #7c8880;
   font-size: 9.5px;
   line-height: 1.55;
 }
-
 .medform-grid {
   display: grid;
   gap: 13px 15px;
 }
-
 .medform-grid-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-
 .medform-grid .form-field-full {
   grid-column: 1 / -1;
 }
-
 .medform-section input[readonly] {
   background: #f7faf8;
   color: #45534b;
   border-color: #dfe7e2;
   cursor: default;
 }
-
 .medform-section input[readonly]:focus {
   box-shadow: none;
   border-color: #dfe7e2;
 }
-
 .medform-profile-note {
   margin-top: 15px;
   padding: 10px 12px;
@@ -1198,24 +1052,20 @@ textarea:focus-visible {
   font-size: 9px;
   line-height: 1.55;
 }
-
 .medform-profile-note i {
   margin-top: 2px;
   flex: 0 0 auto;
   color: var(--green);
 }
-
 .medform-checkbox-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 18px;
 }
-
 .medform-checkbox-grid-1col {
   grid-template-columns: 1fr;
 }
-
 .medform-checkbox {
   min-height: 38px;
   padding: 8px 10px;
@@ -1236,18 +1086,15 @@ textarea:focus-visible {
     color 0.18s ease,
     transform 0.18s ease;
 }
-
 .medform-checkbox:hover {
   background: #f8fbf9;
   border-color: #cddfd4;
 }
-
 .medform-checkbox:has(input:checked) {
   border-color: #b9dcc5;
   background: #f1faf4;
   color: #24653c;
 }
-
 .medform-checkbox input[type="checkbox"],
 .medform-checkbox input[type="radio"] {
   width: 14px;
@@ -1256,14 +1103,12 @@ textarea:focus-visible {
   flex: 0 0 auto;
   accent-color: var(--green);
 }
-
 .medform-checkbox-other {
   display: grid;
   grid-template-columns: auto auto minmax(80px, 1fr);
   gap: 7px;
   align-content: center;
 }
-
 .medform-inline-input {
   height: 26px !important;
   min-width: 0;
@@ -1271,12 +1116,10 @@ textarea:focus-visible {
   border-radius: 6px !important;
   font-size: 8.5px !important;
 }
-
 .medform-question-block {
   margin: 0 0 16px;
   padding-top: 2px;
 }
-
 .medform-question {
   margin: 0 0 9px;
   color: #46534b;
@@ -1284,13 +1127,11 @@ textarea:focus-visible {
   line-height: 1.45;
   font-weight: 700;
 }
-
 .medform-radio-row {
   display: flex;
   align-items: center;
   gap: 18px;
 }
-
 .medform-radio {
   display: inline-flex;
   align-items: center;
@@ -1300,24 +1141,20 @@ textarea:focus-visible {
   font-weight: 600;
   cursor: pointer;
 }
-
 .medform-radio input {
   accent-color: var(--green);
 }
-
 .medform-review {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .review-card {
   padding: 13px;
   border: 1px solid #dfe7e2;
   border-radius: 9px;
   background: #fbfdfc;
 }
-
 .review-card h4 {
   margin: 0 0 9px;
   color: #196238;
@@ -1326,7 +1163,6 @@ textarea:focus-visible {
   line-height: 1.3;
   font-weight: 700;
 }
-
 .review-row {
   min-height: 27px;
   display: flex;
@@ -1334,14 +1170,12 @@ textarea:focus-visible {
   justify-content: space-between;
   gap: 20px;
 }
-
 .review-label {
   flex: 0 0 auto;
   color: #7c8880;
   font-size: 8.5px;
   line-height: 1.45;
 }
-
 .review-value {
   max-width: 68%;
   color: #29362e;
@@ -1352,7 +1186,6 @@ textarea:focus-visible {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-
 .medform-consent {
   margin-top: 12px;
   padding: 11px 12px;
@@ -1360,7 +1193,6 @@ textarea:focus-visible {
   border-radius: 8px;
   background: #f3faf5;
 }
-
 .medform-consent .medform-checkbox {
   min-height: auto;
   padding: 0;
@@ -1368,49 +1200,40 @@ textarea:focus-visible {
   background: transparent;
   align-items: flex-start;
 }
-
 .medform-consent .medform-checkbox:hover {
   background: transparent;
 }
-
 .medform-consent .medform-checkbox:has(input:checked) {
   border: 0;
   background: transparent;
 }
-
 .medform-consent a {
   color: var(--green);
   font-weight: 700;
 }
-
 .medform-step-actions {
   position: relative;
   z-index: 2;
   min-height: 64px;
 }
-
 .medform-step-nav-right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .medform-step-actions.is-final-step .medform-next-btn {
   display: none !important;
 }
-
 .details-modal {
   width: min(700px, 100%);
   max-height: min(720px, calc(100vh - 48px));
 }
-
 .patient-details-body {
   min-height: 0;
   overflow-y: auto;
   padding: 21px 25px 25px;
   background: #f9fbfa;
 }
-
 .details-profile {
   padding: 18px;
   border: 1px solid #dfe7e2;
@@ -1418,7 +1241,6 @@ textarea:focus-visible {
   background: #fff;
   box-shadow: 0 2px 8px rgba(20, 57, 36, 0.025);
 }
-
 .details-profile-header {
   display: flex;
   align-items: center;
@@ -1426,7 +1248,6 @@ textarea:focus-visible {
   padding-bottom: 16px;
   border-bottom: 1px solid #edf1ee;
 }
-
 .details-profile-avatar {
   width: 45px;
   height: 45px;
@@ -1441,11 +1262,9 @@ textarea:focus-visible {
   font-size: 12px;
   font-weight: 800;
 }
-
 .details-profile-name {
   min-width: 0;
 }
-
 .details-profile-name h3 {
   margin: 0 0 3px;
   color: #203028;
@@ -1453,25 +1272,21 @@ textarea:focus-visible {
   font-size: 14px;
   line-height: 1.3;
 }
-
 .details-profile-name span {
   color: var(--green);
   font-size: 8.5px;
   line-height: 1.3;
   font-weight: 700;
 }
-
 .details-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 15px 18px;
   padding-top: 16px;
 }
-
 .details-item {
   min-width: 0;
 }
-
 .details-item label {
   display: block;
   margin-bottom: 4px;
@@ -1480,7 +1295,6 @@ textarea:focus-visible {
   line-height: 1.3;
   font-weight: 600;
 }
-
 .details-item p {
   margin: 0;
   color: #35423a;
@@ -1489,30 +1303,25 @@ textarea:focus-visible {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-
 .details-item.full {
   grid-column: 1 / -1;
 }
-
 .medical-result-modal {
   width: min(820px, 100%);
   max-height: min(820px, calc(100vh - 40px));
 }
-
 .medical-result-updated {
   margin: 5px 0 0;
   color: #8a958e;
   font-size: 9px;
   line-height: 1.4;
 }
-
 .medical-result-body {
   min-height: 0;
   overflow-y: auto;
   padding: 21px 25px 25px;
   background: #f9fbfa;
 }
-
 .medical-result-profile {
   margin-bottom: 14px;
   padding: 16px;
@@ -1521,7 +1330,6 @@ textarea:focus-visible {
   background: #fff;
   box-shadow: 0 2px 8px rgba(20, 57, 36, 0.025);
 }
-
 .medical-result-profile h3 {
   margin: 0 0 4px;
   color: #185b34;
@@ -1530,13 +1338,11 @@ textarea:focus-visible {
   line-height: 1.35;
   font-weight: 700;
 }
-
 .medical-result-profile p {
   margin: 0;
   color: #7b8780;
   font-size: 9.5px;
 }
-
 .medical-result-section {
   margin-bottom: 12px;
   padding: 15px;
@@ -1545,11 +1351,9 @@ textarea:focus-visible {
   background: #fff;
   box-shadow: 0 2px 8px rgba(20, 57, 36, 0.02);
 }
-
 .medical-result-section:last-child {
   margin-bottom: 0;
 }
-
 .medical-result-section h3 {
   margin: 0 0 11px;
   color: #196238;
@@ -1558,21 +1362,17 @@ textarea:focus-visible {
   line-height: 1.35;
   font-weight: 700;
 }
-
 .medical-result-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 13px 19px;
 }
-
 .medical-result-item {
   min-width: 0;
 }
-
 .medical-result-item.full {
   grid-column: 1 / -1;
 }
-
 .medical-result-label {
   display: block;
   margin-bottom: 4px;
@@ -1583,7 +1383,6 @@ textarea:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.045em;
 }
-
 .medical-result-value {
   color: #344239;
   font-size: 10px;
@@ -1592,18 +1391,15 @@ textarea:focus-visible {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-
 .medical-result-value.empty {
   color: #a0aaa4;
   font-weight: 500;
 }
-
 .medical-result-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
-
 .medical-result-tag {
   display: inline-flex;
   align-items: center;
@@ -1616,7 +1412,6 @@ textarea:focus-visible {
   font-size: 8.5px;
   font-weight: 700;
 }
-
 .medical-result-consent {
   margin-top: 12px;
   padding: 11px 12px;
@@ -1627,25 +1422,21 @@ textarea:focus-visible {
   font-size: 9.5px;
   line-height: 1.55;
 }
-
 .medical-result-consent strong {
   color: var(--green);
 }
-
 .profile-form-body::-webkit-scrollbar,
 .medform-step-viewport::-webkit-scrollbar,
 .patient-details-body::-webkit-scrollbar,
 .medical-result-body::-webkit-scrollbar {
   width: 6px;
 }
-
 .profile-form-body::-webkit-scrollbar-track,
 .medform-step-viewport::-webkit-scrollbar-track,
 .patient-details-body::-webkit-scrollbar-track,
 .medical-result-body::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .profile-form-body::-webkit-scrollbar-thumb,
 .medform-step-viewport::-webkit-scrollbar-thumb,
 .patient-details-body::-webkit-scrollbar-thumb,
@@ -1653,198 +1444,157 @@ textarea:focus-visible {
   background: #cfd9d3;
   border-radius: 10px;
 }
-
 .profile-form-body::-webkit-scrollbar-thumb:hover,
 .medform-step-viewport::-webkit-scrollbar-thumb:hover,
 .patient-details-body::-webkit-scrollbar-thumb:hover,
 .medical-result-body::-webkit-scrollbar-thumb:hover {
   background: #b9c7be;
 }
-
 @media (max-width: 1180px) {
   .patients-main {
     padding: 22px 24px 34px;
   }
-
   .patient-table th,
   .patient-table td {
     padding-left: 13px;
     padding-right: 13px;
   }
-
   .patient-card-header {
     gap: 15px;
   }
-
   .patient-search {
     width: 185px;
     flex-basis: 185px;
   }
 }
-
 @media (max-width: 1000px) {
   .patient-card-header {
     align-items: flex-start;
   }
-
   .patient-card-header-right {
     flex-wrap: wrap;
     max-width: 100%;
   }
-
   .patient-card-title p {
     white-space: normal;
   }
 }
-
 @media (max-width: 850px) {
   .patient-page-header {
     align-items: flex-start;
   }
-
   .patient-card-header {
     align-items: flex-start;
   }
-
   .patient-modal-backdrop {
     padding: 15px;
   }
-
   .patient-modal {
     max-height: calc(100vh - 30px);
   }
-
   .medform-modal,
   .medical-result-modal {
     max-height: calc(100vh - 30px);
   }
-
   .patient-table-wrapper {
     overflow-x: auto;
   }
-
   .patient-table {
     min-width: 960px;
   }
 }
-
 @media (max-width: 700px) {
   .patients-main {
     padding: 18px 14px 28px;
   }
-
   .patient-page-header {
     min-height: 76px;
     padding: 13px 15px;
     border-radius: 14px;
   }
-
   .patient-page-title h1 {
     font-size: 20px;
   }
-
   .patient-page-title p {
     font-size: 9px;
   }
-
   .patient-page-header .btn-add-patient {
     height: 34px;
     padding: 0 11px;
   }
-
   .patient-list-card {
     border-radius: 14px;
   }
-
   .patient-card-header {
     padding: 15px;
     border-radius: 14px 14px 0 0;
   }
-
   .patient-card-title h2 {
     font-size: 14px;
   }
-
   .patient-card-title p {
     font-size: 9px;
   }
-
   .patient-card-header-right {
     display: grid;
     grid-template-columns: 1fr auto auto;
     width: 100%;
     gap: 7px;
   }
-
   .patient-search {
     width: 100%;
     flex: none;
     margin-right: 0;
   }
-
   .patient-count-label {
     justify-self: end;
     height: 34px;
     margin-left: 0;
   }
-
   .patient-select {
     width: 100px;
   }
-
   .form-grid,
   .medform-grid-2,
   .medical-result-grid {
     grid-template-columns: 1fr;
   }
-
   .form-field-full,
   .medical-result-item.full {
     grid-column: auto;
   }
-
   .medform-checkbox-grid {
     grid-template-columns: 1fr;
   }
-
   .medform-checkbox-other {
     grid-template-columns: auto 1fr;
   }
-
   .medform-checkbox-other .medform-inline-input {
     grid-column: 2;
   }
-
   .details-grid {
     grid-template-columns: 1fr;
   }
-
   .details-item.full {
     grid-column: auto;
   }
-
   .patient-modal-backdrop {
     padding: 9px;
   }
-
   .patient-modal {
     max-height: calc(100vh - 18px);
     border-radius: 13px;
   }
-
   .patient-modal-header {
     min-height: 76px;
     padding: 17px 18px;
   }
-
   .patient-modal-header h2 {
     font-size: 17px;
   }
-
   .modal-eyebrow {
     font-size: 7.5px;
   }
-
   .profile-form-body,
   .medform-step-viewport,
   .patient-details-body,
@@ -1852,138 +1602,110 @@ textarea:focus-visible {
     padding-left: 17px;
     padding-right: 17px;
   }
-
   .patient-modal-actions {
     padding-left: 17px;
     padding-right: 17px;
   }
-
   .medform-progress {
     padding-left: 17px;
     padding-right: 17px;
   }
-
   .medform-progress-steps {
     gap: 4px;
   }
-
   .medform-progress-step em {
     font-size: 7px;
   }
-
   .medform-section {
     padding: 15px;
   }
-
   .medform-section-heading {
     flex-direction: column;
     gap: 9px;
   }
-
   .readonly-badge {
     align-self: flex-start;
   }
 }
-
 @media (max-width: 480px) {
   .patients-main {
     padding: 14px 10px 24px;
   }
-
   .patient-page-header {
     padding: 12px 14px;
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
   }
-
   .patient-page-header .btn-add-patient {
     width: 100%;
     height: 34px;
   }
-
   .patient-card-header {
     padding: 14px;
   }
-
   .patient-card-header-right {
     grid-template-columns: 1fr auto;
   }
-
   .patient-count-label {
     grid-column: 1 / -1;
     justify-self: start;
   }
-
   .patient-search {
     grid-column: 1;
   }
-
   .patient-select {
     grid-column: 2;
     width: 100px;
   }
-
   .patient-table {
     min-width: 940px;
   }
-
   .patient-modal-header {
     padding: 16px 15px;
   }
-
   .patient-modal-header h2 {
     font-size: 16px;
   }
-
   .modal-close-btn {
     width: 30px;
     height: 30px;
     flex-basis: 30px;
   }
-
   .profile-form-body,
   .medform-step-viewport,
   .patient-details-body,
   .medical-result-body {
     padding: 15px;
   }
-
   .patient-modal-actions {
     min-height: 60px;
     padding: 10px 13px;
   }
-
   .btn-modal-secondary,
   .btn-modal-primary {
     min-height: 36px;
     padding: 0 12px;
     font-size: 9.5px;
   }
-
   .medform-progress {
     padding: 12px 13px 13px;
   }
-
   .medform-progress-step i {
     width: 26px;
     height: 26px;
     flex-basis: 26px;
     font-size: 8px;
   }
-
   .medform-progress-step em {
     display: none;
   }
-
   .medform-section {
     padding: 14px;
   }
-
   .medform-checkbox {
     font-size: 9px;
   }
-
   .medform-step-nav-right {
     gap: 5px;
   }
@@ -1994,7 +1716,6 @@ textarea:focus-visible {
   margin: 0 auto;
   padding: 0 0 36px;
 }
-
 .patient-record-header {
   width: 100%;
   margin: 0;
@@ -2008,11 +1729,9 @@ textarea:focus-visible {
   border-radius: 14px 14px 0 0;
   box-shadow: none;
 }
-
 .patient-record-header-left {
   width: 100%;
 }
-
 .patient-record-back-btn {
   display: inline-flex;
   align-items: center;
@@ -2029,16 +1748,13 @@ textarea:focus-visible {
   font-weight: 700;
   transition: color 0.18s ease;
 }
-
 .patient-record-back-btn:hover {
   color: var(--green-dark);
   background: transparent;
 }
-
 .patient-record-heading {
   margin: 0;
 }
-
 .patient-record-heading .modal-eyebrow {
   display: block;
   margin-bottom: 5px;
@@ -2047,7 +1763,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 .patient-record-heading h1 {
   margin: 0;
   color: var(--text);
@@ -2057,18 +1772,15 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: -0.025em;
 }
-
 .patient-record-heading p {
   margin: 5px 0 0;
   color: var(--text-soft);
   font-size: 10px;
   line-height: 1.4;
 }
-
 .patient-record-profile {
   display: none;
 }
-
 .patient-record-tabs {
   display: flex;
   align-items: center;
@@ -2083,7 +1795,6 @@ textarea:focus-visible {
   background: var(--white);
   box-shadow: none;
 }
-
 .patient-record-tab {
   position: relative;
   display: inline-flex;
@@ -2101,21 +1812,17 @@ textarea:focus-visible {
   font-weight: 700;
   transition: color 0.18s ease;
 }
-
 .patient-record-tab i {
   font-size: 9px;
 }
-
 .patient-record-tab:hover {
   color: var(--green);
   background: transparent;
 }
-
 .patient-record-tab.active {
   background: transparent;
   color: var(--green);
 }
-
 .patient-record-tab.active::after {
   content: "";
   position: absolute;
@@ -2126,15 +1833,12 @@ textarea:focus-visible {
   border-radius: 2px 2px 0 0;
   background: var(--green);
 }
-
 .patient-record-panels {
   width: 100%;
 }
-
 .patient-record-panel {
   width: 100%;
 }
-
 .patient-record-section {
   width: 100%;
   padding: 20px;
@@ -2143,7 +1847,6 @@ textarea:focus-visible {
   background: var(--white);
   box-shadow: none;
 }
-
 .patient-record-section-header {
   display: flex;
   align-items: flex-start;
@@ -2151,7 +1854,6 @@ textarea:focus-visible {
   gap: 18px;
   margin-bottom: 16px;
 }
-
 .patient-record-section-eyebrow {
   display: block;
   margin-bottom: 5px;
@@ -2160,7 +1862,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 .patient-record-section-header h3 {
   margin: 0;
   color: var(--text);
@@ -2168,14 +1869,12 @@ textarea:focus-visible {
   font-size: 16px;
   font-weight: 800;
 }
-
 .patient-record-section-header p {
   margin: 4px 0 0;
   color: var(--text-soft);
   font-size: 9px;
   line-height: 1.5;
 }
-
 .patient-record-count {
   flex-shrink: 0;
   padding: 6px 9px;
@@ -2186,7 +1885,6 @@ textarea:focus-visible {
   font-size: 8px;
   font-weight: 800;
 }
-
 .patient-record-edit-btn {
   display: inline-flex;
   align-items: center;
@@ -2202,17 +1900,14 @@ textarea:focus-visible {
   white-space: nowrap;
   transition: background 0.18s ease;
 }
-
 .patient-record-edit-btn:hover {
   background: var(--green-dark);
 }
-
 .patient-overview-record-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
-
 .patient-overview-record-item {
   display: flex;
   align-items: center;
@@ -2223,7 +1918,6 @@ textarea:focus-visible {
   border-radius: 9px;
   background: var(--white);
 }
-
 .patient-overview-record-icon {
   display: flex;
   align-items: center;
@@ -2235,27 +1929,23 @@ textarea:focus-visible {
   background: var(--green-light);
   color: var(--green);
 }
-
 .patient-overview-record-item strong {
   display: block;
   color: var(--text);
   font-size: 10px;
   font-weight: 800;
 }
-
 .patient-overview-record-item span {
   display: block;
   margin-top: 2px;
   color: var(--text-soft);
   font-size: 8px;
 }
-
 .patient-record-medical-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
-
 .patient-record-medical-card {
   min-width: 0;
   padding: 13px;
@@ -2263,11 +1953,9 @@ textarea:focus-visible {
   border-radius: 9px;
   background: var(--white);
 }
-
 .patient-record-medical-card.full {
   grid-column: 1 / -1;
 }
-
 .patient-record-medical-label {
   display: block;
   margin-bottom: 6px;
@@ -2276,7 +1964,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.06em;
 }
-
 .patient-record-value {
   color: var(--text);
   font-size: 10px;
@@ -2284,13 +1971,11 @@ textarea:focus-visible {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-
 .patient-record-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
-
 .patient-record-tag {
   display: inline-flex;
   align-items: center;
@@ -2303,7 +1988,6 @@ textarea:focus-visible {
   font-size: 8px;
   font-weight: 700;
 }
-
 .patient-record-empty {
   display: flex;
   flex-direction: column;
@@ -2316,18 +2000,15 @@ textarea:focus-visible {
   background: var(--page-bg);
   text-align: center;
 }
-
 .patient-record-empty i {
   margin-bottom: 8px;
   color: var(--text-muted);
   font-size: 22px;
 }
-
 .patient-record-empty strong {
   color: var(--text);
   font-size: 11px;
 }
-
 .patient-record-empty span {
   max-width: 420px;
   margin-top: 4px;
@@ -2335,7 +2016,6 @@ textarea:focus-visible {
   font-size: 9px;
   line-height: 1.5;
 }
-
 .patient-dental-history-list,
 .staff-treatment-list,
 .staff-appointment-list,
@@ -2344,7 +2024,6 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 9px;
 }
-
 .patient-dental-history-card,
 .staff-treatment-card,
 .staff-appointment-card,
@@ -2354,13 +2033,11 @@ textarea:focus-visible {
   border-radius: 9px;
   background: var(--white);
 }
-
 .patient-dental-history-card {
   display: grid;
   grid-template-columns: 140px minmax(0, 1fr);
   gap: 15px;
 }
-
 .patient-dental-history-tooth {
   display: flex;
   align-items: center;
@@ -2369,12 +2046,10 @@ textarea:focus-visible {
   font-size: 10px;
   font-weight: 800;
 }
-
 .patient-dental-history-content {
   display: grid;
   gap: 4px;
 }
-
 .patient-dental-history-content span,
 .staff-treatment-note span,
 .staff-appointment-details span,
@@ -2384,25 +2059,21 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.06em;
 }
-
 .patient-dental-history-content strong {
   color: var(--text);
   font-size: 10px;
 }
-
 .patient-dental-history-content p {
   margin: 0;
   color: var(--text-soft);
   font-size: 9px;
   line-height: 1.5;
 }
-
 .patient-dental-history-content small {
   margin-top: 3px;
   color: var(--text-muted);
   font-size: 8px;
 }
-
 .staff-clinical-image-header,
 .staff-treatment-card-header,
 .staff-appointment-card-header {
@@ -2410,52 +2081,41 @@ textarea:focus-visible {
   align-items: center;
   gap: 10px;
 }
-
 .staff-clinical-image-header {
   justify-content: space-between;
 }
-
-.staff-clinical-image-header h4,
-.staff-treatment-title h4,
-.staff-appointment-title h4 {
+.staff-clinical-image-header h4 {
   margin: 0;
-  color: var(--text);
-  font-size: 10px;
+  color: var(--green);
+  font-size: 10.5px;
   font-weight: 800;
 }
-
-.staff-clinical-image-header span,
-.staff-treatment-title span,
-.staff-appointment-title span {
+.staff-clinical-image-header span {
   display: block;
-  margin-top: 2px;
-  color: var(--text-soft);
-  font-size: 8px;
+  margin: 0;
+  color: #17221b;
+  font-size: 9.5px;
+  font-weight: 600;
 }
-
 .staff-clinical-image-description {
   margin: 9px 0 0;
   color: var(--text-soft);
   font-size: 9px;
   line-height: 1.5;
 }
-
 .staff-clinical-image-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 11px;
 }
-
 .staff-clinical-image-item {
   min-width: 0;
 }
-
 .staff-clinical-image-item > span {
   display: block;
   margin-bottom: 5px;
 }
-
 .staff-clinical-image-item img,
 .staff-clinical-image-empty {
   display: block;
@@ -2465,7 +2125,6 @@ textarea:focus-visible {
   border-radius: 8px;
   object-fit: cover;
 }
-
 .clinical-image-viewer {
   position: fixed;
   inset: 0;
@@ -2478,7 +2137,6 @@ textarea:focus-visible {
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
-
 .clinical-image-viewer-dialog {
   position: relative;
   width: min(1050px, 100%);
@@ -2489,7 +2147,6 @@ textarea:focus-visible {
   background: #ffffff;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
 }
-
 .clinical-image-viewer-close {
   position: absolute;
   top: 12px;
@@ -2505,12 +2162,10 @@ textarea:focus-visible {
   color: #536159;
   font-size: 12px;
 }
-
 .clinical-image-viewer-header {
   padding-right: 45px;
   margin-bottom: 18px;
 }
-
 .clinical-image-viewer-header span {
   display: block;
   margin-bottom: 4px;
@@ -2519,20 +2174,17 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.1em;
 }
-
 .clinical-image-viewer-header h3 {
   margin: 0;
   color: #25332b;
   font-family: var(--font-heading);
   font-size: 15px;
 }
-
 .clinical-image-viewer-pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-
 .clinical-image-viewer-side {
   position: relative;
   min-width: 0;
@@ -2540,7 +2192,6 @@ textarea:focus-visible {
   border-radius: 10px;
   background: #f0f4f1;
 }
-
 .clinical-image-viewer-side > span {
   position: absolute;
   top: 10px;
@@ -2553,11 +2204,9 @@ textarea:focus-visible {
   font-size: 8px;
   font-weight: 800;
 }
-
 .clinical-image-viewer-side > span.after {
   background: rgba(22, 128, 61, 0.9);
 }
-
 .clinical-image-viewer-side img {
   width: 100%;
   height: min(55vh, 500px);
@@ -2565,7 +2214,6 @@ textarea:focus-visible {
   object-fit: contain;
   background: #eef3f0;
 }
-
 .clinical-image-viewer-empty {
   height: 350px;
   display: flex;
@@ -2574,11 +2222,9 @@ textarea:focus-visible {
   color: #8a968f;
   font-size: 10px;
 }
-
 .staff-clinical-image-item img {
   cursor: zoom-in;
 }
-
 .staff-clinical-image-empty {
   display: flex;
   align-items: center;
@@ -2587,7 +2233,6 @@ textarea:focus-visible {
   color: var(--text-muted);
   font-size: 9px;
 }
-
 .staff-treatment-icon,
 .staff-appointment-icon {
   display: flex;
@@ -2600,32 +2245,27 @@ textarea:focus-visible {
   background: var(--green-light);
   color: var(--green);
 }
-
 .staff-treatment-title,
 .staff-appointment-title {
   min-width: 0;
   flex: 1;
 }
-
 .staff-treatment-date {
   flex-shrink: 0;
   color: var(--text-muted);
   font-size: 8px;
 }
-
 .staff-treatment-note {
   margin-top: 10px;
   padding-top: 9px;
   border-top: 1px solid var(--border);
 }
-
 .staff-treatment-note p {
   margin: 4px 0 0;
   color: var(--text-soft);
   font-size: 9px;
   line-height: 1.5;
 }
-
 .staff-appointment-status {
   flex-shrink: 0;
   padding: 5px 8px;
@@ -2636,7 +2276,6 @@ textarea:focus-visible {
   font-weight: 800;
   text-transform: capitalize;
 }
-
 .staff-appointment-details {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2645,107 +2284,84 @@ textarea:focus-visible {
   padding-top: 10px;
   border-top: 1px solid var(--border);
 }
-
 .staff-appointment-details div {
   min-width: 0;
 }
-
 .staff-appointment-details span {
   display: block;
   margin-bottom: 3px;
 }
-
 .staff-appointment-details strong {
   color: var(--text);
   font-size: 9px;
 }
-
 @media (max-width: 900px) {
   .patient-record-profile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .patient-record-profile-item:nth-child(3n) {
     border-right: 1px solid var(--border);
   }
-
   .patient-record-profile-item:nth-child(2n) {
     border-right: 0;
   }
-
   .patient-overview-record-grid,
   .patient-record-medical-grid {
     grid-template-columns: 1fr;
   }
-
   .patient-record-medical-card.full {
     grid-column: auto;
   }
-
   .patient-dental-history-card {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 640px) {
   .patient-record-page {
     padding-bottom: 24px;
   }
-
   .patient-record-header {
     padding: 16px;
   }
-
   .patient-record-heading h1 {
     font-size: 21px;
   }
-
   .patient-record-tabs {
     padding: 0 8px;
   }
-
   .patient-record-tab {
     min-height: 38px;
     padding: 0 9px;
     font-size: 9px;
   }
-
   .patient-record-section {
     padding: 15px;
   }
-
   .patient-record-section-header {
     flex-direction: column;
   }
-
   .patient-record-edit-btn {
     width: 100%;
     justify-content: center;
   }
-
   .patient-record-profile-grid {
     grid-template-columns: 1fr;
   }
-
   .patient-record-profile-item,
   .patient-record-profile-item:nth-child(2n),
   .patient-record-profile-item:nth-child(3n) {
     border-right: 0;
   }
-
   .staff-clinical-image-grid {
     grid-template-columns: 1fr;
   }
-
   .staff-appointment-details {
     grid-template-columns: 1fr;
   }
 }
-
 .patient-record-header-left {
   width: 100%;
 }
-
 .patient-record-back-btn {
   display: inline-flex;
   align-items: center;
@@ -2762,12 +2378,10 @@ textarea:focus-visible {
   cursor: pointer;
   transition: color 0.2s ease;
 }
-
 .patient-record-back-btn:hover {
   color: var(--green-dark);
   background: transparent;
 }
-
 .patient-record-heading {
   width: 100%;
   margin: 0;
@@ -2777,11 +2391,9 @@ textarea:focus-visible {
   border-radius: 14px 14px 0 0;
   background: var(--white);
 }
-
 .patient-record-heading .modal-eyebrow {
   display: none;
 }
-
 .patient-record-heading h1 {
   margin: 0;
   color: var(--text);
@@ -2790,17 +2402,14 @@ textarea:focus-visible {
   line-height: 1.2;
   font-weight: 800;
 }
-
 .patient-record-heading p {
   margin: 5px 0 0;
   color: var(--text-soft);
   font-size: 12px;
 }
-
 .patient-record-profile {
   display: none !important;
 }
-
 .patient-record-tabs {
   display: flex;
   align-items: center;
@@ -2815,7 +2424,6 @@ textarea:focus-visible {
   background: var(--white);
   box-shadow: none;
 }
-
 .patient-record-tab {
   position: relative;
   display: inline-flex;
@@ -2837,17 +2445,14 @@ textarea:focus-visible {
     color 0.2s ease,
     background 0.2s ease;
 }
-
 .patient-record-tab:hover {
   color: var(--green);
   background: transparent;
 }
-
 .patient-record-tab.active {
   background: transparent;
   color: var(--green);
 }
-
 .patient-record-tab.active::after {
   content: "";
   position: absolute;
@@ -2858,11 +2463,9 @@ textarea:focus-visible {
   border-radius: 2px 2px 0 0;
   background: var(--green);
 }
-
 .patient-record-panels {
   width: 100%;
 }
-
 .patient-record-section {
   width: 100%;
   padding: 18px;
@@ -2871,15 +2474,12 @@ textarea:focus-visible {
   background: var(--white);
   box-shadow: none;
 }
-
 .patient-record-section-header {
   margin-bottom: 18px;
 }
-
 .patient-record-section-header h3 {
   font-size: 19px;
 }
-
 .patient-overview-information {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2897,7 +2497,6 @@ textarea:focus-visible {
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
-
 .patient-overview-information-icon {
   display: flex;
   align-items: center;
@@ -2910,47 +2509,39 @@ textarea:focus-visible {
   color: var(--green);
   font-size: 12px;
 }
-
 .patient-overview-information-item:nth-child(4n) {
   border-right: 0;
 }
-
 .patient-overview-information-item:nth-last-child(-n + 3) {
   border-bottom: 0;
 }
-
 .patient-overview-information-item span,
 .patient-overview-information-item strong,
 .patient-overview-information-item small {
   display: block;
 }
-
 .patient-overview-information-item span {
   margin-bottom: 2px;
   color: var(--text-soft);
   font-size: 8px;
 }
-
 .patient-overview-information-item strong {
   color: var(--text);
   font-size: 9px;
   font-weight: 800;
   overflow-wrap: anywhere;
 }
-
 .patient-overview-information-item small {
   margin-top: 1px;
   color: var(--text-soft);
   font-size: 8px;
 }
-
 .patient-overview-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 12px;
 }
-
 .patient-overview-stat {
   display: flex;
   align-items: center;
@@ -2961,7 +2552,6 @@ textarea:focus-visible {
   border-radius: 9px;
   background: var(--white);
 }
-
 .patient-overview-stat-icon {
   display: flex;
   align-items: center;
@@ -2974,7 +2564,6 @@ textarea:focus-visible {
   color: var(--green);
   font-size: 10px;
 }
-
 .patient-overview-stat strong {
   display: block;
   color: var(--text);
@@ -2982,14 +2571,12 @@ textarea:focus-visible {
   font-weight: 800;
   line-height: 1;
 }
-
 .patient-overview-stat span {
   display: block;
   margin-top: 2px;
   color: var(--text-soft);
   font-size: 8px;
 }
-
 .patient-overview-card {
   margin-top: 8px;
   overflow: hidden;
@@ -2997,7 +2584,6 @@ textarea:focus-visible {
   border-radius: 9px;
   background: var(--white);
 }
-
 .patient-overview-card-header {
   display: flex;
   align-items: center;
@@ -3006,7 +2592,6 @@ textarea:focus-visible {
   padding: 9px 11px;
   border-bottom: 1px solid var(--border);
 }
-
 .patient-overview-card-header h3 {
   margin: 2px 0 0;
   color: var(--text);
@@ -3014,7 +2599,6 @@ textarea:focus-visible {
   font-size: 13px;
   font-weight: 800;
 }
-
 .patient-overview-status {
   display: inline-flex;
   align-items: center;
@@ -3027,17 +2611,14 @@ textarea:focus-visible {
   font-size: 10px;
   font-weight: 800;
 }
-
 .patient-overview-status i {
   font-size: 7px;
 }
-
 .patient-overview-status.cancelled,
 .patient-overview-status.no_show {
   background: #fff4f4;
   color: #b54b4b;
 }
-
 .patient-overview-appointment {
   display: flex;
   align-items: center;
@@ -3045,18 +2626,15 @@ textarea:focus-visible {
   gap: 12px;
   padding: 10px 11px;
 }
-
 .patient-overview-appointment-main {
   min-width: 0;
 }
-
 .patient-overview-appointment-main > strong {
   display: block;
   color: var(--text);
   font-size: 10px;
   font-weight: 800;
 }
-
 .patient-overview-appointment-meta {
   display: flex;
   align-items: center;
@@ -3064,7 +2642,6 @@ textarea:focus-visible {
   gap: 14px;
   margin-top: 7px;
 }
-
 .patient-overview-appointment-meta span {
   display: inline-flex;
   align-items: center;
@@ -3072,30 +2649,25 @@ textarea:focus-visible {
   color: var(--text-soft);
   font-size: 10px;
 }
-
 .patient-overview-appointment-meta i {
   color: var(--green);
 }
-
 .patient-overview-appointment-dentist {
   min-width: 150px;
   padding-left: 18px;
   border-left: 1px solid var(--border);
 }
-
 .patient-overview-appointment-dentist span {
   display: block;
   margin-bottom: 4px;
   color: var(--text-soft);
   font-size: 10px;
 }
-
 .patient-overview-appointment-dentist strong {
   color: var(--text);
   font-size: 12px;
   font-weight: 800;
 }
-
 .patient-overview-empty {
   display: flex;
   flex-direction: column;
@@ -3107,48 +2679,40 @@ textarea:focus-visible {
   color: var(--text-soft);
   text-align: center;
 }
-
 .patient-overview-empty i {
   margin-bottom: 2px;
   color: var(--text-muted);
   font-size: 20px;
 }
-
 .patient-overview-empty strong {
   color: var(--text);
   font-size: 11px;
   font-weight: 800;
 }
-
 .patient-overview-empty span {
   max-width: 360px;
   color: var(--text-soft);
   font-size: 9px;
   line-height: 1.5;
 }
-
 .patient-overview-medical-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-
 .patient-overview-medical-summary > div {
   min-width: 0;
   padding: 9px 11px;
   border-right: 1px solid var(--border);
 }
-
 .patient-overview-medical-summary > div:last-child {
   border-right: 0;
 }
-
 .patient-overview-medical-summary span {
   display: block;
   margin-bottom: 3px;
   color: var(--text-soft);
   font-size: 8px;
 }
-
 .patient-overview-medical-summary strong {
   display: block;
   color: var(--text);
@@ -3156,12 +2720,10 @@ textarea:focus-visible {
   font-weight: 700;
   overflow-wrap: anywhere;
 }
-
 .patient-overview-clinical-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-
 .patient-overview-clinical-grid > div {
   display: flex;
   align-items: center;
@@ -3170,11 +2732,9 @@ textarea:focus-visible {
   padding: 9px 10px;
   border-right: 1px solid var(--border);
 }
-
 .patient-overview-clinical-grid > div:last-child {
   border-right: 0;
 }
-
 .patient-overview-clinical-icon {
   display: flex;
   align-items: center;
@@ -3193,97 +2753,77 @@ textarea:focus-visible {
   font-size: 9px;
   font-weight: 800;
 }
-
 .patient-overview-clinical-grid span {
   display: block;
   margin-top: 3px;
   color: var(--text-soft);
   font-size: 9px;
 }
-
 @media (max-width: 1000px) {
   .patient-overview-information {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .patient-overview-information-item:nth-child(4n) {
     border-right: 1px solid var(--border);
   }
-
   .patient-overview-information-item:nth-child(2n) {
     border-right: 0;
   }
-
   .patient-overview-information-item:nth-last-child(-n + 3) {
     border-bottom: 1px solid var(--border);
   }
-
   .patient-overview-information-item:nth-last-child(-n + 2) {
     border-bottom: 0;
   }
-
   .patient-overview-clinical-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .patient-overview-clinical-grid > div:nth-child(2n) {
     border-right: 0;
   }
-
   .patient-overview-clinical-grid > div:nth-child(-n + 2) {
     border-bottom: 1px solid var(--border);
   }
 }
-
 @media (max-width: 700px) {
   .patient-record-heading {
     padding: 16px;
   }
-
   .patient-record-heading h1 {
     font-size: 23px;
   }
-
   .patient-record-tab {
     min-height: 46px;
     padding: 0 12px;
     font-size: 10px;
   }
-
   .patient-overview-information {
     grid-template-columns: 1fr;
   }
-
   .patient-overview-information-item,
   .patient-overview-information-item:nth-child(2n),
   .patient-overview-information-item:nth-child(4n) {
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
-
   .patient-overview-information-item:last-child {
     border-bottom: 0;
   }
-
   .patient-overview-stat-grid,
   .patient-overview-medical-summary {
     grid-template-columns: 1fr;
   }
-
   .patient-overview-medical-summary > div {
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
-
   .patient-overview-medical-summary > div:last-child {
     border-bottom: 0;
   }
-
   .patient-overview-appointment {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .patient-overview-appointment-dentist {
     width: 100%;
     padding-top: 10px;
@@ -3291,17 +2831,14 @@ textarea:focus-visible {
     border-top: 1px solid var(--border);
     border-left: 0;
   }
-
   .patient-overview-clinical-grid {
     grid-template-columns: 1fr;
   }
-
   .patient-overview-clinical-grid > div,
   .patient-overview-clinical-grid > div:nth-child(2n) {
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
-
   .patient-overview-clinical-grid > div:last-child {
     border-bottom: 0;
   }
@@ -3312,11 +2849,9 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 12px;
 }
-
 .patient-medical-record-header {
   display: none;
 }
-
 .patient-medical-record-eyebrow {
   display: block;
   margin-bottom: 3px;
@@ -3326,7 +2861,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 .patient-medical-record-header h3 {
   margin: 0;
   color: var(--text);
@@ -3335,21 +2869,17 @@ textarea:focus-visible {
   line-height: 1.25;
   font-weight: 800;
 }
-
 #patientPageOverview .patient-overview {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  background: #f7faf8;
+  gap: 10px;
+  padding: 12px;
 }
-
 #patientPageOverview .patient-overview-heading p {
   margin: 5px 0 0;
   color: #7d8982;
   font-size: 9.5px;
 }
-
 #patientPageOverview .patient-overview-eyebrow,
 #patientPageOverview .patient-overview-label {
   display: block;
@@ -3359,7 +2889,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.1em;
 }
-
 #patientPageOverview .patient-overview-summary-card,
 #patientPageOverview .patient-overview-stat-card,
 #patientPageOverview .patient-overview-card {
@@ -3367,14 +2896,12 @@ textarea:focus-visible {
   border-radius: 13px;
   background: #fff;
 }
-
 #patientPageOverview .patient-overview-summary-card {
   display: flex;
   align-items: center;
   gap: 18px;
   padding: 20px;
 }
-
 #patientPageOverview .patient-overview-summary-avatar {
   width: 58px;
   height: 58px;
@@ -3388,20 +2915,17 @@ textarea:focus-visible {
   font-size: 16px;
   font-weight: 800;
 }
-
 #patientPageOverview .patient-overview-summary-main h3 {
   margin: 0;
   color: #25332b;
   font-size: 16px;
 }
-
 #patientPageOverview .patient-overview-summary-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
   margin-top: 9px;
 }
-
 #patientPageOverview .patient-overview-summary-meta span {
   display: inline-flex;
   align-items: center;
@@ -3409,19 +2933,16 @@ textarea:focus-visible {
   color: #718078;
   font-size: 9px;
 }
-
 #patientPageOverview .patient-overview-summary-meta i,
 #patientPageOverview .patient-overview-stat-icon,
 #patientPageOverview .patient-overview-record-icon {
   color: #16803d;
 }
-
 #patientPageOverview .patient-overview-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
-
 #patientPageOverview .patient-overview-stat-card {
   display: flex;
   align-items: center;
@@ -3429,7 +2950,6 @@ textarea:focus-visible {
   min-height: 92px;
   padding: 16px;
 }
-
 #patientPageOverview .patient-overview-stat-icon {
   width: 42px;
   height: 42px;
@@ -3441,34 +2961,28 @@ textarea:focus-visible {
   background: #eaf8ef;
   font-size: 15px;
 }
-
 #patientPageOverview .patient-overview-stat-card span,
 #patientPageOverview .patient-overview-stat-card small {
   display: block;
   color: #89958e;
   font-size: 8px;
 }
-
 #patientPageOverview .patient-overview-stat-card span {
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 #patientPageOverview .patient-overview-stat-card strong {
   display: block;
   color: #26352c;
   font-size: 21px;
   line-height: 1.1;
 }
-
 #patientPageOverview .patient-overview-stat-card small {
   margin-top: 3px;
 }
-
 #patientPageOverview .patient-overview-card {
   overflow: hidden;
 }
-
 #patientPageOverview .patient-overview-card-header {
   display: flex;
   align-items: center;
@@ -3477,13 +2991,11 @@ textarea:focus-visible {
   padding: 18px 20px;
   border-bottom: 1px solid #edf1ee;
 }
-
 #patientPageOverview .patient-overview-card-header h3 {
   margin: 0;
   color: #29382f;
   font-size: 14px;
 }
-
 #patientPageOverview .patient-overview-status,
 #patientPageOverview .patient-overview-record-badge {
   display: inline-flex;
@@ -3496,32 +3008,27 @@ textarea:focus-visible {
   font-size: 8px;
   font-weight: 800;
 }
-
 #patientPageOverview .patient-overview-record-badge.empty {
   background: #f3f5f4;
   color: #7d8881;
 }
-
 #patientPageOverview .patient-overview-latest-content {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
   gap: 20px;
   padding: 20px;
 }
-
 #patientPageOverview .patient-overview-latest-main > strong {
   display: block;
   color: #2b3931;
   font-size: 12px;
 }
-
 #patientPageOverview .patient-overview-latest-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
 }
-
 #patientPageOverview .patient-overview-latest-meta span {
   display: inline-flex;
   align-items: center;
@@ -3529,11 +3036,9 @@ textarea:focus-visible {
   color: #78857d;
   font-size: 8.5px;
 }
-
 #patientPageOverview .patient-overview-latest-meta i {
   color: #16803d;
 }
-
 #patientPageOverview .patient-overview-latest-dentist {
   display: flex;
   flex-direction: column;
@@ -3541,53 +3046,44 @@ textarea:focus-visible {
   padding-left: 20px;
   border-left: 1px solid #e8eeea;
 }
-
 #patientPageOverview .patient-overview-latest-dentist span,
 #patientPageOverview .patient-overview-medical-item span {
   color: #89958e;
   font-size: 8px;
 }
-
 #patientPageOverview .patient-overview-latest-dentist strong,
 #patientPageOverview .patient-overview-medical-item strong {
   color: #34423a;
   font-size: 9.5px;
   overflow-wrap: anywhere;
 }
-
 #patientPageOverview .patient-overview-medical-grid,
 #patientPageOverview .patient-overview-record-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-
 #patientPageOverview .patient-overview-record-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-
 #patientPageOverview .patient-overview-medical-item,
 #patientPageOverview .patient-overview-record-item {
   min-width: 0;
   padding: 17px;
   border-right: 1px solid #edf1ee;
 }
-
 #patientPageOverview .patient-overview-medical-item:last-child,
 #patientPageOverview .patient-overview-record-item:last-child {
   border-right: 0;
 }
-
 #patientPageOverview .patient-overview-medical-item span {
   display: block;
   margin-bottom: 6px;
 }
-
 #patientPageOverview .patient-overview-record-item {
   display: flex;
   align-items: center;
   gap: 11px;
 }
-
 #patientPageOverview .patient-overview-record-icon {
   width: 35px;
   height: 35px;
@@ -3599,48 +3095,40 @@ textarea:focus-visible {
   background: #f0f7f2;
   font-size: 12px;
 }
-
 #patientPageOverview .patient-overview-record-item strong,
 #patientPageOverview .patient-overview-record-item span {
   display: block;
 }
-
 #patientPageOverview .patient-overview-record-item strong {
   color: #35433b;
   font-size: 9px;
 }
-
 #patientPageOverview .patient-overview-record-item span {
   margin-top: 3px;
   color: #87938c;
   font-size: 7.8px;
 }
-
 .doctor-medical-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-
 .doctor-medical-card {
   padding: 16px;
   border: 1px solid #dfe8e2;
   border-radius: 12px;
   background: #fff;
 }
-
 .doctor-medical-card h4 {
   margin: 0 0 14px;
   color: #29382f;
   font-family: var(--font-heading);
   font-size: 13px;
 }
-
 .doctor-medical-card div {
   padding: 10px 0;
   border-top: 1px solid #edf1ee;
 }
-
 .doctor-medical-card span {
   display: block;
   margin-bottom: 4px;
@@ -3648,7 +3136,6 @@ textarea:focus-visible {
   font-size: 8px;
   font-weight: 700;
 }
-
 .doctor-medical-card strong {
   display: block;
   color: #34423a;
@@ -3656,11 +3143,9 @@ textarea:focus-visible {
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
-
 .doctor-medical-record > .patient-record-section-header {
   align-items: center;
 }
-
 .doctor-medical-record
   > .patient-record-section-header
   .patient-overview-record-badge {
@@ -3677,34 +3162,29 @@ textarea:focus-visible {
   font-weight: 800;
   white-space: nowrap;
 }
-
 .doctor-medical-record
   > .patient-record-section-header
   .patient-overview-record-badge
   i {
   font-size: 8px;
 }
-
 .patient-appointment-history-list,
 .treatment-history-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .patient-appointment-card {
   padding: 15px;
   border: 1px solid #e1e9e4;
   border-radius: 10px;
   background: #fff;
 }
-
 .patient-appointment-card-main {
   display: flex;
   align-items: center;
   gap: 18px;
 }
-
 .patient-appointment-date-box {
   width: 130px;
   flex: 0 0 130px;
@@ -3712,42 +3192,35 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 3px;
 }
-
 .patient-appointment-date-label,
 .patient-appointment-meta-item span {
   color: #65736a;
   font-size: 9px;
   font-weight: 600;
 }
-
 .patient-appointment-date-box strong,
 .patient-appointment-title-row h4 {
   color: #27362d;
   font-size: 11px;
 }
-
 .patient-appointment-time,
 .patient-appointment-meta-item strong {
   color: #7d8982;
   font-size: 9.5px;
 }
-
 .patient-appointment-details {
   flex: 1;
   min-width: 0;
 }
-
 .patient-appointment-title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
-
 .patient-appointment-title-row h4 {
   margin: 0;
 }
-
 .patient-appointment-status {
   display: inline-flex;
   align-items: center;
@@ -3760,35 +3233,29 @@ textarea:focus-visible {
   font-weight: 800;
   text-transform: capitalize;
 }
-
 .patient-appointment-status-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: currentColor;
 }
-
 .patient-appointment-meta {
   display: flex;
   gap: 16px;
   margin-top: 12px;
 }
-
 .patient-appointment-meta-item {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .patient-appointment-meta-item > i {
   color: var(--green);
 }
-
 .patient-appointment-meta-item span,
 .patient-appointment-meta-item strong {
   display: block;
 }
-
 .treatment-history-list .patient-record-appointment {
   display: flex;
   align-items: center;
@@ -3798,7 +3265,6 @@ textarea:focus-visible {
   border-radius: 10px;
   background: #fff;
 }
-
 .treatment-history-list .patient-record-appointment-date {
   width: 150px;
   flex: 0 0 150px;
@@ -3806,26 +3272,22 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 5px;
 }
-
 .treatment-history-list .patient-record-appointment-date span {
   color: #65736a;
   font-size: 9px;
   font-weight: 600;
 }
-
 .treatment-history-list .patient-record-appointment-date strong {
   display: block;
   color: #27362d;
   font-size: 10px;
   line-height: 1.35;
 }
-
 .treatment-history-list .patient-record-appointment-date strong i {
   margin-right: 4px;
   color: var(--green);
   font-size: 9px;
 }
-
 .treatment-history-list .patient-record-appointment-info {
   min-width: 0;
   display: flex;
@@ -3833,30 +3295,25 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 5px;
 }
-
 .treatment-history-list .patient-record-appointment-info strong {
   color: #2c3b32;
   font-size: 12px;
   line-height: 1.35;
 }
-
 .treatment-history-list .patient-record-appointment-info span {
   color: #7d8982;
   font-size: 9.5px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
-
 .patient-appointment-date-box strong,
 .patient-appointment-date-box .patient-appointment-time {
   display: block;
 }
-
 .patient-appointment-date-box .patient-appointment-time i {
   margin-right: 4px;
   color: var(--green);
 }
-
 .staff-treatment-view-only {
   display: flex;
   align-items: center;
@@ -3868,36 +3325,29 @@ textarea:focus-visible {
   color: #53705d;
   font-size: 9px;
 }
-
 .staff-treatment-view-only i {
   color: var(--green);
 }
-
 @media (max-width: 850px) {
   #patientPageOverview .patient-overview-record-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   #patientPageOverview .patient-overview-latest-content {
     grid-template-columns: 1fr;
   }
-
   #patientPageOverview .patient-overview-latest-dentist {
     padding: 12px 0 0;
     border-top: 1px solid #e8eeea;
     border-left: 0;
   }
 }
-
 @media (max-width: 650px) {
   #patientPageOverview .patient-overview {
     padding: 16px;
   }
-
   #patientPageOverview .patient-overview-summary-card {
     align-items: flex-start;
   }
-
   #patientPageOverview .patient-overview-summary-meta,
   #patientPageOverview .patient-overview-stats,
   #patientPageOverview .patient-overview-medical-grid,
@@ -3905,59 +3355,48 @@ textarea:focus-visible {
   .doctor-medical-grid {
     grid-template-columns: 1fr;
   }
-
   #patientPageOverview .patient-overview-summary-meta {
     flex-direction: column;
     gap: 6px;
   }
-
   #patientPageOverview .patient-overview-medical-item,
   #patientPageOverview .patient-overview-record-item {
     border-right: 0;
     border-bottom: 1px solid #edf1ee;
   }
-
   #patientPageOverview .patient-overview-medical-item:last-child,
   #patientPageOverview .patient-overview-record-item:last-child {
     border-bottom: 0;
   }
-
   .patient-appointment-card-main {
     align-items: flex-start;
     flex-direction: column;
     gap: 12px;
   }
-
   .patient-appointment-date-box {
     width: auto;
   }
-
   .patient-appointment-title-row {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .treatment-history-list .patient-record-appointment {
     align-items: flex-start;
     flex-direction: column;
     gap: 12px;
   }
-
   .treatment-history-list .patient-record-appointment-date {
     width: auto;
     flex-basis: auto;
   }
 }
-
 .patients-main.patient-record-open {
   padding-top: 24px;
 }
-
 .patient-record-page {
   max-width: 1180px;
   padding-bottom: 28px;
 }
-
 .patient-record-header {
   padding: 20px 22px 18px;
   border: 1px solid var(--border);
@@ -3965,27 +3404,22 @@ textarea:focus-visible {
   border-radius: 16px 16px 0 0;
   background: var(--white);
 }
-
 .patient-record-back-btn {
   margin-bottom: 20px;
   font-size: 11px;
 }
-
 .patient-record-heading {
   padding: 0;
   border: 0;
   background: transparent;
 }
-
 .patient-record-heading h1 {
   font-size: 24px;
   letter-spacing: -0.025em;
 }
-
 .patient-record-heading p {
   font-size: 10px;
 }
-
 .patient-record-tabs {
   margin: 0 0 16px;
   padding: 0 12px;
@@ -3994,80 +3428,64 @@ textarea:focus-visible {
   box-shadow: none;
   scrollbar-width: none;
 }
-
 .patient-record-tabs::-webkit-scrollbar {
   display: none;
 }
-
 .patient-record-tab {
   min-height: 46px;
   padding: 0 14px;
   font-size: 10px;
 }
-
 .patient-record-panels {
   min-width: 0;
 }
-
 .patient-record-section {
   padding: 20px;
   border-radius: 14px;
 }
-
 .patient-record-section-header h3 {
   font-size: 17px;
 }
-
 .patient-record-section-header p {
   font-size: 9px;
 }
-
 .patient-overview-information-item strong,
 .patient-overview-information-item small,
 .patient-overview-appointment-main > strong,
 .patient-overview-appointment-dentist strong {
   overflow-wrap: anywhere;
 }
-
 .patient-record-panel[hidden] {
   display: none !important;
 }
-
 @media (max-width: 700px) {
   .patients-main.patient-record-open {
     padding: 12px 12px 24px;
   }
-
   .patient-record-header {
     padding: 16px;
   }
-
   .patient-record-heading h1 {
     font-size: 21px;
   }
-
   .patient-record-tabs {
     padding: 0 6px;
   }
-
   .patient-record-tab {
     min-height: 42px;
     padding: 0 10px;
     font-size: 9px;
   }
-
   .patient-record-section {
     padding: 15px;
   }
 }
-
 .patient-medical-record-id {
   display: block;
   margin-top: 3px;
   color: var(--text-soft);
   font-size: 9px;
 }
-
 .patient-medical-record-status {
   display: inline-flex;
   align-items: center;
@@ -4082,51 +3500,48 @@ textarea:focus-visible {
   font-weight: 800;
   white-space: nowrap;
 }
-
 .patient-medical-record-status i {
   font-size: 6px;
 }
-
 .patient-medical-record-card {
   width: 100%;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--white);
 }
-
 .patient-medical-record-card-header {
+  min-height: 58px;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
   gap: 11px;
-  min-height: 54px;
-  padding: 9px 15px;
   border-bottom: 1px solid var(--border);
 }
-
 .patient-medical-record-card-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 30px;
   height: 30px;
   flex: 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8px;
   background: var(--green-light);
   color: var(--green);
   font-size: 12px;
 }
-
+.patient-medical-record-card-header > div:last-child {
+  min-width: 0;
+}
 .patient-medical-record-card-header span {
   display: block;
-  margin-bottom: 2px;
+  margin: 0 0 2px;
   color: var(--text-muted);
   font-size: 7px;
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 .patient-medical-record-card-header h4 {
   margin: 0;
   color: var(--text);
@@ -4135,33 +3550,117 @@ textarea:focus-visible {
   line-height: 1.25;
   font-weight: 800;
 }
-
 .patient-medical-record-card-body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-
 .patient-medical-field {
   min-width: 0;
-  min-height: 74px;
+  min-height: 76px;
   padding: 13px 15px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
-
 .patient-medical-field:nth-child(2n) {
   border-right: 0;
 }
-
-.patient-medical-field:nth-last-child(-n + 2) {
-  border-bottom: 0;
-}
-
 .patient-medical-field.full {
   grid-column: 1 / -1;
   border-right: 0;
 }
-
+.patient-medical-field > span {
+  display: block;
+  margin: 0 0 7px;
+  color: var(--text-muted);
+  font-size: 7px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+.patient-medical-field > strong {
+  display: block;
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.patient-medical-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.patient-medical-tags span {
+  min-height: 25px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cfe8d8;
+  border-radius: 7px;
+  background: #f0faf4;
+  color: var(--green);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 800;
+}
+.patient-medical-tags strong {
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 700;
+}
+.patient-medical-consent {
+  min-height: 60px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #cfe7d8;
+  border-radius: 12px;
+  background: #f3fbf6;
+}
+.patient-medical-consent-icon {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e1f5e8;
+  color: var(--green);
+  font-size: 12px;
+}
+.patient-medical-consent strong {
+  display: block;
+  color: var(--green);
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+.patient-medical-consent span {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-soft);
+  font-size: 8px;
+  line-height: 1.4;
+}
+.patient-medical-field:nth-child(2n) {
+  border-right: 0;
+}
+.patient-medical-field:last-child {
+  border-bottom: 0;
+}
+.patient-medical-record-card:first-of-type .patient-medical-field.full {
+  border-bottom: 1px solid var(--border);
+}
+.patient-medical-record-card:first-of-type .patient-medical-field:not(.full) {
+  border-bottom: 0;
+}
+.patient-medical-field.full {
+  grid-column: 1 / -1;
+  border-right: 0;
+}
 .patient-medical-field > span {
   display: block;
   margin-bottom: 8px;
@@ -4171,7 +3670,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.07em;
 }
-
 .patient-medical-field > strong {
   display: block;
   color: var(--text);
@@ -4180,14 +3678,12 @@ textarea:focus-visible {
   font-weight: 700;
   overflow-wrap: anywhere;
 }
-
 .patient-medical-tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
 }
-
 .patient-medical-tags span {
   display: inline-flex;
   align-items: center;
@@ -4201,13 +3697,11 @@ textarea:focus-visible {
   line-height: 1;
   font-weight: 800;
 }
-
 .patient-medical-tags strong {
   color: var(--text);
   font-size: 10px;
   font-weight: 700;
 }
-
 .patient-medical-consent {
   display: flex;
   align-items: center;
@@ -4218,7 +3712,6 @@ textarea:focus-visible {
   border-radius: 11px;
   background: #f3fbf6;
 }
-
 .patient-medical-consent-icon {
   display: flex;
   align-items: center;
@@ -4231,7 +3724,6 @@ textarea:focus-visible {
   color: var(--green);
   font-size: 12px;
 }
-
 .patient-medical-consent strong {
   display: block;
   color: var(--green);
@@ -4239,7 +3731,6 @@ textarea:focus-visible {
   line-height: 1.3;
   font-weight: 800;
 }
-
 .patient-medical-consent span {
   display: block;
   margin-top: 2px;
@@ -4247,33 +3738,27 @@ textarea:focus-visible {
   font-size: 8px;
   line-height: 1.4;
 }
-
 @media (max-width: 800px) {
   .patient-medical-record-card-body {
     grid-template-columns: 1fr;
   }
-
   .patient-medical-field,
   .patient-medical-field:nth-child(2n) {
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
-
   .patient-medical-field:last-child {
     border-bottom: 0;
   }
-
   .patient-medical-field.full {
     grid-column: 1;
   }
 }
-
 @media (max-width: 600px) {
   .patient-medical-record-header {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .patient-medical-record-status {
     align-self: flex-start;
   }
@@ -4284,7 +3769,6 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 12px;
 }
-
 .staff-dental-chart-header {
   display: flex;
   align-items: center;
@@ -4292,7 +3776,6 @@ textarea:focus-visible {
   gap: 20px;
   padding: 4px 0 8px;
 }
-
 .staff-dental-chart-eyebrow {
   display: block;
   margin-bottom: 4px;
@@ -4301,7 +3784,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 .staff-dental-chart-header h3 {
   margin: 0;
   color: var(--text);
@@ -4309,25 +3791,21 @@ textarea:focus-visible {
   font-size: 20px;
   font-weight: 800;
 }
-
 .staff-dental-chart-header p {
   margin: 5px 0 0;
   color: var(--text-soft);
   font-size: 10px;
 }
-
 .staff-dental-dentition {
   display: flex;
   align-items: center;
   gap: 9px;
 }
-
 .staff-dental-dentition span {
   color: var(--text-muted);
   font-size: 8px;
   font-weight: 800;
 }
-
 .staff-dental-dentition strong {
   display: inline-flex;
   align-items: center;
@@ -4339,14 +3817,12 @@ textarea:focus-visible {
   color: var(--text);
   font-size: 9px;
 }
-
 .staff-dental-odontogram {
   padding: 24px 18px 20px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--white);
 }
-
 .staff-dental-arch-title {
   margin-bottom: 18px;
   color: var(--text-soft);
@@ -4355,31 +3831,26 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.15em;
 }
-
 .staff-dental-arch-title.lower {
   margin-top: 16px;
   margin-bottom: 0;
 }
-
 .staff-dental-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
   gap: 22px;
   align-items: center;
 }
-
 .staff-dental-half {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 12px;
 }
-
 .staff-dental-midline {
   width: 1px;
   height: 56px;
   background: var(--border);
 }
-
 .staff-dental-center {
   display: flex;
   align-items: center;
@@ -4390,7 +3861,6 @@ textarea:focus-visible {
   font-weight: 800;
   letter-spacing: 0.12em;
 }
-
 .staff-dental-center::before,
 .staff-dental-center::after {
   content: "";
@@ -4398,20 +3868,17 @@ textarea:focus-visible {
   flex: 1;
   background: var(--border);
 }
-
 .staff-dental-tooth {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 }
-
 .staff-dental-tooth-number {
   color: var(--text);
   font-size: 8px;
   font-weight: 800;
 }
-
 .staff-dental-tooth-button {
   position: relative;
   display: flex;
@@ -4431,29 +3898,24 @@ textarea:focus-visible {
     color 0.2s ease,
     box-shadow 0.2s ease;
 }
-
 .staff-dental-tooth-button.has-record {
   background: var(--green-light);
   border-color: #b9dfc5;
   color: var(--green);
   cursor: pointer;
 }
-
 .staff-dental-tooth-button.has-record:hover {
   border-color: var(--green);
 }
-
 .staff-dental-tooth-button.is-selected {
   border-color: var(--green);
   background: #eef8f1;
   color: var(--green);
   box-shadow: 0 0 0 2px rgba(22, 128, 61, 0.08);
 }
-
 .staff-dental-tooth-button i {
   font-size: 18px;
 }
-
 .staff-dental-history-badge {
   position: absolute;
   top: -6px;
@@ -4470,14 +3932,12 @@ textarea:focus-visible {
   font-size: 7px;
   font-weight: 800;
 }
-
 .staff-dental-procedure-history {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--white);
 }
-
 .staff-dental-history-header {
   display: flex;
   align-items: center;
@@ -4486,24 +3946,21 @@ textarea:focus-visible {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
 }
-
 .staff-dental-history-header span:first-child {
   display: block;
   margin-bottom: 3px;
-  color: var(--text-muted);
+  color: var(--green);
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
-
 .staff-dental-history-header h3 {
   margin: 0;
   color: var(--text);
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 800;
 }
-
 .staff-dental-record-count {
   display: inline-flex;
   align-items: center;
@@ -4517,30 +3974,25 @@ textarea:focus-visible {
   font-weight: 800;
   white-space: nowrap;
 }
-
 .staff-dental-procedure-list {
   display: flex;
   flex-direction: column;
 }
-
 .staff-dental-procedure-item {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
   min-height: 66px;
   border-bottom: 1px solid var(--border);
 }
-
 .staff-dental-procedure-item:last-child {
   border-bottom: 0;
 }
-
 .staff-dental-procedure-marker {
   position: relative;
   display: flex;
   justify-content: center;
-  padding-top: 19px;
+  padding-top: 28px;
 }
-
 .staff-dental-procedure-marker::after {
   content: "";
   position: absolute;
@@ -4549,11 +4001,9 @@ textarea:focus-visible {
   width: 1px;
   background: #d5e5da;
 }
-
 .staff-dental-procedure-item:last-child .staff-dental-procedure-marker::after {
   display: none;
 }
-
 .staff-dental-procedure-marker span {
   position: relative;
   z-index: 1;
@@ -4564,42 +4014,53 @@ textarea:focus-visible {
   background: var(--white);
   box-shadow: 0 0 0 2px var(--green-light);
 }
-
 .staff-dental-procedure-content {
-  padding: 15px 16px 13px 0;
+  min-width: 0;
+  min-height: 64px;
+  padding: 12px 16px 12px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
 }
-
 .staff-dental-procedure-title {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .staff-dental-procedure-title strong {
+  min-width: 0;
   color: var(--text);
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 700;
 }
-
 .staff-dental-latest {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  min-height: 17px;
-  padding: 0 6px;
+  justify-content: center;
+  min-height: 18px;
+  padding: 0 7px;
   border-radius: 5px;
   background: var(--green-light);
   color: var(--green);
-  font-size: 6px;
+  font-size: 6.5px;
+  line-height: 1;
   font-weight: 800;
+  letter-spacing: 0.02em;
 }
-
 .staff-dental-procedure-date {
-  display: block;
-  margin-top: 4px;
+  margin: 0;
+  padding: 0;
   color: var(--text-soft);
   font-size: 9px;
+  line-height: 1.3;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
 }
-
 .staff-dental-procedure-empty {
   display: flex;
   align-items: center;
@@ -4608,22 +4069,18 @@ textarea:focus-visible {
   padding: 30px 20px;
   text-align: center;
 }
-
 .staff-dental-procedure-empty i {
   color: var(--green);
   font-size: 22px;
 }
-
 .staff-dental-procedure-empty strong {
   color: var(--text);
   font-size: 11px;
 }
-
 .staff-dental-procedure-empty span {
   color: var(--text-soft);
   font-size: 9px;
 }
-
 .staff-dental-view-only {
   display: flex;
   align-items: center;
@@ -4633,7 +4090,6 @@ textarea:focus-visible {
   border-radius: 11px;
   background: var(--green-soft);
 }
-
 .staff-dental-view-only-icon {
   display: flex;
   align-items: center;
@@ -4646,21 +4102,18 @@ textarea:focus-visible {
   color: var(--green);
   font-size: 12px;
 }
-
 .staff-dental-view-only strong {
   display: block;
   color: var(--green);
   font-size: 9px;
   font-weight: 800;
 }
-
 .staff-dental-view-only span {
   display: block;
   margin-top: 2px;
   color: var(--text-soft);
   font-size: 8px;
 }
-
 .staff-dental-empty {
   display: flex;
   align-items: center;
@@ -4672,59 +4125,47 @@ textarea:focus-visible {
   background: var(--white);
   text-align: center;
 }
-
 .staff-dental-empty i {
   color: var(--green);
   font-size: 25px;
 }
-
 .staff-dental-empty strong {
   color: var(--text);
   font-size: 12px;
 }
-
 .staff-dental-empty span {
   color: var(--text-soft);
   font-size: 9px;
 }
-
 @media (max-width: 900px) {
   .staff-dental-half {
     gap: 7px;
   }
-
   .staff-dental-row {
     gap: 12px;
   }
-
   .staff-dental-tooth-button {
     width: 38px;
     height: 38px;
   }
-
   .staff-dental-tooth-button i {
     font-size: 15px;
   }
 }
-
 @media (max-width: 700px) {
   .staff-dental-chart-header {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .staff-dental-dentition {
     align-self: flex-start;
   }
-
   .staff-dental-odontogram {
     overflow-x: auto;
   }
-
   .staff-dental-row {
     min-width: 720px;
   }
-
   .staff-dental-procedure-item {
     grid-template-columns: 34px minmax(0, 1fr);
   }
@@ -4734,7 +4175,6 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 8px;
 }
-
 .staff-actual-treatment-card {
   display: grid;
   grid-template-columns: 145px 1px minmax(0, 1fr);
@@ -4744,20 +4184,20 @@ textarea:focus-visible {
   border-radius: 11px;
   background: var(--white);
 }
-
 .staff-actual-treatment-date {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 12px 16px;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 14px 16px;
 }
-
 .staff-actual-treatment-date strong {
-  color: var(--text);
+  color: var(--green);
   font-size: 10px;
+  line-height: 1.3;
   font-weight: 700;
 }
-
 .staff-actual-treatment-date span {
   display: flex;
   align-items: center;
@@ -4766,41 +4206,36 @@ textarea:focus-visible {
   font-size: 9px;
   font-weight: 800;
 }
-
 .staff-actual-treatment-date span i {
   font-size: 9px;
 }
-
 .staff-actual-treatment-date small {
-  color: var(--text);
-  font-size: 9px;
+  color: var(--green);
+  font-size: 11px;
+  line-height: 1.3;
   font-weight: 800;
 }
-
 .staff-actual-treatment-divider {
   width: 1px;
   height: 58px;
   background: var(--border);
 }
-
 .staff-actual-treatment-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 12px 18px;
 }
-
 .staff-actual-treatment-info strong {
-  color: var(--text);
+  color: var(--green);
   font-size: 12px;
+  line-height: 1.3;
   font-weight: 800;
 }
-
 .staff-actual-treatment-info span {
   color: var(--text-soft);
   font-size: 9px;
 }
-
 .staff-treatment-materials {
   display: flex;
   align-items: flex-start;
@@ -4814,12 +4249,10 @@ textarea:focus-visible {
   font-size: 8px;
   line-height: 1.4;
 }
-
 .staff-treatment-materials i {
   padding-top: 1px;
   color: var(--green);
 }
-
 .staff-treatment-view-only {
   display: flex;
   align-items: center;
@@ -4828,21 +4261,17 @@ textarea:focus-visible {
   color: var(--text-muted);
   font-size: 8px;
 }
-
 .staff-treatment-view-only i {
   color: var(--green);
   font-size: 9px;
 }
-
 @media (max-width: 640px) {
   .staff-actual-treatment-card {
     grid-template-columns: 105px 1px minmax(0, 1fr);
   }
-
   .staff-actual-treatment-date {
     padding: 11px;
   }
-
   .staff-actual-treatment-info {
     padding: 11px 13px;
   }
@@ -4850,19 +4279,17 @@ textarea:focus-visible {
 .staff-appointment-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
-
 .staff-appointment-card {
   display: grid;
   grid-template-columns: 145px minmax(0, 1fr);
-  min-height: 104px;
+  min-height: 96px;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 11px;
   background: var(--white);
 }
-
 .staff-appointment-date {
   display: flex;
   flex-direction: column;
@@ -4872,89 +4299,82 @@ textarea:focus-visible {
   border-right: 1px solid var(--border);
   background: #f9fcfa;
 }
-
 .staff-appointment-date > span {
-  color: var(--text-muted);
+  color: #87938b;
   font-size: 7px;
-  font-weight: 800;
+  line-height: 1.2;
+  font-weight: 700;
   letter-spacing: 0.08em;
 }
-
 .staff-appointment-date > strong {
-  color: var(--text);
+  color: #26342c;
   font-size: 10px;
-  font-weight: 800;
+  line-height: 1.3;
+  font-weight: 650;
 }
-
 .staff-appointment-date > small {
   display: flex;
   align-items: center;
   gap: 5px;
   color: var(--green);
   font-size: 8px;
-  font-weight: 800;
+  line-height: 1.3;
+  font-weight: 600;
 }
-
 .staff-appointment-date > small i {
   font-size: 8px;
 }
-
 .staff-appointment-main {
   min-width: 0;
-  padding: 13px 16px;
+  padding: 12px 18px;
 }
-
 .staff-appointment-main-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 9px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
-
 .staff-appointment-main-header h4 {
   margin: 0;
-  color: var(--text);
+  color: #26342c;
   font-family: var(--font-heading);
   font-size: 11px;
-  font-weight: 800;
+  line-height: 1.3;
+  font-weight: 650;
 }
-
 .staff-appointment-status {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 23px;
+  min-height: 22px;
   padding: 0 9px;
-  border: 1px solid #cfe7d8;
-  border-radius: 7px;
-  background: var(--green-light);
-  color: var(--green);
+  border: 1px solid #d5e8dc;
+  border-radius: 999px;
+  background: #f2faf5;
+  color: #378157;
   font-size: 7px;
-  font-weight: 800;
+  line-height: 1;
+  font-weight: 600;
   text-transform: none;
   white-space: nowrap;
 }
-
 .staff-appointment-status i {
   font-size: 5px;
 }
-
 .staff-appointment-meta {
   display: flex;
   align-items: center;
-  gap: 22px;
-  padding-top: 9px;
+  gap: 28px;
+  padding-top: 10px;
 }
-
 .staff-appointment-meta > div {
   display: flex;
   align-items: center;
   gap: 7px;
   min-width: 0;
 }
-
 .staff-appointment-meta-icon {
   display: flex;
   align-items: center;
@@ -4963,75 +4383,67 @@ textarea:focus-visible {
   height: 27px;
   flex: 0 0 27px;
   border-radius: 7px;
-  background: var(--green-light);
+  background: #eef8f2;
   color: var(--green);
   font-size: 9px;
 }
-
 .staff-appointment-meta > div > div:last-child {
   min-width: 0;
 }
-
 .staff-appointment-meta span {
   display: block;
   margin-bottom: 2px;
-  color: var(--text-muted);
+  color: #8a958e;
   font-size: 6px;
-  font-weight: 800;
+  line-height: 1.2;
+  font-weight: 700;
   letter-spacing: 0.07em;
 }
-
 .staff-appointment-meta strong {
   display: block;
   max-width: 260px;
   overflow: hidden;
-  color: var(--text);
+  color: #334139;
   font-size: 8px;
-  font-weight: 700;
+  line-height: 1.3;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .staff-appointment-view-only {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 0;
-  color: var(--text-muted);
+  margin-top: 9px;
+  color: #8b958f;
   font-size: 7px;
+  line-height: 1.3;
 }
-
 .staff-appointment-view-only i {
   color: var(--green);
   font-size: 8px;
 }
-
 @media (max-width: 800px) {
   .staff-appointment-card {
     grid-template-columns: 125px minmax(0, 1fr);
   }
-
   .staff-appointment-meta {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
 }
-
 @media (max-width: 600px) {
   .staff-appointment-card {
     grid-template-columns: 1fr;
   }
-
   .staff-appointment-date {
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
-
   .staff-appointment-main {
     padding: 12px;
   }
-
   .staff-appointment-main-header {
     flex-direction: column;
     align-items: flex-start;
@@ -5159,8 +4571,9 @@ textarea:focus-visible {
 }
 .staff-clinical-images-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 415px));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  width: 100%;
   align-items: start;
 }
 .staff-clinical-image-card {
@@ -5173,6 +4586,21 @@ textarea:focus-visible {
 }
 .staff-clinical-image-header {
   padding: 13px 13px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.staff-clinical-image-header > div {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.staff-clinical-image-header span {
+  flex: 0 0 auto;
+  text-align: right;
 }
 .staff-clinical-image-description {
   margin: 9px 13px 0;
@@ -5225,4 +4653,1242 @@ textarea:focus-visible {
   .staff-clinical-image-card {
     max-width: 100%;
   }
+}
+#patientPageOverview {
+  background: #f7f9f8;
+}
+#patientPageOverview .patient-overview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 17px 18px 18px;
+  background: #f7f9f8;
+}
+#patientPageOverview .patient-record-section-header {
+  padding: 1px 2px 4px;
+}
+#patientPageOverview .patient-record-section-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: #16803d;
+  font-size: 7px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+}
+#patientPageOverview .patient-record-section-header h3 {
+  margin: 0;
+  color: #26342c;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+#patientPageOverview .patient-record-section-header p {
+  margin: 4px 0 0;
+  color: #7b8780;
+  font-size: 9px;
+  line-height: 1.45;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-information {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid #dfe7e2;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(20, 57, 36, 0.018);
+}
+#patientPageOverview .patient-overview-information-item {
+  min-width: 0;
+  min-height: 57px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #e7ece9;
+  border-bottom: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-information-item:nth-child(3n) {
+  border-right: 0;
+}
+#patientPageOverview .patient-overview-information-item:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+#patientPageOverview .patient-overview-information-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dceee3;
+  border-radius: 50%;
+  background: #f0f9f3;
+  color: #16803d;
+  font-size: 9px;
+}
+#patientPageOverview .patient-overview-information-item > div:last-child {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-information-item span {
+  display: block;
+  margin-bottom: 3px;
+  color: #8a958f;
+  font-size: 7.5px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+#patientPageOverview .patient-overview-information-item strong {
+  display: block;
+  color: #2d3932;
+  font-size: 8.8px;
+  line-height: 1.35;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+#patientPageOverview .patient-overview-information-item small {
+  display: block;
+  margin-top: 2px;
+  color: #9aa49e;
+  font-size: 6.8px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+#patientPageOverview .patient-overview-stat {
+  min-height: 54px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #dfe7e2;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(20, 57, 36, 0.018);
+}
+#patientPageOverview .patient-overview-stat-icon {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #eff9f3;
+  color: #16803d;
+  font-size: 9px;
+}
+#patientPageOverview .patient-overview-stat strong {
+  display: block;
+  margin: 0;
+  color: #26342c;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-stat span {
+  display: block;
+  margin-top: 3px;
+  color: #818c85;
+  font-size: 7.5px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-card {
+  margin-top: 0;
+  overflow: hidden;
+  border: 1px solid #dfe7e2;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(20, 57, 36, 0.018);
+}
+#patientPageOverview .patient-overview-card-header {
+  min-height: 48px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e8edea;
+  background: #ffffff;
+}
+#patientPageOverview .patient-overview-card-header h3 {
+  margin: 2px 0 0;
+  color: #29362f;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+#patientPageOverview .patient-overview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid #d6eadc;
+  border-radius: 7px;
+  background: #f0f9f3;
+  color: #247342;
+  font-size: 7.2px;
+  line-height: 1;
+  font-weight: 600;
+  white-space: nowrap;
+}
+#patientPageOverview .patient-overview-status i {
+  font-size: 4.5px;
+}
+#patientPageOverview .patient-overview-appointment {
+  min-height: 61px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+#patientPageOverview .patient-overview-appointment-main {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-appointment-main > strong {
+  display: block;
+  color: #29362f;
+  font-size: 9.5px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-appointment-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 11px;
+  margin-top: 5px;
+}
+#patientPageOverview .patient-overview-appointment-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #7e8982;
+  font-size: 7.8px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-appointment-meta i {
+  color: #16803d;
+  font-size: 7px;
+}
+#patientPageOverview .patient-overview-appointment-dentist {
+  min-width: 135px;
+  padding-left: 18px;
+  border-left: 1px solid #e5ebe7;
+}
+#patientPageOverview .patient-overview-appointment-dentist span {
+  display: block;
+  margin-bottom: 3px;
+  color: #8a958f;
+  font-size: 7.3px;
+  line-height: 1.2;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-appointment-dentist strong {
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-medical-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#patientPageOverview .patient-overview-medical-summary > div {
+  min-width: 0;
+  min-height: 54px;
+  padding: 9px 12px;
+  border-right: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-medical-summary > div:last-child {
+  border-right: 0;
+}
+#patientPageOverview .patient-overview-medical-summary span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8a958f;
+  font-size: 7.3px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+#patientPageOverview .patient-overview-medical-summary strong {
+  display: block;
+  color: #303b34;
+  font-size: 8.8px;
+  line-height: 1.35;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+#patientPageOverview .patient-overview-clinical-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+#patientPageOverview .patient-overview-clinical-grid > div {
+  min-width: 0;
+  min-height: 54px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-clinical-grid > div:last-child {
+  border-right: 0;
+}
+#patientPageOverview .patient-overview-clinical-icon {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: #eff9f3;
+  color: #16803d;
+  font-size: 8.5px;
+}
+#patientPageOverview .patient-overview-clinical-grid > div > div:last-child {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-clinical-grid strong {
+  display: block;
+  color: #2d3932;
+  font-size: 8.3px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-clinical-grid span {
+  display: block;
+  margin-top: 3px;
+  color: #818c85;
+  font-size: 7.3px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-information,
+#patientPageOverview .patient-overview-stat,
+#patientPageOverview .patient-overview-card {
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+#patientPageOverview .patient-overview-information:hover,
+#patientPageOverview .patient-overview-stat:hover,
+#patientPageOverview .patient-overview-card:hover {
+  border-color: #d7e2db;
+}
+@media (max-width: 1000px) {
+  #patientPageOverview .patient-overview-information {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #patientPageOverview .patient-overview-information-item:nth-child(4n) {
+    border-right: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-information-item:nth-child(2n) {
+    border-right: 0;
+  }
+  #patientPageOverview
+    .patient-overview-information-item:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+  #patientPageOverview .patient-overview-clinical-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div:nth-child(2n) {
+    border-right: 0;
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div:nth-child(-n + 2) {
+    border-bottom: 1px solid #e7ece9;
+  }
+}
+@media (max-width: 700px) {
+  #patientPageOverview .patient-overview-section {
+    padding: 14px;
+    gap: 9px;
+  }
+  #patientPageOverview .patient-overview-information,
+  #patientPageOverview .patient-overview-stat-grid,
+  #patientPageOverview .patient-overview-medical-summary,
+  #patientPageOverview .patient-overview-clinical-grid {
+    grid-template-columns: 1fr;
+  }
+  #patientPageOverview .patient-overview-information-item,
+  #patientPageOverview .patient-overview-information-item:nth-child(2n),
+  #patientPageOverview .patient-overview-information-item:nth-child(4n) {
+    border-right: 0;
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-information-item:last-child {
+    border-bottom: 0;
+  }
+  #patientPageOverview .patient-overview-medical-summary > div {
+    border-right: 0;
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-medical-summary > div:last-child {
+    border-bottom: 0;
+  }
+  #patientPageOverview .patient-overview-appointment {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #patientPageOverview .patient-overview-appointment-dentist {
+    width: 100%;
+    min-width: 0;
+    padding-top: 8px;
+    padding-left: 0;
+    border-top: 1px solid #e7ece9;
+    border-left: 0;
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div,
+  #patientPageOverview .patient-overview-clinical-grid > div:nth-child(2n) {
+    border-right: 0;
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div:last-child {
+    border-bottom: 0;
+  }
+}
+#patientPageOverview {
+  width: 100%;
+  margin: 0;
+}
+#patientPageOverview .patient-record-section-header {
+  margin-bottom: 14px;
+  padding: 0;
+}
+#patientPageOverview .patient-record-section-eyebrow {
+  display: block;
+  margin: 0 0 3px;
+  color: var(--green);
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+#patientPageOverview .patient-record-section-header h3 {
+  margin: 0;
+  color: #26342c;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+#patientPageOverview .patient-record-section-header p {
+  margin: 3px 0 0;
+  color: #7c8881;
+  font-size: 8.5px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-information {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid #dfe7e2;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(20, 57, 36, 0.018);
+}
+#patientPageOverview .patient-overview-information-item {
+  min-width: 0;
+  min-height: 72px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-right: 1px solid #e7ece9;
+  border-bottom: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-information-item:nth-child(3n) {
+  border-right: 0;
+}
+#patientPageOverview .patient-overview-information-item:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+#patientPageOverview .patient-overview-information-icon {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9eee1;
+  border-radius: 50%;
+  background: #eff9f3;
+  color: var(--green);
+  font-size: 8px;
+}
+#patientPageOverview .patient-overview-information-item > div:last-child {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-information-item span {
+  display: block;
+  margin: 0 0 3px;
+  color: #8a958f;
+  font-size: 7px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+#patientPageOverview .patient-overview-information-item strong {
+  display: block;
+  color: #29362f;
+  font-size: 8.8px;
+  line-height: 1.3;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+#patientPageOverview .patient-overview-address {
+  grid-column: span 1;
+}
+#patientPageOverview .patient-overview-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+#patientPageOverview .patient-overview-stat {
+  min-height: 57px;
+  padding: 9px 13px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #dfe7e2;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(20, 57, 36, 0.018);
+}
+#patientPageOverview .patient-overview-stat-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #eff9f3;
+  color: var(--green);
+  font-size: 9px;
+}
+#patientPageOverview .patient-overview-stat strong {
+  display: block;
+  margin: 0;
+  color: #26342c;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-stat span {
+  display: block;
+  margin-top: 3px;
+  color: #818c85;
+  font-size: 7.5px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-card {
+  margin: 0 0 10px;
+  overflow: hidden;
+  border: 1px solid #dfe7e2;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(20, 57, 36, 0.018);
+}
+#patientPageOverview .patient-overview-card:last-child {
+  margin-bottom: 0;
+}
+#patientPageOverview .patient-overview-card-header {
+  min-height: 48px;
+  padding: 8px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e7ece9;
+  background: #fff;
+}
+#patientPageOverview .patient-overview-card-header > div {
+  min-width: 0;
+}
+#patientPageOverview
+  .patient-overview-card-header
+  .patient-record-section-eyebrow {
+  margin-bottom: 2px;
+  font-size: 9px;
+}
+#patientPageOverview .patient-overview-card-header h3 {
+  margin: 0;
+  color: #29362f;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+#patientPageOverview .patient-overview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid #d6eadc;
+  border-radius: 7px;
+  background: #f0f9f3;
+  color: #247342;
+  font-size: 7px;
+  line-height: 1;
+  font-weight: 600;
+  white-space: nowrap;
+}
+#patientPageOverview .patient-overview-status i {
+  font-size: 4.5px;
+}
+#patientPageOverview .patient-overview-appointment {
+  min-height: 62px;
+  padding: 10px 13px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+#patientPageOverview .patient-overview-appointment-main {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-appointment-main > strong {
+  display: block;
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-appointment-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 11px;
+  margin-top: 5px;
+}
+#patientPageOverview .patient-overview-appointment-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #7e8982;
+  font-size: 7.7px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-appointment-meta i {
+  color: var(--green);
+  font-size: 7px;
+}
+#patientPageOverview .patient-overview-appointment-dentist {
+  min-width: 135px;
+  padding-left: 18px;
+  border-left: 1px solid #e5ebe7;
+}
+#patientPageOverview .patient-overview-appointment-dentist span {
+  display: block;
+  margin-bottom: 3px;
+  color: #8a958f;
+  font-size: 7.2px;
+  line-height: 1.2;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-appointment-dentist strong {
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-medical-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#patientPageOverview .patient-overview-medical-summary > div {
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 13px;
+  border-right: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-medical-summary > div:last-child {
+  border-right: 0;
+}
+#patientPageOverview .patient-overview-medical-summary span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8a958f;
+  font-size: 7.2px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+#patientPageOverview .patient-overview-medical-summary strong {
+  display: block;
+  color: #303b34;
+  font-size: 8.8px;
+  line-height: 1.35;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+#patientPageOverview .patient-overview-clinical-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+#patientPageOverview .patient-overview-clinical-grid > div {
+  min-width: 0;
+  min-height: 56px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-clinical-grid > div:last-child {
+  border-right: 0;
+}
+#patientPageOverview .patient-overview-clinical-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: #eff9f3;
+  color: var(--green);
+  font-size: 8.5px;
+}
+#patientPageOverview .patient-overview-clinical-grid > div > div:last-child {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-clinical-grid strong {
+  display: block;
+  color: #29362f;
+  font-size: 8.3px;
+  line-height: 1.25;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#patientPageOverview .patient-overview-clinical-grid span {
+  display: block;
+  margin-top: 3px;
+  color: #818c85;
+  font-size: 7.3px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+#patientPageOverview .patient-overview-stat,
+#patientPageOverview .patient-overview-clinical-grid > div {
+  transition:
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+#patientPageOverview .patient-overview-stat:hover {
+  background: #fcfefc;
+}
+#patientPageOverview .patient-overview-clinical-grid > div:hover {
+  background: #fbfdfc;
+}
+@media (max-width: 1100px) {
+  #patientPageOverview .patient-overview-information {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #patientPageOverview .patient-overview-information-item:nth-child(4n) {
+    border-right: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-information-item:nth-child(2n) {
+    border-right: 0;
+  }
+  #patientPageOverview
+    .patient-overview-information-item:nth-last-child(-n + 4) {
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview
+    .patient-overview-information-item:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+@media (max-width: 800px) {
+  #patientPageOverview .patient-overview-clinical-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div:nth-child(2n) {
+    border-right: 0;
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div:nth-child(-n + 2) {
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-medical-summary {
+    grid-template-columns: 1fr;
+  }
+  #patientPageOverview .patient-overview-medical-summary > div {
+    border-right: 0;
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-medical-summary > div:last-child {
+    border-bottom: 0;
+  }
+}
+@media (max-width: 600px) {
+  #patientPageOverview .patient-overview-information {
+    grid-template-columns: 1fr;
+  }
+  #patientPageOverview .patient-overview-information-item,
+  #patientPageOverview .patient-overview-information-item:nth-child(2n),
+  #patientPageOverview .patient-overview-information-item:nth-child(4n) {
+    border-right: 0;
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-information-item:last-child {
+    border-bottom: 0;
+  }
+  #patientPageOverview .patient-overview-stat-grid {
+    grid-template-columns: 1fr;
+  }
+  #patientPageOverview .patient-overview-appointment {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  #patientPageOverview .patient-overview-appointment-dentist {
+    min-width: 0;
+    padding: 8px 0 0;
+    border-left: 0;
+    border-top: 1px solid #e5ebe7;
+  }
+  #patientPageOverview .patient-overview-clinical-grid {
+    grid-template-columns: 1fr;
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div {
+    border-right: 0;
+    border-bottom: 1px solid #e7ece9;
+  }
+  #patientPageOverview .patient-overview-clinical-grid > div:last-child {
+    border-bottom: 0;
+  }
+}
+#patientPageOverview .patient-overview-phone {
+  align-items: center;
+}
+#patientPageOverview .patient-overview-phone-icons {
+  flex: 0 0 29px;
+  width: 29px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+#patientPageOverview
+  .patient-overview-phone-icons
+  .patient-overview-information-icon {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+}
+#patientPageOverview .patient-overview-emergency-icon {
+  border-color: #d9eee1;
+  background: #eff9f3;
+  color: var(--green);
+}
+#patientPageOverview .patient-overview-phone-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#patientPageOverview .patient-overview-phone-row {
+  min-width: 0;
+}
+#patientPageOverview .patient-overview-phone-row span {
+  display: block;
+  margin: 0 0 3px;
+  color: #8a958f;
+  font-size: 7px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+#patientPageOverview .patient-overview-phone-row strong {
+  display: block;
+  color: #29362f;
+  font-size: 8.8px;
+  line-height: 1.3;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+#patientPageOverview .patient-overview-emergency-row span {
+  color: #8a958f;
+}
+#patientPageOverview .patient-overview-emergency-row strong {
+  color: #6f7c74;
+  font-weight: 500;
+}
+.patient-medical-record-card:nth-of-type(2)
+  .patient-medical-field.full:last-child {
+  border-bottom: 0;
+}
+.patient-medical-record-card-header span {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #7d8982;
+}
+.patient-medical-record-card-header h4 {
+  font-size: 13px;
+  font-weight: 650;
+  color: #18231c;
+}
+.patient-medical-field > span {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #7d8982;
+}
+.patient-medical-field > strong {
+  font-size: 10px;
+  font-weight: 550;
+  color: #29352e;
+  line-height: 1.45;
+}
+.patient-medical-tags span {
+  font-size: 8px;
+  font-weight: 600;
+}
+.patient-medical-tags strong {
+  font-size: 10px;
+  font-weight: 550;
+  color: #29352e;
+}
+.patient-medical-consent strong {
+  font-size: 9px;
+  font-weight: 650;
+}
+.patient-medical-consent span {
+  font-size: 8px;
+  font-weight: 400;
+  color: #718078;
+}
+.patient-record-page {
+  padding-bottom: 16px;
+}
+.patient-record-tabs {
+  margin-bottom: 12px;
+}
+.patientPageMedical,
+#patientPageMedical {
+  width: 100%;
+}
+#patientPageMedical {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#patientPageMedical .patient-medical-record-card {
+  margin: 0;
+}
+#patientPageMedical .patient-medical-record-card-header {
+  min-height: 48px;
+  padding: 8px 15px;
+}
+#patientPageMedical .patient-medical-record-card-icon {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  font-size: 11px;
+}
+#patientPageMedical .patient-medical-record-card-header span {
+  margin-bottom: 1px;
+  font-size: 6.5px;
+}
+#patientPageMedical .patient-medical-record-card-header h4 {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+#patientPageMedical .patient-medical-field {
+  min-height: 58px;
+  padding: 10px 15px;
+}
+#patientPageMedical .patient-medical-field > span {
+  margin-bottom: 5px;
+  font-size: 6.5px;
+  line-height: 1.2;
+}
+#patientPageMedical .patient-medical-field > strong {
+  font-size: 9.5px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+#patientPageMedical .patient-medical-tags {
+  gap: 5px;
+}
+#patientPageMedical .patient-medical-tags span {
+  min-height: 23px;
+  padding: 0 8px;
+  font-size: 7.5px;
+  font-weight: 600;
+}
+#patientPageMedical .patient-medical-tags strong {
+  font-size: 9.5px;
+  font-weight: 500;
+}
+#patientPageMedical .patient-medical-consent {
+  min-height: 50px;
+  padding: 8px 13px;
+  gap: 9px;
+}
+#patientPageMedical .patient-medical-consent-icon {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  font-size: 11px;
+}
+#patientPageMedical .patient-medical-consent strong {
+  font-size: 8.5px;
+  font-weight: 600;
+}
+#patientPageMedical .patient-medical-consent span {
+  margin-top: 1px;
+  font-size: 7.5px;
+  line-height: 1.3;
+}
+#patientPageOverview .patient-overview-appointment {
+  min-height: 78px;
+  padding: 12px 0;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 0.9fr 1.5fr;
+  align-items: stretch;
+  gap: 0;
+}
+#patientPageOverview .patient-overview-appointment-main {
+  min-width: 0;
+  display: contents;
+}
+#patientPageOverview .patient-overview-appointment-main > strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 0 18px;
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 500;
+  border-right: 1px solid #e7ece9;
+}
+#patientPageOverview .visit-history-label {
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+#patientPageOverview .visit-history-value {
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+#patientPageOverview .patient-overview-appointment-meta {
+  display: contents;
+  margin: 0;
+}
+#patientPageOverview .patient-overview-appointment-meta span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 0 18px;
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 400;
+  white-space: nowrap;
+  border-right: 1px solid #e7ece9;
+}
+#patientPageOverview .patient-overview-appointment-meta i {
+  flex: 0 0 auto;
+  color: var(--green);
+  font-size: 8px;
+}
+#patientPageOverview .patient-overview-appointment-dentist {
+  min-width: 0;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  border-left: 0;
+  line-height: 1.3;
+}
+#patientPageOverview
+  .patient-overview-appointment-dentist
+  .visit-history-label {
+  margin: 0;
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+#patientPageOverview
+  .patient-overview-appointment-dentist
+  .visit-history-value {
+  color: #29362f;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  #patientPageOverview .patient-overview-appointment {
+    grid-template-columns: 1fr 1fr;
+  }
+  #patientPageOverview .patient-overview-appointment-main > strong,
+  #patientPageOverview .patient-overview-appointment-meta span {
+    min-height: 48px;
+  }
+  #patientPageOverview .patient-overview-appointment-dentist {
+    min-height: 48px;
+  }
+}
+.patient-medical-record-card-header span {
+  font-size: 9px !important;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.patient-medical-record-card-header h4 {
+  font-size: 9px !important;
+  line-height: 1.2;
+  font-weight: 600;
+}
+#patientPageTreatments .patient-record-section-header {
+  align-items: center;
+  margin-bottom: 14px;
+}
+#patientPageTreatments .patient-record-section-header h3 {
+  display: none;
+}
+#patientPageTreatments .staff-actual-treatment-list {
+  gap: 10px;
+}
+#patientPageTreatments .staff-actual-treatment-card {
+  grid-template-columns: 150px 1px minmax(0, 1fr);
+  min-height: 86px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(20, 57, 36, 0.025);
+}
+#patientPageTreatments .staff-actual-treatment-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  padding: 14px 16px;
+  text-align: center;
+}
+#patientPageTreatments .staff-actual-treatment-date strong {
+  display: block;
+  color: #48564d;
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 650;
+  white-space: nowrap;
+}
+#patientPageTreatments .staff-actual-treatment-date small {
+  display: block;
+  color: var(--green);
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#patientPageTreatments .staff-actual-treatment-info {
+  gap: 5px;
+  padding: 13px 18px;
+}
+#patientPageTreatments .staff-actual-treatment-info strong {
+  font-size: 13px;
+}
+#patientPageTreatments .staff-treatment-materials {
+  margin-top: 5px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  font-size: 9px;
+}
+#patientPageTreatments .staff-treatment-view-only {
+  gap: 9px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  color: #68756d;
+  font-size: 9px;
+  line-height: 1.45;
+}
+@media (max-width: 640px) {
+  #patientPageTreatments .staff-actual-treatment-card {
+    grid-template-columns: 110px 1px minmax(0, 1fr);
+  }
+  #patientPageTreatments .staff-actual-treatment-date {
+    padding: 12px 10px;
+  }
+  #patientPageTreatments .staff-actual-treatment-info {
+    padding: 12px;
+  }
+}
+#patientPageAppointments .patient-record-section {
+  padding: 18px 20px 15px;
+}
+#patientPageAppointments .patient-record-section-header {
+  margin-bottom: 14px;
+  align-items: center;
+}
+#patientPageAppointments .patient-record-section-eyebrow {
+  color: var(--green);
+  font-size: 8px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+#patientPageAppointments .patient-record-section-header p {
+  margin: 5px 0 0;
+  color: #718078;
+  font-size: 9px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+#patientPageAppointments .patient-record-count {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #cfe6d8;
+  border-radius: 999px;
+  background: #f0f9f3;
+  color: #317b50;
+  font-size: 7px;
+  line-height: 1;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(2px);
 }

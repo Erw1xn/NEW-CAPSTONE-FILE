@@ -76,6 +76,25 @@ document.addEventListener("DOMContentLoaded", () => {
       lastFocusedElement.focus();
     }
   }
+  function handleAuthFrameNavigation(event) {
+    const target = event.target;
+    if (!target || typeof target.closest !== "function") return;
+    const link = target.closest("a[href]");
+    if (!link || !loginIframe) return;
+
+    const targetUrl = new URL(link.href);
+    const isAuthPage =
+      targetUrl.pathname.endsWith("/login/login.html") ||
+      targetUrl.pathname.endsWith("/signup/signup.html");
+    if (!isAuthPage) return;
+
+    event.preventDefault();
+    targetUrl.searchParams.set("_modal", Date.now().toString());
+    loginIframe.src = targetUrl.href;
+    loginIframe.title = targetUrl.pathname.endsWith("/signup/signup.html")
+      ? "DentaNueva Sign Up"
+      : "DentaNueva Login";
+  }
   document
     .querySelectorAll('a[href*="login/login.html"]')
     .forEach((loginLink) => {
@@ -92,7 +111,20 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleMobileMenu(false);
   });
   loginIframe?.addEventListener("load", () => {
-    if (loginModalOverlay?.classList.contains("active")) modalCloseBtn?.focus();
+    const frameDocument = loginIframe.contentDocument;
+    if (!frameDocument) return;
+
+    const isSignupPage = loginIframe.contentWindow.location.pathname.endsWith(
+      "/signup/signup.html",
+    );
+    loginIframe.title = isSignupPage
+      ? "DentaNueva Sign Up"
+      : "DentaNueva Login";
+    modalCloseBtn?.setAttribute(
+      "aria-label",
+      isSignupPage ? "Close sign up dialog" : "Close login dialog",
+    );
+    frameDocument.addEventListener("click", handleAuthFrameNavigation);
   });
 
   /* ---------- Hero slider ---------- */

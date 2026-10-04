@@ -7,34 +7,29 @@
     <i class="fa-solid fa-bars"></i>
   </button>
 </header>
-
 <aside class="sidebar" id="sidebar">
   <button class="toggle-btn" id="sidebarToggle" aria-label="Toggle Navigation">
     <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
   </button>
-
   <div class="sidebar-top">
     <div class="sidebar-staff-profile" id="activeStaffProfileTrigger">
       <div class="sidebar-staff-avatar">
         <img id="activeStaffImage" src="" alt="Staff profile" />
         <span id="activeStaffInitials">EJ</span>
       </div>
-
       <div class="sidebar-staff-info">
         <span class="sidebar-staff-name" id="activeStaffName">
           Erwin Jacaba
         </span>
-
         <span class="sidebar-staff-status">
           <span class="staff-status-dot"></span>
           Active now
         </span>
       </div>
     </div>
-
     <nav class="sidebar-menu">
       <a
-        href="#"
+        href="../staff/dashboard/dashboard.html"
         data-path="staff/dashboard/dashboard.html"
         class="menu-item"
         data-page="dashboard"
@@ -43,9 +38,8 @@
         <i class="fa-solid fa-border-all"></i>
         <span class="menu-text">Dashboard</span>
       </a>
-
       <a
-        href="#"
+        href="../staff/appointment/appointment.html"
         data-path="staff/appointment/appointment.html"
         class="menu-item"
         data-page="appointment"
@@ -54,9 +48,8 @@
         <i class="fa-regular fa-calendar-check"></i>
         <span class="menu-text">Appointment</span>
       </a>
-
       <a
-        href="#"
+        href="../staff/patients/patients.html"
         data-path="staff/patients/patients.html"
         class="menu-item"
         data-page="patients"
@@ -65,9 +58,8 @@
         <i class="fa-solid fa-user-doctor"></i>
         <span class="menu-text">Patients</span>
       </a>
-
       <a
-        href="#"
+        href="../staff/inventory/inventory.html"
         data-path="staff/inventory/inventory.html"
         class="menu-item"
         data-page="inventory"
@@ -76,9 +68,8 @@
         <i class="fa-solid fa-boxes-stacked"></i>
         <span class="menu-text">Inventory</span>
       </a>
-
       <a
-        href="#"
+        href="../staff/sms_notifications/sms_notifications.html"
         data-path="staff/sms_notifications/sms_notifications.html"
         class="menu-item"
         data-page="sms"
@@ -87,9 +78,8 @@
         <i class="fa-regular fa-comment-dots"></i>
         <span class="menu-text">SMS</span>
       </a>
-
       <a
-        href="#"
+        href="../staff/finance/finance.html"
         data-path="staff/finance/finance.html"
         class="menu-item"
         data-page="finance"
@@ -98,7 +88,6 @@
         <i class="fa-regular fa-credit-card"></i>
         <span class="menu-text">Finance</span>
       </a>
-
       <a
         href="#logout"
         class="menu-item btn-logout btn-logout-mobile"
@@ -110,34 +99,26 @@
       </a>
     </nav>
   </div>
-
   <div class="sidebar-footer">
     <a href="#logout" class="btn-logout" id="logoutTriggerBtn" title="Logout">
       <i class="fa-solid fa-right-from-bracket logout-icon"></i>
       <span class="logout-text">Logout</span>
     </a>
-
     <div class="sidebar-footer-divider"></div>
   </div>
 </aside>
-
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
 <div class="logout-modal-backdrop" id="logoutModalBackdrop">
   <div class="logout-modal-card">
     <div class="logout-modal-icon">
       <i class="fa-solid fa-triangle-exclamation"></i>
     </div>
-
     <h3>Ready to Leave?</h3>
-
     <p>Are you sure you want to log out of your session?</p>
-
     <div class="logout-modal-actions">
       <button type="button" class="btn-modal-cancel" id="logoutCancelBtn">
         Cancel
       </button>
-
       <button type="button" class="btn-modal-confirm" id="logoutConfirmBtn">
         Yes, Log Out
       </button>

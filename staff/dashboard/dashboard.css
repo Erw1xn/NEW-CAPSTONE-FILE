@@ -6,81 +6,64 @@
   --green-400: #2ca559;
   --green-100: #e8f5ec;
   --green-50: #f2fbf4;
-
   --ink-900: #14201a;
   --ink-700: #3a463f;
   --ink-500: #6b7970;
   --ink-300: #a2ada6;
   --ink-100: #e7ece9;
-
   --white: #ffffff;
   --bg: #f4f7f5;
-
   --red-500: #e5484d;
   --red-100: #fdecec;
-
   --amber-500: #d98e04;
   --amber-100: #fdf2df;
-
   --blue-500: #2064c9;
   --blue-100: #e8f1fd;
-
   --purple-500: #7440c9;
   --purple-100: #f1e9fd;
-
   --radius-lg: 18px;
   --radius-md: 11px;
   --radius-sm: 8px;
-
   --shadow-card: 0 2px 10px rgba(20, 40, 30, 0.05);
   --shadow-hover: 0 8px 22px rgba(20, 40, 30, 0.09);
-
   --font-display: "Poppins", sans-serif;
   --font-body: "Inter", sans-serif;
 }
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 html {
   scroll-behavior: smooth;
 }
-
 body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--ink-900);
   -webkit-font-smoothing: antialiased;
 }
-
 a {
   text-decoration: none;
   color: inherit;
 }
-
 button {
   font-family: inherit;
   cursor: pointer;
   border: none;
   background: none;
 }
-
 button:focus-visible,
 a:focus-visible {
   outline: 3px solid rgba(22, 128, 61, 0.16);
   outline-offset: 2px;
 }
-
 .dashboard-layout {
   display: flex;
   width: 100%;
   min-height: 100vh;
   background: var(--bg);
 }
-
 .main-content {
   flex: 1;
   min-width: 0;
@@ -89,7 +72,6 @@ a:focus-visible {
   margin: 0 auto;
   padding: 20px 30px 30px;
 }
-
 .dash-header {
   position: relative;
   display: flex;
@@ -105,24 +87,20 @@ a:focus-visible {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
-
 .dash-header-left {
   display: flex;
   align-items: center;
   min-width: 0;
 }
-
 .page-heading {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
 }
-
 .page-eyebrow {
   display: none;
 }
-
 .dashboard-title {
   font-family: var(--font-display);
   font-size: 1.18rem;
@@ -131,7 +109,6 @@ a:focus-visible {
   color: var(--ink-900);
   letter-spacing: 0;
 }
-
 .dashboard-subtitle {
   margin-top: 4px;
   color: var(--ink-500);
@@ -140,13 +117,11 @@ a:focus-visible {
   line-height: 1.4;
   font-weight: 500;
 }
-
 .dash-header-right {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
-
 .header-action-row {
   display: flex;
   align-items: center;
@@ -155,7 +130,6 @@ a:focus-visible {
   flex-wrap: wrap;
   flex-direction: row-reverse;
 }
-
 .datetime-pill-widget {
   min-height: 43px;
   display: inline-flex;
@@ -167,13 +141,11 @@ a:focus-visible {
   box-shadow: 0 5px 16px rgba(28, 63, 43, 0.06);
   white-space: nowrap;
 }
-
 .datetime-pill-content {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .datetime-icon-wrap {
   width: 32px;
   height: 32px;
@@ -186,7 +158,6 @@ a:focus-visible {
   color: var(--green-700);
   font-size: 12px;
 }
-
 .datetime-text-group {
   display: inline-flex;
   align-items: center;
@@ -198,28 +169,23 @@ a:focus-visible {
   font-weight: 700;
   color: var(--ink-900);
 }
-
 .datetime-dot {
   color: #9aa59f;
   font-size: 0.58rem;
 }
-
 #currentDate {
   color: var(--ink-900);
   font-weight: 700;
 }
-
 #currentTime {
   color: var(--green-700);
   font-weight: 700;
 }
-
 .header-quick-actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
 .qa-btn-pill {
   min-height: 34px;
   display: inline-flex;
@@ -242,11 +208,9 @@ a:focus-visible {
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .qa-btn-pill i {
   font-size: 0.6rem;
 }
-
 .qa-btn-pill:hover {
   background: var(--green-50);
   border-color: #cfe6d6;
@@ -254,17 +218,16 @@ a:focus-visible {
   transform: translateY(-1px);
   box-shadow: var(--shadow-hover);
 }
-
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 20px;
 }
-
 .stat-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 14px;
   min-width: 0;
   min-height: 112px;
   padding: 17px 18px;
@@ -277,31 +240,49 @@ a:focus-visible {
     box-shadow 0.18s ease,
     border-color 0.18s ease;
 }
-
 .stat-card:hover {
   transform: translateY(-2px);
   border-color: #dbe6df;
   box-shadow: var(--shadow-hover);
 }
-
 .stat-icon {
-  display: none;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  font-size: 15px;
 }
-
+.stat-icon-patients {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+.stat-icon-appointments {
+  background: var(--blue-100);
+  color: var(--blue-500);
+}
+.stat-icon-today-revenue {
+  background: var(--amber-100);
+  color: var(--amber-500);
+}
+.stat-icon-monthly-revenue {
+  background: var(--purple-100);
+  color: var(--purple-500);
+}
 .stat-body {
   display: flex;
   flex-direction: column;
   min-width: 0;
   gap: 2px;
 }
-
 .stat-label {
   color: var(--ink-500);
   font-size: 10.5px;
   line-height: 1.4;
   font-weight: 600;
 }
-
 .stat-value {
   margin-top: 2px;
   font-family: var(--font-display);
@@ -312,7 +293,6 @@ a:focus-visible {
   white-space: nowrap;
   letter-spacing: -0.2px;
 }
-
 .stat-trend,
 .stat-trend.up,
 .stat-trend.neutral,
@@ -330,27 +310,31 @@ a:focus-visible {
   font-weight: 500;
   color: var(--green-700) !important;
 }
-
 #statMonthlyRevenueTrend i {
   display: none;
 }
-
 .two-col-grid {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.15fr)
-    minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
-
 .stacked-panel-column {
   display: grid;
   grid-template-rows: auto;
   gap: 16px;
   min-width: 0;
 }
-
+.two-col-grid > .stacked-panel-column:first-child {
+  height: auto;
+}
+.two-col-grid > .stacked-panel-column:first-child > .panel:first-child {
+  height: 470px;
+  min-height: 470px;
+}
+.two-col-grid > .stacked-panel-column:last-child > .panel:first-child {
+  min-height: 230px;
+}
 .panel {
   overflow: hidden;
   background: var(--white);
@@ -361,12 +345,10 @@ a:focus-visible {
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .panel:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-hover);
 }
-
 .panel-header {
   display: flex;
   align-items: center;
@@ -375,13 +357,11 @@ a:focus-visible {
   min-height: 69px;
   padding: 16px 18px;
   border-bottom: 1px solid var(--ink-100);
-  background: #ffffff;
+  background: #fff;
 }
-
 .panel-heading {
   min-width: 0;
 }
-
 .panel-header h3 {
   font-family: var(--font-display);
   font-size: 14px;
@@ -389,7 +369,6 @@ a:focus-visible {
   color: var(--ink-900);
   line-height: 1.3;
 }
-
 .panel-subtitle {
   margin-top: 3px;
   font-size: 10px;
@@ -397,25 +376,18 @@ a:focus-visible {
   color: var(--ink-500);
   font-weight: 500;
 }
-
 .panel-body {
   padding: 14px 18px 17px;
 }
-
-.two-col-grid > .stacked-panel-column:first-child > .panel:first-child {
-  height: 313px;
-}
-
 .two-col-grid
   > .stacked-panel-column:first-child
   > .panel:first-child
   .panel-body {
-  height: calc(313px - 69px);
+  height: calc(250px - 69px);
   display: block;
   overflow-y: auto;
   padding: 14px 18px 17px;
 }
-
 .btn-link {
   display: inline-flex;
   align-items: center;
@@ -428,230 +400,10 @@ a:focus-visible {
     color 0.15s ease,
     gap 0.15s ease;
 }
-
 .btn-link:hover {
   gap: 8px;
   color: var(--green-900);
 }
-
-.appt-item {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 10px 11px;
-  background: var(--white);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    transform 0.18s ease;
-}
-
-.appt-item + .appt-item {
-  margin-top: 7px;
-}
-
-.appt-item:hover {
-  background: var(--green-50);
-  transform: translateX(2px);
-}
-
-.appt-avatar {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--green-100);
-  color: var(--green-700);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.appt-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.appt-name {
-  overflow: hidden;
-  color: var(--ink-900);
-  font-size: 11.5px;
-  line-height: 1.35;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appt-meta {
-  margin-top: 3px;
-  color: var(--ink-500);
-  font-size: 9.5px;
-  line-height: 1.4;
-}
-
-.appt-meta strong {
-  color: var(--ink-700);
-}
-
-.appt-service {
-  margin-top: 2px;
-  color: var(--ink-500);
-  font-size: 9.5px;
-  line-height: 1.4;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  padding: 3px 7px;
-  border-radius: 999px;
-  white-space: nowrap;
-  font-size: 8.5px;
-  line-height: 1;
-  font-weight: 700;
-}
-
-.badge-confirmed {
-  background: var(--green-100);
-  color: var(--green-700);
-}
-
-.badge-pending {
-  background: var(--amber-100);
-  color: var(--amber-500);
-}
-
-.badge-completed {
-  background: var(--blue-100);
-  color: var(--blue-500);
-}
-
-.badge-cancelled {
-  background: var(--red-100);
-  color: var(--red-500);
-}
-
-.badge-checkedin {
-  background: var(--purple-100);
-  color: var(--purple-500);
-}
-
-.badge-consultation {
-  background: var(--green-100);
-  color: var(--green-700);
-}
-
-.badge-no-show {
-  background: var(--red-100);
-  color: var(--red-500);
-}
-
-.dentist-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 10px;
-  border-radius: var(--radius-md);
-  transition: background 0.15s ease;
-}
-
-.dentist-item + .dentist-item {
-  margin-top: 4px;
-}
-
-.dentist-item:hover {
-  background: var(--green-50);
-}
-
-.dentist-avatar {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--green-700);
-  color: var(--white);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.dentist-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.dentist-name {
-  overflow: hidden;
-  color: var(--ink-900);
-  font-size: 11.5px;
-  line-height: 1.35;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dentist-spec {
-  margin-top: 2px;
-  color: var(--ink-500);
-  font-size: 9.5px;
-  line-height: 1.4;
-}
-
-.dentist-status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  white-space: nowrap;
-  font-size: 9px;
-  line-height: 1;
-  font-weight: 700;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  display: inline-block;
-  margin-right: 5px;
-  border-radius: 50%;
-}
-
-.status-available {
-  background: var(--green-100);
-  color: var(--green-700);
-}
-
-.status-available .status-dot {
-  background: var(--green-700);
-}
-
-.status-withpatient {
-  background: var(--amber-100);
-  color: var(--amber-500);
-}
-
-.status-withpatient .status-dot {
-  background: var(--amber-500);
-}
-
-.status-offduty {
-  background: var(--ink-100);
-  color: var(--ink-500);
-}
-
-.status-offduty .status-dot {
-  background: var(--ink-300);
-}
-
 .inv-item {
   display: flex;
   align-items: center;
@@ -665,23 +417,19 @@ a:focus-visible {
     background 0.18s ease,
     transform 0.18s ease;
 }
-
 .inv-item + .inv-item {
   margin-top: 7px;
 }
-
 .inv-item:hover {
   background: var(--green-50);
   transform: translateX(2px);
 }
-
 .inv-left {
   display: flex;
   align-items: center;
   gap: 9px;
   min-width: 0;
 }
-
 .inv-icon {
   width: 35px;
   height: 35px;
@@ -694,11 +442,9 @@ a:focus-visible {
   color: var(--amber-500);
   font-size: 12px;
 }
-
 .inv-info {
   min-width: 0;
 }
-
 .inv-name {
   overflow: hidden;
   color: var(--ink-900);
@@ -708,113 +454,144 @@ a:focus-visible {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .inv-sub {
   margin-top: 3px;
   color: var(--ink-500);
   font-size: 9.5px;
   line-height: 1.4;
 }
-
 .status-low {
   background: var(--amber-100);
   color: var(--amber-500);
 }
-
 .status-critical {
   background: #fde3e3;
   color: var(--red-500);
 }
-
 .status-out {
   background: var(--red-500);
   color: var(--white);
 }
-
-.clinic-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 8.5px;
+  line-height: 1;
+  font-weight: 700;
 }
-
-.summary-item {
+.badge-confirmed {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+.dentist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px;
+  border-radius: var(--radius-md);
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+.dentist-item + .dentist-item {
+  margin-top: 7px;
+}
+.dentist-item:hover {
+  background: var(--green-50);
+  transform: translateX(2px);
+}
+.dentist-left {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 70px;
-  padding: 11px;
-  background: var(--bg);
-  border: 1px solid var(--ink-100);
-  border-radius: var(--radius-md);
-  transition:
-    background 0.15s ease,
-    transform 0.15s ease,
-    border-color 0.15s ease;
+  min-width: 0;
 }
-
-.summary-item:hover {
-  background: var(--green-50);
-  transform: translateY(-1px);
-  border-color: var(--green-100);
-}
-
-.summary-clickable {
-  cursor: pointer;
-}
-
-.summary-icon {
-  width: 34px;
-  height: 34px;
+.dentist-avatar {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border-radius: 9px;
-  font-size: 12px;
-}
-
-.summary-waiting {
-  background: var(--amber-100);
-  color: var(--amber-500);
-}
-
-.summary-checkin {
-  background: var(--blue-100);
-  color: var(--blue-500);
-}
-
-.summary-consultation {
+  border-radius: 50%;
   background: var(--green-100);
   color: var(--green-700);
-}
-
-.summary-completed {
-  background: var(--purple-100);
-  color: var(--purple-500);
-}
-
-.summary-content {
-  min-width: 0;
-}
-
-.summary-label {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--ink-500);
-  font-size: 9px;
-  line-height: 1.3;
-  font-weight: 600;
-}
-
-.summary-value {
-  display: block;
-  color: var(--ink-900);
   font-family: var(--font-display);
-  font-size: 18px;
-  line-height: 1.2;
+  font-size: 11px;
   font-weight: 700;
 }
-
+.dentist-info {
+  min-width: 0;
+}
+.dentist-name {
+  overflow: hidden;
+  color: var(--ink-900);
+  font-size: 11.5px;
+  line-height: 1.35;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dentist-spec {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--ink-500);
+  font-size: 9.5px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dentist-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  color: var(--ink-500);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+.status-available .status-dot {
+  background: var(--green-500);
+}
+.status-withpatient .status-dot {
+  background: var(--blue-500);
+}
+.status-next .status-dot {
+  background: var(--green-500);
+}
+.status-offduty .status-dot {
+  background: var(--ink-300);
+}
+.status-unknown .status-dot {
+  background: var(--ink-300);
+}
+.status-available {
+  color: var(--green-700);
+}
+.status-withpatient {
+  color: var(--blue-500);
+}
+.status-next {
+  color: var(--green-700);
+}
+.status-offduty,
+.status-unknown {
+  color: var(--ink-500);
+}
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -823,22 +600,19 @@ a:focus-visible {
   width: 100%;
   height: 100%;
   text-align: center;
-  padding: 10px 18px;
+  padding: 30px 18px;
   color: var(--ink-500);
 }
-
 .empty-state i {
   margin-bottom: 7px;
   color: var(--green-400);
   font-size: 22px;
 }
-
 .empty-state p {
   font-size: 11px;
   line-height: 1.5;
   font-weight: 500;
 }
-
 .dashboard-notification {
   position: fixed;
   right: 22px;
@@ -865,86 +639,77 @@ a:focus-visible {
     opacity 0.2s ease,
     transform 0.2s ease;
 }
-
 .dashboard-notification.show {
   opacity: 1;
   transform: translateY(0);
 }
-
 .dashboard-notification.success i {
   color: var(--green-700);
 }
-
 .dashboard-notification.error i {
   color: var(--red-500);
 }
-
 @media (max-width: 1180px) {
   .main-content {
     padding: 19px 28px 32px;
   }
-
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .two-col-grid {
     grid-template-columns: 1fr;
   }
-
-  .two-col-grid > .stacked-panel-column:first-child > .panel:first-child {
+  .two-col-grid > .stacked-panel-column:first-child {
     height: auto;
   }
-
+  .two-col-grid > .stacked-panel-column:first-child > .panel:first-child {
+    height: 313px;
+    min-height: 313px;
+  }
   .two-col-grid
     > .stacked-panel-column:first-child
     > .panel:first-child
     .panel-body {
-    height: auto;
+    height: calc(313px - 69px);
     padding-top: 14px;
     padding-bottom: 17px;
   }
-
+  .two-col-grid > .stacked-panel-column:last-child > .panel:first-child {
+    min-height: 286px;
+  }
   .empty-state {
     height: auto;
     min-height: 180px;
   }
 }
-
 @media (max-width: 900px) {
   .main-content {
     padding: 18px 20px 30px;
   }
-
   .dash-header {
     align-items: flex-start;
     flex-direction: column;
     gap: 12px;
   }
-
   .dash-header-right {
     width: 100%;
   }
-
   .header-action-row {
     width: 100%;
     justify-content: space-between;
   }
 }
-
 @media (max-width: 640px) {
   .dashboard-layout {
     flex-direction: column;
     width: 100%;
   }
-
   .main-content {
     width: 100%;
     max-width: 700px;
     margin: 0 auto;
     padding: 15px 14px 25px;
   }
-
   .dash-header {
     align-items: flex-start;
     flex-direction: column;
@@ -952,126 +717,103 @@ a:focus-visible {
     margin-bottom: 12px;
     padding: 14px;
   }
-
   .dashboard-title {
     font-size: 1.02rem;
   }
-
   .dashboard-subtitle {
     font-size: 0.59rem;
   }
-
   .dash-header-right {
     width: 100%;
   }
-
   .header-action-row {
     width: 100%;
     align-items: stretch;
     flex-direction: column;
     gap: 8px;
   }
-
   .datetime-pill-widget {
     width: 100%;
     justify-content: center;
   }
-
   .header-quick-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     gap: 7px;
   }
-
   .qa-btn-pill {
     width: 100%;
     min-height: 34px;
     padding: 0 8px;
     font-size: 0.58rem;
   }
-
   .stats-grid {
     grid-template-columns: 1fr;
     gap: 10px;
   }
-
   .dash-header {
     margin-bottom: 12px;
   }
-
   .panel-header {
     min-height: 65px;
     padding: 15px;
     align-items: flex-start;
   }
-
   .panel-body {
     padding: 13px 14px 15px;
   }
-
-  .clinic-summary-grid {
-    grid-template-columns: 1fr;
-  }
 }
-
 @media (max-width: 480px) {
   .main-content {
     padding: 12px 10px 22px;
   }
-
   .dash-header {
     padding: 13px;
   }
-
   .dashboard-title {
     font-size: 0.96rem;
   }
-
   .dashboard-subtitle {
     font-size: 0.56rem;
   }
-
   .datetime-pill-widget {
     gap: 6px;
     padding-right: 9px;
   }
-
   .datetime-icon-wrap {
     width: 30px;
     height: 30px;
   }
-
   .datetime-text-group {
     font-size: 0.54rem;
   }
-
   .header-quick-actions {
     gap: 6px;
   }
-
   .qa-btn-pill {
     min-height: 33px;
     font-size: 0.54rem;
   }
-
   .stats-grid {
     gap: 9px;
   }
-
   .stat-card {
     min-height: 105px;
     padding: 15px;
+    gap: 12px;
   }
-
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 14px;
+  }
   .stat-label {
     font-size: 10px;
   }
-
   .stat-value {
     font-size: 20px;
   }
-
   .stat-trend,
   .stat-trend.up,
   .stat-trend.neutral,
@@ -1082,108 +824,30 @@ a:focus-visible {
   #statMonthlyRevenueTrend {
     font-size: 9px;
   }
-
   .panel-header {
     padding: 14px;
   }
-
   .panel-body {
     padding: 11px 12px 13px;
   }
-
   .panel-header h3 {
     font-size: 13.5px;
   }
-
   .panel-subtitle {
     font-size: 10px;
   }
-
-  .appt-item {
-    padding: 10px;
-    gap: 9px;
-  }
-
-  .appt-avatar {
-    width: 35px;
-    height: 35px;
-    font-size: 10px;
-  }
-
-  .appt-name {
-    font-size: 11px;
-  }
-
-  .appt-meta,
-  .appt-service {
-    font-size: 9px;
-  }
-
-  .badge {
-    min-height: 21px;
-    font-size: 8px;
-    padding: 3px 6px;
-  }
-
   .dentist-item {
-    padding: 9px;
-    gap: 9px;
+    padding: 10px;
   }
-
-  .dentist-avatar {
-    width: 35px;
-    height: 35px;
-  }
-
   .dentist-name {
     font-size: 11px;
   }
-
   .dentist-spec {
-    font-size: 9.5px;
+    font-size: 9px;
   }
-
   .dentist-status {
-    min-height: 21px;
-    font-size: 8px;
-    padding: 3px 6px;
-  }
-
-  .inv-item {
-    padding: 9px;
-  }
-
-  .inv-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .inv-name {
-    font-size: 11px;
-  }
-
-  .inv-sub {
-    font-size: 9.5px;
-  }
-
-  .summary-item {
-    min-height: 62px;
-    padding: 10px;
-  }
-
-  .summary-icon {
-    width: 31px;
-    height: 31px;
-  }
-
-  .summary-label {
     font-size: 8.5px;
   }
-
-  .summary-value {
-    font-size: 15px;
-  }
-
   .dashboard-notification {
     right: 12px;
     bottom: 12px;
