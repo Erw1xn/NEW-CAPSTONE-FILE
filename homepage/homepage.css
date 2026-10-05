@@ -1,6 +1,3 @@
-/* =====================================================
-   DentaNueva - Homepage styles (final)
-   ===================================================== */
 :root {
   --dark: #073b2c;
   --dark-2: #0b4d39;
@@ -19,7 +16,6 @@
   --r-lg: 32px;
   --sh-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
   --sh-md: 0 16px 40px rgba(15, 23, 42, 0.1);
-  /* Layout: iisang lapad para sa navbar, hero, sections at footer */
   --wrap: 1280px;
   --pad: clamp(20px, 4vw, 48px);
   --edge: max(var(--pad), calc((100% - var(--wrap)) / 2));
@@ -103,8 +99,6 @@ img {
   opacity: 1;
   transform: none;
 }
-
-/* ================= NAVBAR: fixed, nawawala pag nag-scroll pababa ================= */
 .home-navbar {
   position: fixed;
   top: 0;
@@ -112,7 +106,7 @@ img {
   right: 0;
   z-index: 3000;
   width: 100%;
-  height: 80px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -138,8 +132,8 @@ img {
   text-decoration: none;
 }
 .brand-logo {
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,7 +172,7 @@ img {
   gap: 8px;
 }
 .nav-link {
-  padding: 10px 20px;
+  padding: 8px 20px;
   border-radius: 40px;
   color: var(--mut);
   text-decoration: none;
@@ -199,8 +193,8 @@ img {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  min-height: 48px;
-  padding: 11px 28px;
+  min-height: 44px;
+  padding: 9px 26px;
   border-radius: 50px;
   background: var(--dark);
   color: #fff;
@@ -239,8 +233,6 @@ img {
   opacity: 1;
   visibility: visible;
 }
-
-/* ================= HERO ================= */
 .hero-section {
   padding: 0;
 }
@@ -364,7 +356,7 @@ img {
   min-width: 0;
   margin-left: auto;
 }
-.hero-slider {
+.hero-photo {
   position: relative;
   width: 100%;
   aspect-ratio: 5 / 4;
@@ -373,29 +365,13 @@ img {
   background: var(--dark-2);
   border: 6px solid rgba(255, 255, 255, 0.12);
 }
-.hero-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(1.05);
-  transition:
-    opacity 0.8s ease,
-    transform 4.5s ease,
-    visibility 0.8s ease;
-}
-.hero-slide.active {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-}
-.hero-img {
+.hero-photo img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 }
-.hero-slider::after {
+.hero-photo::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -406,33 +382,7 @@ img {
   );
   pointer-events: none;
 }
-.hero-slider-dots {
-  position: absolute;
-  right: 0;
-  bottom: 18px;
-  left: 0;
-  z-index: 3;
-  display: flex;
-  justify-content: center;
-  gap: 7px;
-}
-.hero-slider-dot {
-  width: 8px;
-  height: 8px;
-  padding: 0;
-  border: 1px solid #fff;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-.hero-slider-dot.active {
-  width: 24px;
-  border-radius: 5px;
-  background: #fff;
-}
 
-/* ================= INFO BAR ================= */
 .info-bar {
   position: relative;
   z-index: 5;
@@ -482,8 +432,6 @@ img {
   font-size: 0.86rem;
   line-height: 1.4;
 }
-
-/* ================= SECTION HEADS (centered) ================= */
 .section-head {
   display: flex;
   flex-direction: column;
@@ -569,8 +517,6 @@ img {
     text-align: center;
   }
 }
-
-/* ================= SERVICES ================= */
 .services-section {
   background: #fff;
 }
@@ -646,8 +592,6 @@ img {
   font-size: 0.76rem;
   font-weight: 500;
 }
-
-/* ================= HOW IT WORKS ================= */
 .how-it-works-section {
   background:
     radial-gradient(
@@ -741,8 +685,6 @@ img {
   font-size: 0.8rem;
   line-height: 1.65;
 }
-
-/* ================= TEAM ================= */
 .dentists-section {
   background: #fff;
 }
@@ -807,8 +749,6 @@ img {
   font-size: 0.82rem;
   line-height: 1.7;
 }
-
-/* ================= ABOUT (picture sa kanan) ================= */
 .about-section {
   background:
     radial-gradient(
@@ -950,8 +890,6 @@ img {
   font-size: 0.8rem;
   line-height: 1.6;
 }
-
-/* ================= LOCATION ================= */
 .location-section {
   padding-top: 56px;
   padding-bottom: 64px;
@@ -1102,8 +1040,6 @@ img {
   background: var(--mint);
   transform: translateY(-2px);
 }
-
-/* ================= CTA ================= */
 .cta-section {
   position: relative;
   z-index: 2;
@@ -1188,8 +1124,6 @@ img {
   background: var(--g-d);
   box-shadow: 0 12px 26px rgba(7, 59, 44, 0.3);
 }
-
-/* ================= FOOTER ================= */
 .home-footer {
   position: relative;
   z-index: 1;
@@ -1316,8 +1250,6 @@ img {
   font-size: 0.74rem;
   text-align: center;
 }
-
-/* ================= BACK TO TOP + LOGIN MODAL ================= */
 .back-to-top {
   position: fixed;
   right: 22px;
@@ -1414,12 +1346,10 @@ a:focus-visible {
   outline: 3px solid rgba(22, 163, 74, 0.45);
   outline-offset: 3px;
 }
-
-/* ================= RESPONSIVE ================= */
 @media (max-width: 1100px) {
   .hero-panel {
     gap: 36px;
-    padding: 128px var(--edge) 108px;
+    padding: 128px var(--edge) 120px;
   }
   .nav-links {
     gap: 2px;
@@ -1526,7 +1456,7 @@ a:focus-visible {
     padding-bottom: 48px;
   }
   .home-navbar {
-    height: 64px;
+    height: 60px;
   }
   .nav-menu-wrapper {
     position: fixed;
@@ -1587,7 +1517,7 @@ a:focus-visible {
   .hero-secondary-btn {
     flex: 1 1 100%;
   }
-  .hero-slider {
+  .hero-photo {
     border-radius: 22px;
   }
   .info-bar {

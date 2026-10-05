@@ -855,3 +855,16 @@ a:focus-visible {
     max-width: none;
   }
 }
+.badge.status-normal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #e8f7ee;
+  color: #23864b;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}

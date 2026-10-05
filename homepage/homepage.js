@@ -6,8 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const navToggleIcon = document.getElementById("navToggleIcon");
   const homeNavbar = document.getElementById("homeNavbar");
   const backToTop = document.getElementById("backToTop");
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  );
 
-  /* ---------- Mobile menu ---------- */
   function toggleMobileMenu(forceState) {
     if (!navMenuWrapper) return;
     const currentState = navMenuWrapper.classList.contains("mobile-open");
@@ -32,10 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ---------- Scroll state ----------
-     - Navbar nawawala kapag nag-scroll pababa
-     - Bumabalik lang kapag nasa taas ulit ng page
-     - Back-to-top button lumalabas pagkalampas ng 700px */
   const NAV_HIDE_AFTER = 80;
   function updateScrollState() {
     const y = window.scrollY;
@@ -50,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  /* ---------- Login modal ---------- */
   const loginModalOverlay = document.getElementById("loginModalOverlay");
   const modalCloseBtn = document.getElementById("modalCloseBtn");
   const loginIframe = document.getElementById("loginIframe");
@@ -81,13 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!target || typeof target.closest !== "function") return;
     const link = target.closest("a[href]");
     if (!link || !loginIframe) return;
-
     const targetUrl = new URL(link.href);
     const isAuthPage =
       targetUrl.pathname.endsWith("/login/login.html") ||
       targetUrl.pathname.endsWith("/signup/signup.html");
     if (!isAuthPage) return;
-
     event.preventDefault();
     targetUrl.searchParams.set("_modal", Date.now().toString());
     loginIframe.src = targetUrl.href;
@@ -113,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loginIframe?.addEventListener("load", () => {
     const frameDocument = loginIframe.contentDocument;
     if (!frameDocument) return;
-
     const isSignupPage = loginIframe.contentWindow.location.pathname.endsWith(
       "/signup/signup.html",
     );
@@ -127,68 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
     frameDocument.addEventListener("click", handleAuthFrameNavigation);
   });
 
-  /* ---------- Hero slider ---------- */
-  const heroSlides = document.querySelectorAll(".hero-slide");
-  const heroSlider = document.getElementById("heroSlider");
-  const heroSliderDots = document.getElementById("heroSliderDots");
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  );
-  let currentHeroSlide = 0;
-  let heroSlideInterval = null;
-
-  function showHeroSlide(index) {
-    if (!heroSlides.length) return;
-    if (index < 0 || index >= heroSlides.length) index = 0;
-    heroSlides.forEach((slide, slideIndex) => {
-      slide.classList.toggle("active", slideIndex === index);
-    });
-    heroSliderDots?.querySelectorAll("button").forEach((dot, dotIndex) => {
-      const isActive = dotIndex === index;
-      dot.classList.toggle("active", isActive);
-      dot.setAttribute("aria-current", isActive ? "true" : "false");
-    });
-    currentHeroSlide = index;
-  }
-  function startHeroSlider() {
-    clearInterval(heroSlideInterval);
-    if (heroSlides.length > 1 && !prefersReducedMotion.matches) {
-      heroSlideInterval = setInterval(() => {
-        showHeroSlide((currentHeroSlide + 1) % heroSlides.length);
-      }, 4500);
-    }
-  }
-  if (heroSliderDots && heroSlides.length > 1) {
-    heroSlides.forEach((_, slideIndex) => {
-      const dot = document.createElement("button");
-      dot.type = "button";
-      dot.className = "hero-slider-dot";
-      dot.setAttribute("aria-label", `Show hero image ${slideIndex + 1}`);
-      dot.setAttribute("aria-current", slideIndex === 0 ? "true" : "false");
-      dot.addEventListener("click", () => {
-        showHeroSlide(slideIndex);
-        startHeroSlider();
-      });
-      heroSliderDots.appendChild(dot);
-    });
-  }
-  heroSlider?.addEventListener("mouseenter", () =>
-    clearInterval(heroSlideInterval),
-  );
-  heroSlider?.addEventListener("mouseleave", startHeroSlider);
-  heroSlider?.addEventListener("focusin", () =>
-    clearInterval(heroSlideInterval),
-  );
-  heroSlider?.addEventListener("focusout", startHeroSlider);
-  if (typeof prefersReducedMotion.addEventListener === "function") {
-    prefersReducedMotion.addEventListener("change", startHeroSlider);
-  }
-  if (heroSlides.length > 0) {
-    showHeroSlide(0);
-    startHeroSlider();
-  }
-
-  /* ---------- Active nav link per section ---------- */
   const navLinks = document.querySelectorAll(".nav-link");
   const sectionToNav = {
     home: "#home",
@@ -223,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
     observedSections.forEach((section) => sectionObserver.observe(section));
   }
 
-  /* ---------- Reveal on scroll ---------- */
   const revealItems = document.querySelectorAll(".reveal");
   if ("IntersectionObserver" in window && !prefersReducedMotion.matches) {
     const revealObserver = new IntersectionObserver(
@@ -249,7 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
     revealItems.forEach((item) => item.classList.add("in"));
   }
 
-  /* ---------- Focus target after anchor jump ---------- */
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener("click", () => {
       const targetId = link.getAttribute("href");

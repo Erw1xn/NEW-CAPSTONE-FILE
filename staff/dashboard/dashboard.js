@@ -756,10 +756,13 @@ function isExcludedFromToday(appointment) {
 }
 function renderInventoryAlerts() {
   const container = document.getElementById("inventoryAlerts");
+
   if (!container) {
     return;
   }
+
   const inventory = getStoredInventory();
+
   if (!Array.isArray(inventory) || inventory.length === 0) {
     container.innerHTML = createEmptyState(
       "fa-box-open",
@@ -767,10 +770,26 @@ function renderInventoryAlerts() {
     );
     return;
   }
+
+  const getUpdatedTime = (item) => {
+    const value =
+      item.updated_at ||
+      item.updatedAt ||
+      item.modified_at ||
+      item.modifiedAt ||
+      item.created_at ||
+      item.createdAt ||
+      "";
+
+    const time = value ? new Date(value).getTime() : 0;
+
+    return Number.isNaN(time) ? 0 : time;
+  };
+
   const alerts = inventory
     .filter((item) => {
       const status = getInventoryStatus(item);
-      return status === "low" || status === "critical" || status === "out";
+      return status === "out" || status === "critical" || status === "low";
     })
     .sort((a, b) => {
       const priority = {
@@ -778,16 +797,61 @@ function renderInventoryAlerts() {
         critical: 1,
         low: 2,
       };
-      return priority[getInventoryStatus(a)] - priority[getInventoryStatus(b)];
+
+      const statusDifference =
+        priority[getInventoryStatus(a)] - priority[getInventoryStatus(b)];
+
+      if (statusDifference !== 0) {
+        return statusDifference;
+      }
+
+      return getUpdatedTime(b) - getUpdatedTime(a);
     });
-  if (alerts.length === 0) {
+
+  const normalItems = inventory
+    .filter((item) => getInventoryStatus(item) === "normal")
+    .sort((a, b) => {
+      const stockA = Number(
+        a.quantity ?? a.stock ?? a.current_stock ?? a.currentStock ?? 0,
+      );
+
+      const stockB = Number(
+        b.quantity ?? b.stock ?? b.current_stock ?? b.currentStock ?? 0,
+      );
+
+      const reorderA = Number(
+        a.reorder_level ??
+          a.reorderLevel ??
+          a.minimum_stock ??
+          a.minimumStock ??
+          0,
+      );
+
+      const reorderB = Number(
+        b.reorder_level ??
+          b.reorderLevel ??
+          b.minimum_stock ??
+          b.minimumStock ??
+          0,
+      );
+
+      return stockA - reorderA - (stockB - reorderB);
+    });
+
+  const selectedItems = [
+    ...alerts.slice(0, 2),
+    ...normalItems.slice(0, Math.max(0, 2 - alerts.length)),
+  ];
+
+  if (selectedItems.length === 0) {
     container.innerHTML = createEmptyState(
       "fa-box-open",
       "All inventory levels are normal",
     );
     return;
   }
-  container.innerHTML = alerts.map(createInventoryHTML).join("");
+
+  container.innerHTML = selectedItems.map(createInventoryHTML).join("");
 }
 function createInventoryHTML(item) {
   const name = String(
@@ -810,7 +874,7 @@ function createInventoryHTML(item) {
   );
   const status = getInventoryStatus(item);
   const priority = getInventoryPriority(status);
-  return `<div class="inv-item"><div class="inv-left"><div class="inv-icon"><i class="fa-solid fa-box"></i></div><div class="inv-info"><div class="inv-name">${escapeHTML(name)}</div><div class="inv-sub">Stock: ${formatNumber(stock)} · Reorder: ${formatNumber(reorderLevel)}</div></div></div><span class="badge ${priority.className}">${escapeHTML(priority.label)}</span></div>`;
+  return `<div class="inv-item"><div class="inv-left"><div class="inv-icon"><i class="fa-solid fa-box"></i></div><div class="inv-info"><div class="inv-name">${escapeHTML(name)}</div><div class="inv-sub">Stock: ${formatNumber(stock)} · Minimum: ${formatNumber(reorderLevel)}</div></div></div><span class="badge ${priority.className}">${escapeHTML(priority.label)}</span></div>`;
 }
 function getInventoryStatus(item) {
   const stock = Number(
@@ -841,15 +905,24 @@ function getInventoryPriority(status) {
       className: "status-out",
     };
   }
+
   if (status === "critical") {
     return {
       label: "Critical",
       className: "status-critical",
     };
   }
+
+  if (status === "low") {
+    return {
+      label: "Low Stock",
+      className: "status-low",
+    };
+  }
+
   return {
-    label: "Low Stock",
-    className: "status-low",
+    label: "Normal",
+    className: "status-normal",
   };
 }
 function getDashboardPaymentHistory(transaction) {

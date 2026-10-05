@@ -10,10 +10,12 @@ let toastTimeout = null;
 let smsProcessingIds = new Set();
 let smsRefreshInProgress = false;
 let smsCurrentPage = 1;
+let suppressedAutomaticNotifications = new Set();
 async function initializeSMSPage() {
   await loadPatients();
   await loadAppointments();
   await loadSMSNotifications();
+  await loadSuppressedAutomaticNotifications();
   const cleanupChanged = cleanupOrphanedNotifications();
   const notificationsChanged = syncAppointmentNotifications();
   if (cleanupChanged || notificationsChanged) {
@@ -162,6 +164,19 @@ async function loadSMSNotifications() {
   } catch (error) {
     console.error("Unable to fetch notifications:", error);
     smsNotifications = [];
+  }
+}
+async function loadSuppressedAutomaticNotifications() {
+  try {
+    const response = await fetch("sms_notifications.php?action=suppressed");
+    const data = await response.json();
+    suppressedAutomaticNotifications =
+      data.success && Array.isArray(data.data)
+        ? new Set(data.data.map((item) => String(item)))
+        : new Set();
+  } catch (error) {
+    console.error("Unable to load notification suppressions:", error);
+    suppressedAutomaticNotifications = new Set();
   }
 }
 async function saveSMSNotifications() {
@@ -348,7 +363,7 @@ function getAppointmentStatus(appointment) {
   const value = String(rawStatus)
     .trim()
     .toLowerCase()
-    .replace(/[\_-]+/g, " ")
+    .replace(/[\_\-]+/g, " ")
     .replace(/\s+/g, " ");
   if (
     value === "confirmed" ||
@@ -471,6 +486,48 @@ function getDateDifferenceInDays(startDate, endDate) {
     (endDate.getTime() - startDate.getTime()) / millisecondsPerDay,
   );
 }
+function getAutomaticNotificationKey(
+  appointmentId,
+  notificationType,
+  channel,
+  appointmentDate = "",
+  appointmentTime = "",
+) {
+  const base = `${appointmentId}|${notificationType}|${channel}`;
+  if (
+    notificationType === "Appointment Reminder" ||
+    notificationType === "Same-Day Reminder" ||
+    notificationType === "Appointment Reschedule"
+  ) {
+    return `${base}|${appointmentDate || ""}|${appointmentTime || ""}`;
+  }
+  return base;
+}
+function createAutomaticNotificationUID(
+  appointmentId,
+  notificationType,
+  channel,
+  appointmentDate = "",
+  appointmentTime = "",
+) {
+  const key = getAutomaticNotificationKey(
+    appointmentId,
+    notificationType,
+    channel,
+    appointmentDate,
+    appointmentTime,
+  );
+  let hash1 = 2166136261;
+  let hash2 = 2166136261 ^ 0x9e3779b9;
+  for (let i = 0; i < key.length; i++) {
+    const code = key.charCodeAt(i);
+    hash1 ^= code;
+    hash1 = Math.imul(hash1, 16777619);
+    hash2 ^= code + i;
+    hash2 = Math.imul(hash2, 16777619);
+  }
+  return `NTF-${(hash1 >>> 0).toString(36)}-${(hash2 >>> 0).toString(36)}`;
+}
 function createAutomaticNotificationIfMissing(
   appointment,
   patient,
@@ -525,16 +582,34 @@ function createAutomaticNotificationIfMissing(
   const createChannelNotification = (channel, contactMessage) => {
     const contactAvailable = channel === "email" ? email : phone;
     if (!contactAvailable) return false;
+    const notificationKey = getAutomaticNotificationKey(
+      appointmentId,
+      notificationType,
+      channel,
+      appointmentDate,
+      appointmentTime,
+    );
+    if (suppressedAutomaticNotifications.has(notificationKey)) return false;
     const alreadyExists = smsNotifications.some(
       (notification) =>
         notification.source === "appointment" &&
-        String(notification.appointmentId || "") === String(appointmentId) &&
-        String(notification.type || "") === String(notificationType) &&
-        String(notification.channel || "email").toLowerCase() === channel,
+        getAutomaticNotificationKey(
+          notification.appointmentId,
+          notification.type,
+          String(notification.channel || "email").toLowerCase(),
+          notification.appointmentDate || "",
+          notification.appointmentTime || "",
+        ) === notificationKey,
     );
     if (alreadyExists) return false;
     smsNotifications.unshift({
-      id: createID(),
+      id: createAutomaticNotificationUID(
+        appointmentId,
+        notificationType,
+        channel,
+        appointmentDate,
+        appointmentTime,
+      ),
       appointmentId,
       patientId,
       patientName,
@@ -1263,6 +1338,22 @@ async function confirmDelete() {
     const data = await response.json();
     if (!data.success)
       throw new Error(data.message || "Unable to delete notification.");
+    const deletedNotification = smsNotifications.find(
+      (item) => String(item.id) === String(notificationId),
+    );
+    if (
+      deletedNotification?.source === "appointment" &&
+      deletedNotification.appointmentId
+    ) {
+      const deletedKey = getAutomaticNotificationKey(
+        deletedNotification.appointmentId,
+        deletedNotification.type,
+        String(deletedNotification.channel || "email").toLowerCase(),
+        deletedNotification.appointmentDate || "",
+        deletedNotification.appointmentTime || "",
+      );
+      suppressedAutomaticNotifications.add(deletedKey);
+    }
     smsNotifications = smsNotifications.filter(
       (item) => String(item.id) !== String(notificationId),
     );
@@ -1488,6 +1579,7 @@ setInterval(async () => {
     await loadAppointments();
     await loadPatients();
     await loadSMSNotifications();
+    await loadSuppressedAutomaticNotifications();
     const cleanupChanged = cleanupOrphanedNotifications();
     const notificationsChanged = syncAppointmentNotifications();
     if (cleanupChanged || notificationsChanged) {

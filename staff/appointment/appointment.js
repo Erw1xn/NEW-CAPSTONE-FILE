@@ -1812,10 +1812,10 @@ function checkCurrentFormConflict() {
   }
   if (
     startMinutes < clinicStart ||
-    appointmentEnd > clinicEnd ||
+    startMinutes > clinicEnd ||
     startMinutes % SLOT_MIN !== 0
   ) {
-    text.textContent = `The selected time must start on a ${SLOT_MIN}-minute slot and stay within clinic hours (${fmtTime("10:00")}–${fmtTime("17:30")}).`;
+    text.textContent = `The selected appointment must start between ${fmtTime("10:00")} and ${fmtTime("17:30")}.`;
     notice.classList.add("show");
     saveBtn.disabled = true;
     return;
@@ -1922,11 +1922,11 @@ function saveAppt() {
   }
   if (
     startMinutes < clinicStart ||
-    appointmentEnd > clinicEnd ||
+    startMinutes > clinicEnd ||
     startMinutes % SLOT_MIN !== 0
   ) {
     showToast(
-      `Appointment must start on a ${SLOT_MIN}-minute slot and remain within clinic hours (${fmtTime("10:00")}–${fmtTime("17:30")}).`,
+      `Appointment must start between ${fmtTime("10:00")} and ${fmtTime("17:30")}.`,
     );
     return;
   }

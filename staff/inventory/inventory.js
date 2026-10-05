@@ -66,7 +66,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let stockStatusIcon = document.getElementById("stockStatusIcon");
   let inventoryCurrentPage = 1;
-  let inventoryCurrentSection = 1;
+  const requestedInventorySection = Number(
+    new URLSearchParams(window.location.search).get("page"),
+  );
+  let inventoryCurrentSection =
+    Number.isInteger(requestedInventorySection) && requestedInventorySection > 0
+      ? requestedInventorySection
+      : 1;
   let itemUnitManuallyEdited = false;
   let inventoryToastTimeout = null;
   let selectedDeleteItemId = null;
@@ -768,7 +774,41 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
 
+      const historyItemNames = Object.keys(result.history_by_item || {});
       const mergedItems = [...forecastItems];
+      const mergedMap = new Map();
+
+      mergedItems.forEach((item) => {
+        const normalizedName = normalizeItemName(item?.item_name);
+        if (normalizedName) {
+          mergedMap.set(normalizedName, item);
+        }
+      });
+
+      historyItemNames.forEach((itemName) => {
+        const normalizedName = normalizeItemName(itemName);
+        if (!normalizedName || mergedMap.has(normalizedName)) {
+          return;
+        }
+        const historyRecords = result.history_by_item[itemName] || [];
+        mergedItems.push({
+          item_name: itemName,
+          forecast_date: null,
+          model_name: null,
+          sma_forecast: null,
+          random_forest_forecast: null,
+          selected_forecast: null,
+          accuracy: null,
+          mape: null,
+          rmse: null,
+          forecast_status:
+            historyRecords.length > 0
+              ? "insufficient_data"
+              : "no_consumption_data",
+          evaluation_available: false,
+        });
+        mergedMap.set(normalizedName, mergedItems[mergedItems.length - 1]);
+      });
 
       inventoryItems.forEach((inventoryItem) => {
         const itemName = String(
@@ -785,7 +825,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const normalizedName = normalizeItemName(itemName);
 
-        if (forecastMap.has(normalizedName)) {
+        if (mergedMap.has(normalizedName)) {
           return;
         }
 
@@ -802,6 +842,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           forecast_status: "no_consumption_data",
           evaluation_available: false,
         });
+        mergedMap.set(normalizedName, mergedItems[mergedItems.length - 1]);
       });
 
       forecastBody.innerHTML = mergedItems
@@ -1274,9 +1315,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    select.addEventListener("change", () => {
-      renderForecastDemandChart(select.value);
-    });
+    if (!select.dataset.forecastInitialized) {
+      select.addEventListener("change", () => {
+        renderForecastDemandChart(select.value);
+      });
+      select.dataset.forecastInitialized = "true";
+    }
 
     loadForecastChartData();
   }
@@ -1654,9 +1698,9 @@ document.addEventListener("DOMContentLoaded", async () => {
               >
                 ${escapeHTML(item.name)}
               </span>
-              <span class="item-id">
-                ${escapeHTML(item.id)}
-              </span>
+              <span class="item-id" style="color: #4f6258;">
+  Item ID: ${escapeHTML(item.id)}
+</span>
             </div>
           </div>
         </td>
